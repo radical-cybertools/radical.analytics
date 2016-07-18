@@ -81,7 +81,7 @@ srp['eid'].filter(name=['state',...]).duration('start_state', 'end_state')
   * name          = Name of the filter. Supported: has_all, has_any, has_none. Optional.
   * ['state']     = list of one or more names of state to pass to the filter. The name of the states are returned by srp['eid'].states. Optional.
   * 'start_state' = Time stamp of the name of the state used as the start of the duration.
-  * 'end_state' = Time stamp of the name of the state used as the end of the duration.
+  * 'end_state'   = Time stamp of the name of the state used as the end of the duration.
 
   Returns:
   * Float quantifying the duration between start and end state for all the units returned by the indicated filter, if any.
