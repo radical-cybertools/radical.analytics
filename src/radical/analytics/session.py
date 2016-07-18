@@ -157,7 +157,6 @@ class Session(object):
         return ret
 
 
-
     # --------------------------------------------------------------------------
     #
     def duration(self, start_states=None, end_states=None, 
@@ -182,6 +181,7 @@ class Session(object):
         elif start_events and end_events:
             # magic goes here
             pass
+
 
 # ------------------------------------------------------------------------------
 
