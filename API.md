@@ -10,91 +10,158 @@ csv file.
 * Phase 2 (P2): extended to event models.
 * Phase 3 (P3): extended to statistical analysis.
 
-## Entities and Properties
-
-```
-srp = Session(profiles, description)
-
-  Arguments:
-  * profiles: one or more lists containing 'events'. Saved in csv format.
-  * description: dict from which we can derive. Saved in json format.
-    - stateful entities: have uid, states, events.
-    - state model.
-    - event model.
-
-  Returns:
-  * Obj
 
 
-srp.id
+## Classes
 
-  Returns:
-  * String
-
-
-srp.entities
-
-  Returns:
-  * dict of dict of Obj
-```
-
-### States (P1)
-
-* RADICAL-Pilot entities: CU and pilots.
-
-```
-srp['eid']
-
-  Returns:
-  * Dict of Obj
+The API has two classes: one with with the raw data and methods relative to the stateful entities of the experimental run; the other with the details of each stateful entity.
 
 
-srp['eid'].states
+### srp = Session(profiles, description)
 
-  Returns:
-  * List of strings. The joined list of the names of the states of all the entities.
+Arguments:
+
+* profiles. Saved in csv format, one or more lists containing 'events'.
+* description. Saved in json format, dictionary from which we can derive:
+  - stateful entities: have uid, states, events.
+  - state model.
+  - event model.
+
+Returns:
+
+* Object of type Session
 
 
-srp['eid']['id'].states
+### spr = Sentity(Session)
 
-  Returns:
-  * List of strings. The names of all the states of a specific entity.
-```
+Arguments:
 
-### Events (P2)
+* Session. The object containing the data about the stateful entities of the
+  session.
 
-* RADICAL-Pilot entities: CU, pilots, and files.
+Returns:
 
-```
-srp['eid']['id'].events                                # list
-```
+* Object of type Sentity
 
-## Durations
 
-### States (P1)
 
-```
-srp['eid'].filter(name=['state',...]).duration('start_state', 'end_state')
+## Methods of Session
 
-  Arguments:
-  * 'eid'         = String identifier of the entity. The string identifier of the entities are returned by srp.entities.keys()
-  * name          = Name of the filter. Supported: has_all, has_any, has_none. Optional.
-  * ['state']     = list of one or more names of state to pass to the filter. The name of the states are returned by srp['eid'].states. Optional.
-  * 'start_state' = Time stamp of the name of the state used as the start of the duration.
-  * 'end_state'   = Time stamp of the name of the state used as the end of the duration.
+The following are the methods of the class Session.
 
-  Returns:
-  * Float quantifying the duration between start and end state for all the units returned by the indicated filter, if any.
 
-srp['eid']['id'].duration('start_state', 'end_state')  # Float
-```
+### srp.list('entities'|'uids'|'states'|'events')
 
-### Events (P2)
+Returns a list of properties of the given session.
 
-```
-srp['eid'].duration      ('start_event', 'end_event')  # Float
-srp['eid']['id'].duration('start_event', 'end_event')  # Float
-```
+Arguments:
+
+* 'entities': List the name of all the stateful entities of the given session.
+  In principle, the name of the entities are not known in advance. Currently,
+  for RP they are 'CU' and 'Pilot' but for another RADICAL cybertool may be
+  different.
+* 'uids': List the uid (identifier unique to the given session) of all the
+  stateful entities of the given session.
+* 'states': List the name of the states of all the stateful entities of the
+  given session.
+* 'events': List the name of the events of the given session.
+
+Returns:
+
+* List of Strings. E.g., ['Pilot', 'CU']; ['p.00000','cu.00000']; ['NEW',
+  'DONE']; ['',''].
+
+
+### srp.get(entities=['ename'])
+
+List all the objects in the given session of one or more named entities. The
+list of the names of the entities available in the given session is returned
+by srp.list('entities').
+
+Arguments:
+
+* ['ename']: list of names of entity.
+
+Returns:
+
+* List of Objects of type Sentity
+
+
+### srp.filter(entities=['ename']|uids=['uid']|states=['sname']|events=['ename'], inplace=False|True)
+
+Returns a session with a subset of the entities of the given session.
+
+Arguments:
+
+* ['ename']: List of names of entity.
+* ['uid']: List of names of uids.
+* ['sname']: List of names of state.
+* ['ename']: List of names of entity.
+* True|False: switch on and off in-place replacement of the given session.
+  False is the default behavior and can be omitted.
+
+Returns:
+
+* Copy of srp, Obj of type Session (inplace=False) or in place replacement of
+  srp (inplace=True).
+
+
+### srp.describe(none|'smodel'|'emodel')
+
+Print the description as passed to the Session constructor.
+
+Arguments:
+
+* none: Prints the full description as passed to the Session constructor.
+* 'smodel': Prints the ordered state model.
+* 'emodel': Prints the ordered event model for the profile of the given
+  session.
+
+Returns:
+
+* List of Dictionaries. In the dictionaries of the state and event models,
+  Keys are strings, values integers. Keys are the name of each state or event,
+  values represent the temporal ordering of the states or events. Give two
+  numbers x and y, if x < y, x has to happen before y. When x == y, the two
+  states or events are mutually exclusive.
+
+
+### srp.duration('start_state|event', 'end_state|event')
+
+Calculates the duration between two state or event timestamps for all the
+entities in the given session that have those those states or event
+timestamps. When more than one entity exists in the session with the indicated
+state or event timestamps, the duration is calculated taking into account the
+possible overlap among those timestamps.
+
+The entities used to calculate the duration can be filtered via the filter
+method. For example:
+
+* srp.filter(entities=['unit'], inplace=True).duration('NEW', 'DONE')
+  calculates the overall duration of all the units that have been successfully
+  executed.
+* srp.filter(uids=['u.00000'], inplace=True).duration('NEW', 'DONE')
+  calculates the overall duration of a single unit. If the unit has no state
+  'DONE' an error is risen.
+* srp.filter(states=['FAILED'], inplace=True).duration('NEW', 'FAILED')
+  calculates the overall duration of every entity that has failed.
+* srp.filter(entities=['unit'], inplace=True).filter(states=['FAILED'],
+  inplace=True).duration('NEW', 'FAILED') calculates the overall duration of
+  every unit that has failed.
+
+Arguments:
+
+* 'start_state' = Time stamp of the name of the state used as the start of the
+  duration.
+* 'end_state'   = Time stamp of the name of the state used as the end of the
+  duration.
+
+Returns:
+
+* Float quantifying the duration between start and end state for all the units
+  returned by the indicated filter, if any.
+
+
 
 ## Integrity
 
@@ -108,6 +175,7 @@ Check the integrity of the data collected for each session:
 srp.consistency                                        # Obj
 srp.accuracy                                           # Obj
 ```
+
 
 ## Plotting
 
