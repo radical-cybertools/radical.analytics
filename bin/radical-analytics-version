@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+
+import radical.analytics
+print  radical.analytics.version_detail
+
