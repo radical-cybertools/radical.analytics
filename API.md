@@ -25,7 +25,7 @@ srp.entities                                           # dict of dict of Obj
 
 ### States (P1)
 
-* RADICAL-Pilot: CU and pilots.
+* RADICAL-Pilot entities: CU and pilots.
 
 ```
 srp['eid']                                             # dict of Obj
@@ -33,7 +33,7 @@ srp['eid']['id'].states                                # list
 ```
 ### Events (P2)
 
-* RADICAL-Pilot: CU, pilots, and files.
+* RADICAL-Pilot entities: CU, pilots, and files.
 
 ```
 srp['eid']['id'].events                                # list
