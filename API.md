@@ -6,7 +6,12 @@
 ## Properties
 
 ```
-srp = Session(fjson, econf)
+srp = Session(profiles, description)
+# profiles   : one or more lists containing 'events'
+# description: dict (json) from which we can derive 
+#    - stateful entities (things which have uid, states, events)
+#    - state model
+#    - event model
 ```
 
 
