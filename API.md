@@ -2,6 +2,7 @@
 
 * Phase 1 (P1): state model.
 * Phase 2 (P2): extended to event models.
+* Phase 3 (P3): extended to statistical analysis.
 
 ## Properties
 
@@ -18,18 +19,18 @@ srp = Session(profiles, description)
 ### States (P1)
 
 ```
-srp.id                  # string
-srp.cus                 # dict of Obj
-srp.cuid.states         # list
-srp.pilots              # dict of Obj
-srp.pid.states          # list
+srp.id                                   # string
+srp.cus                                  # dict of Obj
+srp.cuid.states                          # list
+srp.pilots                               # dict of Obj
+srp.pid.states                           # list
 ```
 ### Events (P2)
 ```
-srp.cuid.events         # list          (P2)
-srp.pid.events          # list          (P2)
-srp.files               # dict of Obj   (P2)
-srp.fid                 # list          (P2)
+srp.cuid.events                          # list
+srp.pid.events                           # list
+srp.files                                # dict of Obj
+srp.fid                                  # list
 ```
 
 ## Durations
@@ -37,21 +38,21 @@ srp.fid                 # list          (P2)
 ### States (P1)
 
 ```
-srp.cus.duration('sstate', 'estate')        # Float
-srp.cuid.duration('sstate', 'estate')       # Float
-srp.pilots.duration('sstate', 'estate')     # Float
-srp.pid.duration('sstate', 'estate')        # Float
+srp.cus.duration   ('sstate', 'estate')  # Float
+srp.cuid.duration  ('sstate', 'estate')  # Float
+srp.pilots.duration('sstate', 'estate')  # Float
+srp.pid.duration   ('sstate', 'estate')  # Float
 ```
 
 ### Events (P2)
 
 ```
-srp.cus.duration('sevent', 'eevent')        # Float
-srp.cuid.duration('sevent', 'eevent')       # Float
-srp.pilots.duration('sevent', 'eevent')     # Float
-srp.pid.duration('sevent', 'eevent')        # Float
-srp.files.duration('sevent', 'eevent')      # Float
-srp.fid.duration('sevent', 'eevent')        # Float
+srp.cus.duration   ('sevent', 'eevent')  # Float
+srp.cuid.duration  ('sevent', 'eevent')  # Float
+srp.pilots.duration('sevent', 'eevent')  # Float
+srp.pid.duration   ('sevent', 'eevent')  # Float
+srp.files.duration ('sevent', 'eevent')  # Float
+srp.fid.duration   ('sevent', 'eevent')  # Float
 ```
 
 ## Integrity
@@ -63,37 +64,14 @@ Check the integrity of the data collected for each session:
 * Accuracy: clock synchronization.
 
 ```
+srp.test.consistency                     # Obj
+srp.test.accuracy                        # Obj
 ```
-
-## Statistical Analysis
-
-### Averages
-
-```
-
-```
-
-### Spread
-
-```
-
-```
-
-### Skew
-
-```
-
-```
-
-### Compare
-
-```
-
-```
-
 
 ## Plotting
 
 ```
-srp.plot.durations(ptype, ldurations, title, xname, yname, fname)
+srp.plot.durations (ptype, ldurations,
+                    title, xname,
+                    yname, fname)        # PDF file
 ```
