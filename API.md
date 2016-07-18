@@ -119,7 +119,7 @@ Returns a session with a subset of the entities of the given session.
   srp (inplace=True).
 
 
-### `srp.describe(none|'smodel'|'emodel')`
+### `srp.describe(none|'smodel', entities=['ename']|'emodel', entities=['ename'])`
 
 Returns the description as passed to the Session constructor.
 
@@ -130,6 +130,7 @@ Returns the description as passed to the Session constructor.
 * `'smodel'`: Prints the ordered state model.
 * `'emodel'`: Prints the ordered event model for the profile of the given
   session.
+* `['ename']`: List of names of entity.
 
 #### Returns:
 
