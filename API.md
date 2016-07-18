@@ -1,45 +1,63 @@
 # Analytics API
 
-* Phase 1 (P1): Specification constrained to state model.
-* Phase 2 (P2): Specification extended to event models.
+* Phase 1 (P1): state model.
+* Phase 2 (P2): extended to event models.
 
 ## Properties
 
 ```
-srp = Session(fjson)
-srp.id          # string        (P1)
-srp.cus         # dict of Obj   (P1)
-srp.pilots      # dict of Obj   (P1)
-srp.files       # dict of Obj   (P2)
+srp = Session(fjson, econf)
+```
+
+
+### States (P1)
+
+```
+srp.id                  # string
+srp.cus                 # dict of Obj
+srp.cuid.states         # list
+srp.pilots              # dict of Obj
+srp.pid.states          # list
+```
+### Events (P2)
+```
+srp.cuid.events         # list          (P2)
+srp.pid.events          # list          (P2)
+srp.files               # dict of Obj   (P2)
+srp.fid                 # list          (P2)
+```
+
+## Durations
+
+### States (P1)
+
+```
+srp.cus.duration('sstate', 'estate')        # Float
+srp.cuid.duration('sstate', 'estate')       # Float
+srp.pilots.duration('sstate', 'estate')     # Float
+srp.pid.duration('sstate', 'estate')        # Float
+```
+
+### Events (P2)
+
+```
+srp.cus.duration('sevent', 'eevent')        # Float
+srp.cuid.duration('sevent', 'eevent')       # Float
+srp.pilots.duration('sevent', 'eevent')     # Float
+srp.pid.duration('sevent', 'eevent')        # Float
+srp.files.duration('sevent', 'eevent')      # Float
+srp.fid.duration('sevent', 'eevent')        # Float
 ```
 
 ## Integrity
 
 Check the integrity of the data collected for each session:
 
-* Consistency: timestamp order; identity among independent measurements of the same quantity.
+* Consistency: timestamp order; identity among independent measurements of the
+  same quantity.
 * Accuracy: clock synchronization.
 
 ```
-```
-
-## Durations
-
-### States (P1)
-```
-Ts_cus    = srp.cus.duration('sstate', 'estate')        # Float
-Ts_cu     = srp.cuid.duration('sstate', 'estate')       # Float
-Ts_pilots = srp.pilots.duration('sstate', 'estate')     # Float
-Ts_pilot  = srp.pilots[i].duration('sstate', 'estate')  # Float
-```
-
-### Events (P2)
-```
-Te_cus    = srp.cus.duration('sevent', 'eevent')        # Float
-Te_cu     = srp.cuid.duration('sevent', 'eevent')       # Float
-Te_pilots = srp.pilots.duration('sevent', 'eevent')     # Float
-Te_pilot  = srp.pilots[i].duration('sevent', 'eevent')  # Float
-
 ```
 
 ## Statistical Analysis
