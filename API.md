@@ -46,6 +46,7 @@ srp.entities
 srp['eid']                                             # dict of Obj
 srp['eid']['id'].states                                # list
 ```
+
 ### Events (P2)
 
 * RADICAL-Pilot entities: CU, pilots, and files.
@@ -90,3 +91,4 @@ srp.plot_durations (ptype, ldurations,
                     title, xname,
                     yname, fname)                      # PDF file
 ```
+
