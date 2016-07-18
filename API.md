@@ -19,6 +19,23 @@ The API has two classes: one with with the raw data and methods relative to the 
 
 ### `srp = Session(profiles, description)`
 
+Stores information about the properties of an execution of a RADICAL Cybertool
+and exposes methods to list, get, and filter this information. The class
+assumes the existence of the following properties: _entities_, _uids_,
+_states_, and _events_. Entities are stateful, have a unique identifier (uid),
+one or more states and events. Both states and events are assumed to be
+explicitly defined and documented within the RADICAL Cybertool code base.
+
+The method _duration_ is exposed to calculate the amount of time between two
+states or events. Durations can be calculated for single and multiple
+entities, both of the same and different type. This method accounts for the
+overlapping among durations of multiple entities both of the same and
+different type.
+
+Internally, this class acts as a factory of entities objects. Each entity has
+a set of properties that are collected within a private object, one for each
+entity. The class of this objects is called _Sentity_.
+
 #### Arguments:
 
 * `profiles`. Saved in csv format, one or more lists containing 'events'.
@@ -31,19 +48,6 @@ The API has two classes: one with with the raw data and methods relative to the 
 ##### Returns:
 
 * Object of type Session
-
-
-### `spr = Sentity(Session)`
-
-#### Arguments:
-
-* `Session`. The object containing the data about the stateful entities of
-  the session.
-
-#### Returns:
-
-* Object of type Sentity
-
 
 
 ## Methods of Session
