@@ -13,14 +13,29 @@ csv file.
 ## Entities and Properties
 
 ```
-srp = Session(profiles, description)                   # Obj
-# profiles   : one or more lists containing 'events'
-# description: dict (json) from which we can derive
-#    - stateful entities (things which have uid, states, events)
-#    - state model
-#    - event model
-srp.id                                                 # string
-srp.entities                                           # dict of dict of Obj
+srp = Session(profiles, description)
+
+  Arguments:
+  * ```profiles```: one or more lists containing 'events'. Saved in _csv_ format.
+  * ```description```: dict from which we can derive. Saved in _json_ format.
+    - stateful entities: have uid, states, events.
+    - state model.
+    - event model.
+
+  Returns:
+  * Obj
+
+
+srp.id
+
+  Returns:
+  * String
+
+
+srp.entities
+
+  Returns:
+  * dict of dict of Obj
 ```
 
 ### States (P1)
