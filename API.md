@@ -1,31 +1,38 @@
 # Analytics API
 
+Generic analytics API for systems implementing RADICAL-Utils Session.  Systems
+have to implement listing of stateful entities and state and event
+timestamping. Systems are assumed to provide information about: the stateful
+entities and their states via a json description file; the timestamps via a
+csv file.
+
 * Phase 1 (P1): state model.
 * Phase 2 (P2): extended to event models.
 * Phase 3 (P3): extended to statistical analysis.
 
-## Properties
+## Entities and Properties
 
 ```
-srp = Session(fjson, econf)
+srp = Session(fjson, econf)                            # Obj
+srp.id                                                 # string
+srp.entities                                           # dict of dict of Obj
 ```
 
 
 ### States (P1)
 
+* RADICAL-Pilot: CU and pilots.
+
 ```
-srp.id                                   # string
-srp.cus                                  # dict of Obj
-srp.cuid.states                          # list
-srp.pilots                               # dict of Obj
-srp.pid.states                           # list
+srp['eid']                                             # dict of Obj
+srp['eid']['id'].states                                # list
 ```
 ### Events (P2)
+
+* RADICAL-Pilot: CU, pilots, and files.
+
 ```
-srp.cuid.events                          # list
-srp.pid.events                           # list
-srp.files                                # dict of Obj
-srp.fid                                  # list
+srp['eid']['id'].events                                # list
 ```
 
 ## Durations
@@ -33,21 +40,15 @@ srp.fid                                  # list
 ### States (P1)
 
 ```
-srp.cus.duration   ('sstate', 'estate')  # Float
-srp.cuid.duration  ('sstate', 'estate')  # Float
-srp.pilots.duration('sstate', 'estate')  # Float
-srp.pid.duration   ('sstate', 'estate')  # Float
+srp['eid'].duration      ('start_state', 'end_state')  # Float
+srp['eid']['id'].duration('start_state', 'end_state')  # Float
 ```
 
 ### Events (P2)
 
 ```
-srp.cus.duration   ('sevent', 'eevent')  # Float
-srp.cuid.duration  ('sevent', 'eevent')  # Float
-srp.pilots.duration('sevent', 'eevent')  # Float
-srp.pid.duration   ('sevent', 'eevent')  # Float
-srp.files.duration ('sevent', 'eevent')  # Float
-srp.fid.duration   ('sevent', 'eevent')  # Float
+srp['eid'].duration      ('start_event', 'end_event')  # Float
+srp['eid']['id'].duration('start_event', 'end_event')  # Float
 ```
 
 ## Integrity
@@ -59,14 +60,14 @@ Check the integrity of the data collected for each session:
 * Accuracy: clock synchronization.
 
 ```
-srp.test.consistency                     # Obj
-srp.test.accuracy                        # Obj
+srp.consistency                                        # Obj
+srp.accuracy                                           # Obj
 ```
 
 ## Plotting
 
 ```
-srp.plot.durations (ptype, ldurations,
+srp.plot_durations (ptype, ldurations,
                     title, xname,
-                    yname, fname)        # PDF file
+                    yname, fname)                      # PDF file
 ```
