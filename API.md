@@ -13,11 +13,15 @@ csv file.
 ## Entities and Properties
 
 ```
-srp = Session(fjson, econf)                            # Obj
+srp = Session(profiles, description)                   # Obj
+# profiles   : one or more lists containing 'events'
+# description: dict (json) from which we can derive
+#    - stateful entities (things which have uid, states, events)
+#    - state model
+#    - event model
 srp.id                                                 # string
 srp.entities                                           # dict of dict of Obj
 ```
-
 
 ### States (P1)
 
