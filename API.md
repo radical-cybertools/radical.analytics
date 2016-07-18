@@ -18,12 +18,29 @@ csv file.
 The API has two classes: one with with the raw data and methods relative to the stateful entities of the experimental run; the other with the details of each stateful entity.
 
 
-### ```srp = Session(profiles, description)```
+### `srp = Session(profiles, description)`
+
+Stores information about the properties of an execution of a RADICAL Cybertool
+and exposes methods to list, get, and filter this information. The class
+assumes the existence of the following properties: _entities_, _uids_,
+_states_, and _events_. Entities are stateful, have a unique identifier (uid),
+one or more states and events. Both states and events are assumed to be
+explicitly defined and documented within the RADICAL Cybertool code base.
+
+The method _duration_ is exposed to calculate the amount of time between two
+states or events. Durations can be calculated for single and multiple
+entities, both of the same and different type. This method accounts for the
+overlapping among durations of multiple entities both of the same and
+different type.
+
+Internally, this class acts as a factory of entities objects. Each entity has
+a set of properties that are collected within a private object, one for each
+entity. The class of this objects is called _Sentity_.
 
 #### Arguments:
 
-* ```profiles```. Saved in csv format, one or more lists containing 'events'.
-* ```description```. Saved in json format, dictionary from which we can
+* `profiles`. Saved in csv format, one or more lists containing 'events'.
+* `description`. Saved in json format, dictionary from which we can
   derive:
   - stateful entities: have uid, states, events.
   - state model.
@@ -34,47 +51,39 @@ The API has two classes: one with with the raw data and methods relative to the 
 * Object of type Session
 
 
-### ```spr = Sentity(Session)```
-
-#### Arguments:
-
-* ```Session```. The object containing the data about the stateful entities of
-  the session.
-
-#### Returns:
-
-* Object of type Sentity
-
-
-
 ## Methods of Session
 
 The following are the methods of the class Session.
 
 
-### ```srp.list('entities'|'uids'|'states'|'events')```
+### `srp.list('entities'|'uids'|'states'|'events')`
 
-Returns a list of properties of the given session.
+Returns a list of values for the values of the properties 'entities', 'uids',
+'states', 'events' of the given session.
 
 #### Arguments:
 
-* ```'entities'```: List the name of all the stateful entities of the given
+* `'entities'`: List the name of all the stateful entities of the given
   session. In principle, the name of the entities are not known in advance.
   Currently, for RP they are 'CU' and 'Pilot' but for another RADICAL
   cybertool may be different.
-* ```'uids'```: List the uid (identifier unique to the given session) of all
+* `'uids'`: List the uid (identifier unique to the given session) of all
   the stateful entities of the given session.
-* ```'states'```: List the name of the states of all the stateful entities of
+* `'states'`: List the name of the states of all the stateful entities of
   the given session.
-* ```'events'```: List the name of the events of the given session.
+* `'events'`: List the name of the events of the given session.
 
 #### Returns:
 
 * List of Strings. E.g., ['Pilot', 'CU']; ['p.00000','cu.00000']; ['NEW',
   'DONE']; ['',''].
 
+#### TODO:
 
-### ```srp.get(entities=['ename'])```
+* Enforce naming for events in RP (and RADICAL Cybertools in general if
+  needed)
+
+### `srp.get(entities=['ename']|uids=['uid']|states=['sname']|events=['ename'])`
 
 List all the objects in the given session of one or more named entities. The
 list of the names of the entities available in the given session is returned
@@ -82,24 +91,27 @@ by srp.list('entities').
 
 #### Arguments:
 
-* ```['ename']```: list of names of entity.
+* `['ename']`: list of names of entity.
+* `['uid']`: List of names of uids.
+* `['sname']`: List of names of state.
+* `['ename']`: List of names of entity.
 
 #### Returns:
 
 * List of Objects of type Sentity
 
 
-### ```srp.filter(entities=['ename']|uids=['uid']|states=['sname']|events=['ename'], inplace=False|True)```
+### `srp.filter(entities=['ename']|uids=['uid']|states=['sname']|events=['ename'], inplace=False|True)`
 
 Returns a session with a subset of the entities of the given session.
 
 #### Arguments:
 
-* ```['ename']```: List of names of entity.
-* ```['uid']```: List of names of uids.
-* ```['sname']```: List of names of state.
-* ```['ename']```: List of names of entity.
-* ```True|False```: switch on and off in-place replacement of the given
+* `['ename']`: List of names of entity.
+* `['uid']`: List of names of uids.
+* `['sname']`: List of names of state.
+* `['ename']`: List of names of entity.
+* `True|False`: switch on and off in-place replacement of the given
   session. False is the default behavior and can be omitted.
 
 #### Returns:
@@ -108,17 +120,18 @@ Returns a session with a subset of the entities of the given session.
   srp (inplace=True).
 
 
-### ```srp.describe(none|'smodel'|'emodel')```
+### `srp.describe(none|'smodel', entities=['ename']|'emodel', entities=['ename'])`
 
-Print the description as passed to the Session constructor.
+Returns the description as passed to the Session constructor.
 
 #### Arguments:
 
-* ```none```: Prints the full description as passed to the Session
+* `none`: Prints the full description as passed to the Session
   constructor.
-* ```'smodel'```: Prints the ordered state model.
-* ```'emodel'```: Prints the ordered event model for the profile of the given
+* `'smodel'`: Prints the ordered state model.
+* `'emodel'`: Prints the ordered event model for the profile of the given
   session.
+* `['ename']`: List of names of entity.
 
 #### Returns:
 
@@ -129,7 +142,7 @@ Print the description as passed to the Session constructor.
   states or events are mutually exclusive.
 
 
-### ```srp.duration('start_state|event', 'end_state|event')```
+### `srp.duration('start_state|event', 'end_state|event')`
 
 Calculates the duration between two state or event timestamps for all the
 entities in the given session that have those those states or event
@@ -140,23 +153,23 @@ possible overlap among those timestamps.
 The entities used to calculate the duration can be filtered via the filter
 method. For example:
 
-* ```srp.filter(entities=['unit'], inplace=True).duration('NEW', 'DONE')```
+* `srp.filter(entities=['unit'], inplace=True).duration('NEW', 'DONE')`
   calculates the overall duration of all the units that have been successfully
   executed.
-* ```srp.filter(uids=['u.00000'], inplace=True).duration('NEW', 'DONE')```
+* `srp.filter(uids=['u.00000'], inplace=True).duration('NEW', 'DONE')`
   calculates the overall duration of a single unit. If the unit has no state
   'DONE' an error is risen.
-* ```srp.filter(states=['FAILED'], inplace=True).duration('NEW', 'FAILED')```
+* `srp.filter(states=['FAILED'], inplace=True).duration('NEW', 'FAILED')`
   calculates the overall duration of every entity that has failed.
-* ```srp.filter(entities=['unit'], inplace=True).filter(states=['FAILED'],
-  inplace=True).duration('NEW', 'FAILED')``` calculates the overall duration
+* `srp.filter(entities=['unit'], inplace=True).filter(states=['FAILED'],
+  inplace=True).duration('NEW', 'FAILED')` calculates the overall duration
   of every unit that has failed.
 
 #### Arguments:
 
-* ```'start_state'``` = Time stamp of the name of the state used as the start
+* `'start_state'` = Time stamp of the name of the state used as the start
   of the duration.
-* ```'end_state'```   = Time stamp of the name of the state used as the end of
+* `'end_state'`   = Time stamp of the name of the state used as the end of
   the duration.
 
 #### Returns:
@@ -174,17 +187,17 @@ Check the integrity of the data collected for each session:
   same quantity.
 * Accuracy: clock synchronization.
 
-```
+`
 srp.consistency                                        # Obj
 srp.accuracy                                           # Obj
-```
+`
 
 
 ## Plotting
 
-```
+`
 srp.plot_durations (ptype, ldurations,
                     title, xname,
                     yname, fname)                      # PDF file
-```
+`
 
