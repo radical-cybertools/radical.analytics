@@ -58,9 +58,9 @@ class Session(object):
         for uid,events in entity_events.iteritems():
             print len(events)
             print events[0]
-            etype = events[0]['entity_type']
+            ename = events[0]['entity_type']
             self._entities[uid] = Entity(_uid=uid, 
-                                         _etype=etype, 
+                                         _ename=ename, 
                                          _profile=events)
 
 
@@ -107,7 +107,7 @@ class Session(object):
         uids = list()
         for e in self._entities:
 
-            if entities and e.entity not in entities: continue
+            if entities and e.entity   not in entities: continue
             if uids     and e.uid      not in uids    : continue
             if states   and e.states   not in states  : continue
             if events   and e.event    not in events  : continue
