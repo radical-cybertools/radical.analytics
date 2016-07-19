@@ -48,18 +48,16 @@ if __name__ == '__main__':
     units = session.filter(etype='unit', inplace=False)
     for unit in units.get():
         print "%s: %s" % (unit.uid,
-                unit.range(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
+                unit.range(state=[rp.NEW, rp.FINAL]))
     print "%s: %s" % ('session',
             units.range(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
 
     print ' durations -------------------------------------------------------- '
     for unit in units.get():
         print "%s: %5.3fs" % (unit.uid,
-                unit.duration(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
+                unit.duration(state=[rp.NEW, rp.FINAL]))
     print "%s: %5.3fs" % ('session',
             units.duration(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
-
-    sys.exit()
 
     print ' ------------------------------------------------------------------ '
 
