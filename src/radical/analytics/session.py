@@ -1,13 +1,18 @@
 
+from .entity import Entity
+
+
 # ------------------------------------------------------------------------------
 #
 class Session(object):
 
     def __init__(self, profiles, description, _entities=None):
 
+        # we can't do any analysis on empty profiles
+        assert(profiles)
+
         self._profiles    = profiles
         self._description = description
-
 
         # internal state is represented by a dict of entities:
         # dict keys are entity uids (which are assumed to be unique per
@@ -17,7 +22,7 @@ class Session(object):
             self._entities = _entities
         else:
             self._entities = dict()
-            self._initizialize_entities()
+            self._initialize_entities()
 
         # we do some bookkeeping in self._properties where we keep a list of
         # property values around which we encountered in self._entities.
@@ -30,8 +35,41 @@ class Session(object):
         """
         populate self._entities from self._profiles and 
         self._description.
+
+        NOTE: We derive entity types via some heuristics for now: we assume the
+        first part of any dot-separated uid to signify an entity type.
         """
-        pass
+
+        # this method can only be called once
+        assert (not self._entities)
+
+        # create entities from the profile events: 
+        entity_events  = dict()
+        session_events = list()
+
+        for event in self._profiles:
+            uid = event.get('uid')
+            if uid:
+                if uid not in entity_events:
+                    entity_events[uid] = list()
+                entity_events[uid].append(event)
+            else:
+                session_events.append(event)
+
+        # for all uids found,  create and store an entity.  We derive entity
+        # types via some heuristics for now: we assume the first part of any
+        # dot-separated uid to signify an entity type.
+        for uid,events in entity_events.iteritems():
+            etype = uid.split('.',1)[0]
+            self._entities[uid] = Entity(_uid=uid, _etype=etype, 
+                                         _profile=events)
+
+        # we also create an entity for the analysis session itself, which
+        # contains all events which are not tagged by a specific uid
+        # FIXME: we should get a session ID via the c'tor
+        assert('session' not in self._entities)
+        self._entities['session'] = Entity(_uid='session', _etype='session', 
+                                           _profile=session_events)
 
 
     # --------------------------------------------------------------------------
@@ -89,6 +127,14 @@ class Session(object):
             uids.append(e.uid)
 
         return uids
+
+
+    # --------------------------------------------------------------------------
+    #
+    def dump(self):
+
+        for uid,entity in self._entities.iteritems():
+            entity.dump()
 
 
     # --------------------------------------------------------------------------

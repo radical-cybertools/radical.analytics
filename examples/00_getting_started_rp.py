@@ -36,7 +36,8 @@ if __name__ == '__main__':
     print ' ------------------------------------------------------------------ '
     pprint.pprint(descr)
 
-    session  = ra.Session(prof, descr)
+    session = ra.Session(prof, descr)
+    session.dump()
 
     print ' ------------------------------------------------------------------ '
 
