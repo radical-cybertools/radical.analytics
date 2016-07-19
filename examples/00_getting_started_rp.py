@@ -19,7 +19,7 @@ __license__   = 'MIT'
 if __name__ == '__main__':
 
     if len(sys.argv) <= 1:
-        print "\n\tusage: %s <session_id>\n"
+        print "\n\tusage: %s <session_id>\n" % sys.argv[0]
         sys.exit(1)
 
     sid     = sys.argv[1]
@@ -103,11 +103,13 @@ if __name__ == '__main__':
             print "\nproperties of the entities with state %s" % state
             entities = session.get(state=state)
             pprint.pprint(entities)
+            break
 
         for event in entity.events:
             print "\nproperties of the entities with event %s" % event
             entities = session.get(event=event)
             pprint.pprint(entities)
+            break
 
     print ' ------------------------------------------------------------------ '
 
