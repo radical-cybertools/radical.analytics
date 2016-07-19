@@ -6,12 +6,12 @@ from .entity import Entity
 #
 class Session(object):
 
-    def __init__(self, profiles, description, _entities=None):
+    def __init__(self, profile, description, _entities=None):
 
-        # we can't do any analysis on empty profiles
-        assert(profiles)
+        # we can't do any analysis on empty profile
+        assert(profile)
 
-        self._profiles    = profiles
+        self._profile     = profile
         self._description = description
 
         # internal state is represented by a dict of entities:
@@ -27,13 +27,17 @@ class Session(object):
         # we do some bookkeeping in self._properties where we keep a list of
         # property values around which we encountered in self._entities.
         self._properties = dict()
+        self._initialize_properties()
+
+        # FIXME: we should do a sanity check that all encountered states and
+        #        events are part of the respective state and event models
 
 
     # --------------------------------------------------------------------------
     #
     def _initialize_entities(self):
         """
-        populate self._entities from self._profiles and 
+        populate self._entities from self._profile and 
         self._description.
 
         NOTE: We derive entity types via some heuristics for now: we assume the
@@ -46,7 +50,7 @@ class Session(object):
         # create entities from the profile events: 
         entity_events  = dict()
 
-        for event in self._profiles:
+        for event in self._profile:
             uid = event['uid']
             if uid not in entity_events:
                 entity_events[uid] = list()
@@ -56,11 +60,9 @@ class Session(object):
         # entity type in one of the events (and assume it is consistent over 
         # all events for that uid)
         for uid,events in entity_events.iteritems():
-            print len(events)
-            print events[0]
-            ename = events[0]['entity_type']
+            etype = events[0]['entity_type']
             self._entities[uid] = Entity(_uid=uid, 
-                                         _ename=ename, 
+                                         _etype=etype, 
                                          _profile=events)
 
 
@@ -83,42 +85,87 @@ class Session(object):
 
         So we basically count how often any property value appears in the
         current set of entities.
+
+        RA knows exactly 4 properties:
+          - uid   (entity idetifiers)
+          - etype (type of entities)
+          - event (names of events)
+          - state (state identifiers)
         """
-        # we do *not* look at profiles and descriptions anymore, those are only
+        # we do *not* look at profile and descriptions anymore, those are only
         # evaluated once on construction, in `_initialize_entities()`.  Now we
         # don't parse all that stuff again, but only re-initialize after
         # in-place filtering etc.
-        #
-        # TODO: we have no means to get the counters, yet.
-        pass
+        self._properties = { 'uid'   : dict(),
+                             'etype' : dict(),
+                             'event' : dict(),
+                             'state' : dict()}
+
+        for euid,e in self._entities.iteritems():
+
+            if euid in self._properties['uid']:
+                raise RuntimeError('duplicated uid %s' % euid)
+            self._properties['uid'][euid] = 1
+
+            if e.etype not in self._properties['etype']:
+                self._properties['etype'][e.etype] = 0
+            self._properties['etype'][e.etype] += 1
+
+            for state in e.states:
+                if state not in self._properties['state']:
+                    self._properties['state'][state] = 0
+                self._properties['state'][state] += 1
+
+            for event in e.events:
+                if event not in self._properties['event']:
+                    self._properties['event'][event] = 0
+                self._properties['event'][event] += 1
 
 
     # --------------------------------------------------------------------------
     #
-    def _apply_filter(entities=None, uids=None, states=None, events=None):
+    def _apply_filter(self, etype=None, uid=None, state=None, event=None):
 
         # iterate through all self._entities and collect UIDs of all entities
         # which match the given set of filters
-        if entities and not isinstance(entities, list): entities = [entities]
-        if uids     and not isinstance(uids    , list): uids     = [uids    ]
-        if states   and not isinstance(states  , list): states   = [states  ]
-        if events   and not isinstance(events  , list): events   = [events  ]
+        if not etype: etype = []
+        if not uid  : uid   = []
+        if not state: state = []
+        if not event: event = []
 
-        uids = list()
-        for e in self._entities:
+        if etype and not isinstance(etype, list): etype = [etype]
+        if uid   and not isinstance(uid  , list): uid   = [uid  ]
+        if state and not isinstance(state, list): state = [state]
+        if event and not isinstance(event, list): event = [event]
 
-            if entities and e.entity   not in entities: continue
-            if uids     and e.uid      not in uids    : continue
-            if states   and e.states   not in states  : continue
-            if events   and e.event    not in events  : continue
-            # FIXME: above is wrong as e.states and e.events are lists.  We need
-            #        to intersect those lists with the filter, and continue on
-            #        any empty intersection.
+        ret = list()
+        for eid,entity in self._entities.iteritems():
+
+            if etype and entity.etype not in etype: continue
+            if uid   and entity.uid   not in uid  : continue
+            
+            if state:
+                match = False
+                for s in entity.states:
+                    if s in state:
+                        match = True
+                        continue
+                if not match:
+                     continue
+
+            if event:
+                match = False
+                for e in entity.events:
+                    if e in event:
+                        match = True
+                        continue
+                if not match:
+                     continue
 
             # all existing filters have been passed - this is a match!
-            uids.append(e.uid)
+            ret.append(eid)
 
-        return uids
+        return ret
 
 
     # --------------------------------------------------------------------------
@@ -128,52 +175,52 @@ class Session(object):
         for uid,entity in self._entities.iteritems():
             print "\n\n === %s" % uid
             entity.dump()
-            for ename in entity.events:
-                print "  = %s" % ename
-                for e in entity.events[ename]:
+            for event in entity.events:
+                print "  = %s" % event
+                for e in entity.events[event]:
                     print "    %s" % e
 
 
     # --------------------------------------------------------------------------
     #
-    def list(self, property_name=None):
+    def list(self, pname=None):
 
-        if not property_name:
+        if not pname:
             # return the name of all known properties
             return self._properties.keys()
 
-        if property_name not in self._properties:
-            raise KeyError('no such property known')
+        if pname not in self._properties:
+            raise KeyError('no such property known (%s) / %s' \
+                    % (pname, self._properties.keys()))
 
-        return self._properties[property_name]
+        return self._properties[pname].keys()
 
 
     # --------------------------------------------------------------------------
     #
-    def get(self, entities=None, uids=None, states=None, events=None):
+    def get(self, etype=None, uid=None, state=None, event=None):
 
-        uids = self._apply_filter(entities, uids, states, events)
+        uids = self._apply_filter(etype=etype, uid=uid, state=state, event=event)
         return [self._entities[uid] for uid in uids]
 
 
     # --------------------------------------------------------------------------
     #
-    def filter(self, entities=None, uids=None, states=None, events=None,
-            inplace=True):
+    def filter(self, etype=None, uid=None, state=None, event=None, inplace=True):
 
-        uids = self._apply_filter(entities, uids, states, events)
+        uids = self._apply_filter(etype=etype, uid=uid, state=state, event=event)
 
         if inplace:
             # filter our own entity list, and refresh the properties based on
             # the new list
             if uids != self._entities.keys():
-                self._entities = [self._entities[uid] for uid in uids]
+                self._entities = {uid:self._entities[uid] for uid in uids}
                 self._initialize_properties()
 
         else:
             # create a new session with the resulting property list
-            entities = [self._entities[uid] for uid in uids]
-            return Session(profiles    = self._profiles,
+            entities = {uid:self._entities[uid] for uid in uids}
+            return Session(profile     = self._profile,
                            description = self._description, 
                            _entities   = entities)
 
@@ -183,20 +230,31 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def describe(entities=None):
+    def describe(self, mode=None, etype=None):
 
-        if not entities:
+        if mode not in [None, 'state_model', 'event_model']:
+            raise ValueError('describe parameter "mode" invalid')
+
+        if not etype:
             # no entity filter applied: return the full description
             return self._description
 
-        if not isinstance(entities,list):
-            entities = [entities]
+        if not isinstance(etype,list):
+            etype = [etype]
 
         ret = dict()
-        for entity in entities:
-            ret[entity] = {
-                    'state_model' : self._description['entities'][entity]['state_model'],
-                    'event_model' : self._description['entities'][entity]['event_model']}
+        for et in etype:
+            if et in self._description['entities']:
+                # we have well defined state and event models:
+                ret[et] = {
+                        'state_model' : self._description['entities'][et]['state_model'],
+                        'event_model' : self._description['entities'][et]['event_model']}
+            else:
+                # we don't have any state or event model -- return minimalistic
+                # ones
+                ret[et] = {
+                        'state_model' : {'ALIVE' : 0},
+                        'event_model' : {}}
         return ret
 
 

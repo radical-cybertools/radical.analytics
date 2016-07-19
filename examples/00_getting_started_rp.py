@@ -42,45 +42,57 @@ if __name__ == '__main__':
     pprint.pprint(descr)
 
     session = ra.Session(prof, descr)
-    session.dump()
+  # session.dump()
 
     print ' ------------------------------------------------------------------ '
 
     # TODO: get session.uid from session.describe.
 
-    enames = session.list('entities')
+    pnames = session.list()
+    print "\nname of the properties of the session:"
+    pprint.pprint(pnames)
 
-    print "Name of the entities of the session:"
-    pprint.pprint(enames)
+    etypes = session.list('etype')
+    print "\nname of the entities of the session:"
+    pprint.pprint(etypes)
 
     print "\nunique identifiers of all entities:"
-    pprint.pprint(session.list('uids'))
+    uids = session.list('uid')
+    pprint.pprint(uids)
 
     print "\nunique names of the states of all entities:"
-    pprint.pprint(session.list('states'))
+    states = session.list('state')
+    pprint.pprint(states)
 
     print "\nunique names of the events of all entities:"
-    pprint.pprint(session.list('events'))
+    events = session.list('event')
+    pprint.pprint(events)
 
     print ' ------------------------------------------------------------------ '
 
-    print "State models:"
-    pprint.pprint(session.describe('smodel', entities=enames))
+    print "\nstate models:"
+    pprint.pprint(session.describe('state_model', etype=etypes))
 
-    print "Events models:"
-    pprint.pprint(session.describe('emodel', entities=enames))
+    print "\nevents models:"
+    pprint.pprint(session.describe('event_model', etype=etypes))
 
     print ' ------------------------------------------------------------------ '
 
-    for ename in enames:
+    for etype in etypes:
 
-        entity = session.get(entities=[ename])[0]
+        entity = session.get(etype=etype)[0]
+        uid    = entity.uid
 
-        print "Properties of the entity %s of type %s" % (entity.uid, ename)
-        pprint.pprint(session.get(entities=[ename])[0])
+        print "\nproperties of the entity %s of type %s" % (entity.uid, etype)
+        entity.dump()
 
-        print "Properties of the object uid of the entity %s" % entity.uid
-        pprint.pprint(session.get(uids=[entity.uid]))
+        print "\nproperties of the entities with uid %s" % uid
+        entities = session.get(uid=uid)
+        pprint.pprint(entities)
+
+        print "\nproperties of the entities with etype %s" % etype
+        entities = session.get(etype=etype)
+        pprint.pprint(entities)
 
         # TODO:
         # - check the entity state to see whether we have access to a list of
@@ -88,19 +100,22 @@ if __name__ == '__main__':
         # - check state UID.
         # - check event UID.
         for state in entity.states:
-            print "Properties of the object state %s of the entity %s" % (state.uid, entity.uid)
-            pprint.pprint(session.get(states=[state]))
+            print "\nproperties of the entities with state %s" % state
+            entities = session.get(state=state)
+            pprint.pprint(entities)
 
         for event in entity.events:
-            print "Properties of the object event %s of the entity %s" % (event.uid, entity.uid)
-            pprint.pprint(session.get(events=[event]))
+            print "\nproperties of the entities with event %s" % event
+            entities = session.get(event=event)
+            pprint.pprint(entities)
 
     print ' ------------------------------------------------------------------ '
 
-    sevents = session.filter(entities=['ename'])
-    suids   = session.filter(uids=['uid'])
-    ssnames = session.filter(states=['sname'])
-    senames = session.filter(events=['ename'])
+    sevents = session.filter(etype=etype)
+    suids   = session.filter(uid=uid)
+    ssnames = session.filter(state=state)
+    senames = session.filter(event=event)
+
 
     print ' ------------------------------------------------------------------ '
 
