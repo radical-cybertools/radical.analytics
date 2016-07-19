@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     sid     = sys.argv[1]
     descr   = rp.utils.get_profile_description(sid=sid)
-    profdir = '%s/%s/' % (os.getcwd(), sid) 
+    profdir = '%s/%s/' % (os.getcwd(), sid)
 
     if os.path.exists(profdir):
         # we have profiles locally
@@ -115,7 +115,6 @@ if __name__ == '__main__':
     suids   = session.filter(uid=uid)
     ssnames = session.filter(state=state)
     senames = session.filter(event=event)
-
 
     print ' ------------------------------------------------------------------ '
 

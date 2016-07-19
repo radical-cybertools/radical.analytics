@@ -96,10 +96,10 @@ by session.list('entities').
 
 Note: single parameters can be passed without a list.
 
-* `'etname'`: List of names of entity's types.
-* `'uidname'`: List of names of uids.
-* `'sname'`: List of names of states.
-* `'ename'`: List of names of events.
+* `['etname', ...]`: List of names of entity's types.
+* `['uidname', ...]`: List of names of uids.
+* `['sname', ...]`: List of names of states.
+* `['ename', ...]`: List of names of events.
 
 #### Returns:
 
@@ -114,10 +114,10 @@ Returns a session with a subset of the entities of the given session.
 
 Note: single parameters can be passed without a list.
 
-* `'etname'`: List of names of entity's types.
-* `'uidname'`: List of names of uids.
-* `'sname'`: List of names of states.
-* `'ename'`: List of names of events.
+* `['etname', ...]`: List of names of entity's types.
+* `['uidname', ...]`: List of names of uids.
+* `['sname', ...]`: List of names of states.
+* `['ename', ...]`: List of names of events.
 * `True|False`: switch on and off in-place replacement of the given
   session. False is the default behavior and can be omitted.
 
@@ -137,7 +137,7 @@ Returns the description as passed to the Session constructor.
 * `'smodel'`: Prints the ordered state model.
 * `'emodel'`: Prints the ordered event model for the profile of the given
   session.
-* `'etname'`: List of names of entity's types.
+* `['etname', ...]`: List of names of entity's types.
 
 #### Returns:
 
@@ -192,7 +192,7 @@ Check the integrity of the data collected for each session:
   the same quantity.
 * Accuracy: clock synchronization.
 
-### `session.consistency(test='timestamps', [{sname: int|ename: int}]|test='comparison', [{dname: float}])`
+### `session.consistency(test='timestamps', [{sname: int|ename: int}, ...]|test='comparison', [{dname: float}, ...])`
 
 Evaluates the internal consistency of the data of the session with two tests:
 
@@ -204,12 +204,12 @@ Evaluates the internal consistency of the data of the session with two tests:
 #### Arguments:
 
 * `'timestamps'`: Selects the test _timestamps_.
-* `[{sname: int}]`: Description of a state model as returned by
+* `[{sname: int}, ...]`: Description of a state model as returned by
   `session.describe('smodel', etype=['etname'])`.
-* `[{ename: int}]`: Description of an event model as returned by
+* `[{ename: int}, ...]`: Description of an event model as returned by
   `session.describe('emodel', etype=['etname'])`.
 * `'comparison'`: Selects the test _comparison_.
-* `[{dname: float}]`: List of dictionaries where `dname` is the name
+* `[{dname: float}, ...]`: List of dictionaries where `dname` is the name
   given to a duration and `float` is the quantity of that duration as returned
   by `session.duration('start_state|event', 'end_state|event')`.
 
@@ -219,7 +219,7 @@ Dictionary of Lists `{['sname|ename|dname', Passed|Failed, float]}`, where
 `float` is the measure used to evaluate the consistency.
 
 
-### `session.accuracy([{sname: int|ename: int}])`
+### `session.accuracy([{sname: int|ename: int}, ...])`
 
 Quantifies the accuracy of the timestamps used to evaluate the durations.
 Timestamps are collected on independent machines that can have non
@@ -230,9 +230,9 @@ heuristic for each timestamp.
 
 #### Arguments:
 
-* `[{sname: int}]`: Description of a state model as returned by
+* `[{sname: int}, ...]`: Description of a state model as returned by
   `session.describe('smodel', etype='etname')`.
-* `[{ename: int}]`: Description of an event model as returned by
+* `[{ename: int}, ...]`: Description of an event model as returned by
   `session.describe('emodel', etype='etname')`.
 
 #### Returns:
