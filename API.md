@@ -83,7 +83,7 @@ Returns a list of values for the values of the properties 'entities', 'uids',
 
 #### TODO:
 
-* Enforce naming for events in RP (and RADICAL Cybertools in general if
+* Enforce naming for events in RP (and RADICAL Cybertools in general, when
   needed)
 
 ### `session.get(etype=['etname', ...]|uid=['uidname', ...]|state=['sname', ...]|event=['ename', ...])`
@@ -133,6 +133,8 @@ Returns the description as passed to the Session constructor.
 
 #### Arguments:
 
+Note: single parameters can be passed without a list.
+
 * `none`: Prints the full description as passed to the Session constructor.
 * `'smodel'`: Prints the ordered state model.
 * `'emodel'`: Prints the ordered event model for the profile of the given
@@ -148,7 +150,7 @@ Returns the description as passed to the Session constructor.
   states or events are mutually exclusive.
 
 
-### `session.duration('start_state|event', 'end_state|event')`
+### `session.duration(['start_state|event', ...], ['end_state|event', ...])`
 
 Calculates the duration between two state or event timestamps for all the
 entities in the given session that have those those states or event
@@ -172,10 +174,12 @@ method. For example:
 
 #### Arguments:
 
-* `'start_state'` = Time stamp of the name of the state used as the start
-  of the duration.
-* `'end_state'`   = Time stamp of the name of the state used as the end of
-  the duration.
+Note: single parameters can be passed without a list.
+
+* `['start_state', ...]` = Time stamp of the name of the state(s) used as the
+  start of the duration.
+* `['end_state', ...]`   = Time stamp of the name of the state(s) used as the
+  end of the duration.
 
 #### Returns:
 
