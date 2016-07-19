@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     sid     = sys.argv[1]
     descr   = rp.utils.get_profile_description(sid=sid)
-    profdir = '%s/%s/' % (os.getcwd(), sid) 
+    profdir = '%s/%s/' % (os.getcwd(), sid)
 
     if os.path.exists(profdir):
         # we have profiles locally
@@ -48,19 +48,19 @@ if __name__ == '__main__':
 
     # TODO: get session.uid from session.describe.
 
-    enames = session.list('entities')
+    enames = session.list('etype')
 
     print "Name of the entities of the session:"
     pprint.pprint(enames)
 
     print "\nunique identifiers of all entities:"
-    pprint.pprint(session.list('uids'))
+    pprint.pprint(session.list('uid'))
 
     print "\nunique names of the states of all entities:"
-    pprint.pprint(session.list('states'))
+    pprint.pprint(session.list('state'))
 
     print "\nunique names of the events of all entities:"
-    pprint.pprint(session.list('events'))
+    pprint.pprint(session.list('event'))
 
     print ' ------------------------------------------------------------------ '
 
@@ -74,13 +74,13 @@ if __name__ == '__main__':
 
     for ename in enames:
 
-        entity = session.get(entities=[ename])[0]
+        entity = session.get(etype=ename)[0]
 
-        print "Properties of the entity %s of type %s" % (entity.uid, ename)
-        pprint.pprint(session.get(entities=[ename])[0])
+        print "Properties of the obect entity %s of type %s" % (entity.uid, ename)
+        pprint.pprint(session.get(etype=ename)[0])
 
         print "Properties of the object uid of the entity %s" % entity.uid
-        pprint.pprint(session.get(uids=[entity.uid]))
+        pprint.pprint(session.get(uid=entity.uid))
 
         # TODO:
         # - check the entity state to see whether we have access to a list of
@@ -89,18 +89,18 @@ if __name__ == '__main__':
         # - check event UID.
         for state in entity.states:
             print "Properties of the object state %s of the entity %s" % (state.uid, entity.uid)
-            pprint.pprint(session.get(states=[state]))
+            pprint.pprint(session.get(state=state))
 
         for event in entity.events:
             print "Properties of the object event %s of the entity %s" % (event.uid, entity.uid)
-            pprint.pprint(session.get(events=[event]))
+            pprint.pprint(session.get(event=event))
 
     print ' ------------------------------------------------------------------ '
 
-    sevents = session.filter(entities=['ename'])
-    suids   = session.filter(uids=['uid'])
-    ssnames = session.filter(states=['sname'])
-    senames = session.filter(events=['ename'])
+    sevents = session.filter(etype='ename')
+    suids   = session.filter(uid='uid')
+    ssnames = session.filter(state='sname')
+    senames = session.filter(event='ename')
 
     print ' ------------------------------------------------------------------ '
 
