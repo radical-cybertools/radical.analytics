@@ -45,31 +45,23 @@ class Session(object):
 
         # create entities from the profile events: 
         entity_events  = dict()
-        session_events = list()
 
         for event in self._profiles:
-            uid = event.get('uid')
-            if uid:
-                if uid not in entity_events:
-                    entity_events[uid] = list()
-                entity_events[uid].append(event)
-            else:
-                session_events.append(event)
+            uid = event['uid']
+            if uid not in entity_events:
+                entity_events[uid] = list()
+            entity_events[uid].append(event)
 
-        # for all uids found,  create and store an entity.  We derive entity
-        # types via some heuristics for now: we assume the first part of any
-        # dot-separated uid to signify an entity type.
+        # for all uids found,  create and store an entity.  We look up the
+        # entity type in one of the events (and assume it is consistent over 
+        # all events for that uid)
         for uid,events in entity_events.iteritems():
-            etype = uid.split('.',1)[0]
-            self._entities[uid] = Entity(_uid=uid, _etype=etype, 
+            print len(events)
+            print events[0]
+            etype = events[0]['entity_type']
+            self._entities[uid] = Entity(_uid=uid, 
+                                         _etype=etype, 
                                          _profile=events)
-
-        # we also create an entity for the analysis session itself, which
-        # contains all events which are not tagged by a specific uid
-        # FIXME: we should get a session ID via the c'tor
-        assert('session' not in self._entities)
-        self._entities['session'] = Entity(_uid='session', _etype='session', 
-                                           _profile=session_events)
 
 
     # --------------------------------------------------------------------------
@@ -134,7 +126,12 @@ class Session(object):
     def dump(self):
 
         for uid,entity in self._entities.iteritems():
+            print "\n\n === %s" % uid
             entity.dump()
+            for ename in entity.events:
+                print "  = %s" % ename
+                for e in entity.events[ename]:
+                    print "    %s" % e
 
 
     # --------------------------------------------------------------------------

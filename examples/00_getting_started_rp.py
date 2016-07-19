@@ -26,10 +26,10 @@ if __name__ == '__main__':
     sid = sys.argv[1]
 
     descr    = rp.utils.get_profile_description(sid=sid)
-    profiles = rp.utils.fetch_profiles(sid=sid, dburl=None, client=os.getcwd(),
-                                    tgt=os.getcwd(), access=None, skip_existing=True)
+    profiles = rp.utils.fetch_profiles(sid=sid, skip_existing=True)
     profs    = rp.utils.read_profiles(profiles)
     prof     = rp.utils.combine_profiles(profs)
+    prof     = rp.utils.clean_profile(prof, sid)
 
     print ' ------------------------------------------------------------------ '
     pprint.pprint(descr)
