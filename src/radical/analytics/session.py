@@ -245,16 +245,23 @@ class Session(object):
         ret = dict()
         for et in etype:
             if et in self._description['entities']:
-                # we have well defined state and event models:
-                ret[et] = {
-                        'state_model' : self._description['entities'][et]['state_model'],
-                        'event_model' : self._description['entities'][et]['event_model']}
+                state_model = 'state_model' : self._description['entities'][et]['state_model']
+                event_model = 'event_model' : self._description['entities'][et]['event_model']
+                        
             else:
                 # we don't have any state or event model -- return minimalistic
                 # ones
-                ret[et] = {
-                        'state_model' : {'ALIVE' : 0},
-                        'event_model' : {}}
+                state_model = {'ALIVE' : 0},
+                event_model = {}
+
+            if not mode:
+                ret[et] = {'state_model' : state_model,
+                           'event_model' : event_model}
+            elif mode == 'state_model':
+                ret[et] = {'state_model' : state_model}
+            elif mode == 'event_model':
+                ret[et] = {'event_model' : event_model}
+
         return ret
 
 
