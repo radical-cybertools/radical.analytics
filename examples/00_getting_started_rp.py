@@ -45,6 +45,12 @@ if __name__ == '__main__':
   # session.dump()
 
     print ' ------------------------------------------------------------------ '
+    units = session.get(etype='unit')
+    for unit in units:
+        print "%s: %5.3fs" % (unit.uid, 
+                unit.duration(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
+
+    print ' ------------------------------------------------------------------ '
 
     # TODO: get session.uid from session.describe.
 
