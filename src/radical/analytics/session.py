@@ -257,8 +257,10 @@ class Session(object):
             if not mode:
                 ret[et] = {'state_model' : state_model,
                            'event_model' : event_model}
+
             elif mode == 'state_model':
                 ret[et] = {'state_model' : state_model}
+
             elif mode == 'event_model':
                 ret[et] = {'event_model' : event_model}
 
