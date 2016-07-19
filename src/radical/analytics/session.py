@@ -142,7 +142,7 @@ class Session(object):
             # return the name of all known properties
             return self._properties.keys()
 
-        if propery_name not in self._properties:
+        if property_name not in self._properties:
             raise KeyError('no such property known')
 
         return self._properties[property_name]
