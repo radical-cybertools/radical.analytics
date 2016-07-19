@@ -3,12 +3,12 @@
 #
 class Entity(object):
 
-    def __init__(self, _uid, _etype, _profile):
+    def __init__(self, _uid, _ename, _profile):
         """
         This is a private constructor for an RA Entity: it gets a series of
         events and sorts it into its properties.  We have 4 properties:
 
-          - etype : the type of the entity in question.  This defines, amongst
+          - ename : the type of the entity in question.  This defines, amongst
                     others, what state model the Session will assume to be valid
                     for this entity
           - uid   : an ID assumed to be unique in the scope of an RA Session
@@ -21,7 +21,7 @@ class Entity(object):
         assert(_profile)
 
         self._uid        = _uid
-        self._etype      = _etype
+        self._ename      = _ename
         self._states     = dict()
         self._events     = dict()
 
@@ -64,7 +64,7 @@ class Entity(object):
 
         return {
                 'uid'    : self._uid, 
-                'etype'  : self._etype, 
+                'ename'  : self._ename, 
                 'states' : self._states, 
               # 'events' : self._events
                }
@@ -85,8 +85,8 @@ class Entity(object):
         return self._uid 
     
     @property
-    def etype(self):
-        return self._etype
+    def ename(self):
+        return self._ename
 
     @property
     def events(self):
