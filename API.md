@@ -183,14 +183,60 @@ method. For example:
 
 Check the integrity of the data collected for each session:
 
-* Consistency: timestamp order; identity among independent measurements of the
-  same quantity.
+* Consistency: timestamps order; identity among independent measurements of
+  the same quantity.
 * Accuracy: clock synchronization.
 
-`
-srp.consistency                                        # Obj
-srp.accuracy                                           # Obj
-`
+### `srp.consistency(test='timestamps', [{sname: int|ename: int}]|test='comparison', [{dname: float}])`
+
+Evaluates the internal consistency of the data of the session with two tests:
+
+1. _Timestamps_. Tests whether the timestamps of the element of a state or
+   event model are consistent with the element's order given in the
+   `description` passed to the Session constructor.
+2. _Comparison_. Tests whether two durations are equal.
+
+#### Arguments:
+
+* `'timestamps'`: Selects the test _timestamps_.
+* `[{sname: int}]`: Description of a state model as returned by
+  `srp.describe('smodel', entities=['ename'])`.
+* `[{ename: int}]`: Description of an event model as returned by
+  `srp.describe('emodel', entities=['ename'])`.
+* `'comparison'`: Selects the test _comparison_.
+* `[{dname: float}]`: List of dictionaries where `dname` is the name
+  given to a duration and `float` is the quantity of that duration as returned
+  by `srp.duration('start_state|event', 'end_state|event')`.
+
+#### Returns:
+
+Dictionary of Lists `{['sname|ename|dname', Passed|Failed, float]}`, where
+`float` is the measure used to evaluate the consistency.
+
+
+### `srp.accuracy([{sname: int|ename: int}])`
+
+Quantifies the accuracy of the timestamps used to evaluate the durations.
+Timestamps are collected on independent machines that can have non
+synchronized clocks. The initialization of the class Session uses an heuristic
+to normalize the differences among timestamps produced by non synchronized
+clocks. This method returns the percentage of adjustment used by this
+heuristic for each timestamp.
+
+#### Arguments:
+
+* `[{sname: int}]`: Description of a state model as returned by
+  `srp.describe('smodel', entities=['ename'])`.
+* `[{ename: int}]`: Description of an event model as returned by
+  `srp.describe('emodel', entities=['ename'])`.
+
+#### Returns:
+
+Dictionary of Lists `{['sname|ename|dname', Measured|Normalized, float]}`,
+where: `Measured` indicates that the value is used as measured by the RADICAL
+Cybertool, `Normalized` that the value has been altered to enforce model
+consistency, and `float` is the percentage of the timestamp that has been
+normalized.
 
 
 ## Plotting
