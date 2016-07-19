@@ -245,8 +245,8 @@ class Session(object):
         ret = dict()
         for et in etype:
             if et in self._description['entities']:
-                state_model = 'state_model' : self._description['entities'][et]['state_model']
-                event_model = 'event_model' : self._description['entities'][et]['event_model']
+                state_model = self._description['entities'][et]['state_model']
+                event_model = self._description['entities'][et]['event_model']
                         
             else:
                 # we don't have any state or event model -- return minimalistic
