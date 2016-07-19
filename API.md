@@ -15,10 +15,12 @@ csv file.
 
 ## Classes
 
-The API has two classes: one with with the raw data and methods relative to the stateful entities of the experimental run; the other with the details of each stateful entity.
+The API has two classes: one with with the raw data and methods relative to
+the stateful entities of the experimental run; the other with the details of
+each stateful entity.
 
 
-### `srp = Session(profiles, description)`
+### `session = Session(profiles, description)`
 
 Stores information about the properties of an execution of a RADICAL Cybertool
 and exposes methods to list, get, and filter this information. The class
@@ -56,7 +58,7 @@ entity. The class of this objects is called _Sentity_.
 The following are the methods of the class Session.
 
 
-### `srp.list('entities'|'uids'|'states'|'events')`
+### `session.list('entities'|'uids'|'states'|'events')`
 
 Returns a list of values for the values of the properties 'entities', 'uids',
 'states', 'events' of the given session.
@@ -75,19 +77,19 @@ Returns a list of values for the values of the properties 'entities', 'uids',
 
 #### Returns:
 
-* List of Strings. E.g., ['Pilot', 'CU']; ['p.00000','cu.00000']; ['NEW',
-  'DONE']; ['',''].
+* Set of Strings (so to avoid duplicates). E.g., ['Pilot', 'CU'];
+  ['p.00000','cu.00000']; ['NEW', 'DONE']; ['',''].
 
 #### TODO:
 
 * Enforce naming for events in RP (and RADICAL Cybertools in general if
   needed)
 
-### `srp.get(entities=['ename']|uids=['uid']|states=['sname']|events=['ename'])`
+### `session.get(entities=['ename']|uids=['uid']|states=['sname']|events=['ename'])`
 
 List all the objects in the given session of one or more named entities. The
 list of the names of the entities available in the given session is returned
-by srp.list('entities').
+by session.list('entities').
 
 #### Arguments:
 
@@ -101,7 +103,7 @@ by srp.list('entities').
 * List of Objects of type Sentity
 
 
-### `srp.filter(entities=['ename']|uids=['uid']|states=['sname']|events=['ename'], inplace=False|True)`
+### `session.filter(entities=['ename']|uids=['uid']|states=['sname']|events=['ename'], inplace=False|True)`
 
 Returns a session with a subset of the entities of the given session.
 
@@ -116,11 +118,11 @@ Returns a session with a subset of the entities of the given session.
 
 #### Returns:
 
-* Copy of srp, Obj of type Session (inplace=False) or in place replacement of
-  srp (inplace=True).
+* Copy of session, Obj of type Session (inplace=False) or in place replacement
+  of session (inplace=True).
 
 
-### `srp.describe(none|'smodel', entities=['ename']|'emodel', entities=['ename'])`
+### `session.describe(none|'smodel', entities=['ename']|'emodel', entities=['ename'])`
 
 Returns the description as passed to the Session constructor.
 
@@ -142,7 +144,7 @@ Returns the description as passed to the Session constructor.
   states or events are mutually exclusive.
 
 
-### `srp.duration('start_state|event', 'end_state|event')`
+### `session.duration('start_state|event', 'end_state|event')`
 
 Calculates the duration between two state or event timestamps for all the
 entities in the given session that have those those states or event
@@ -153,15 +155,15 @@ possible overlap among those timestamps.
 The entities used to calculate the duration can be filtered via the filter
 method. For example:
 
-* `srp.filter(entities=['unit'], inplace=True).duration('NEW', 'DONE')`
+* `session.filter(entities=['unit'], inplace=True).duration('NEW', 'DONE')`
   calculates the overall duration of all the units that have been successfully
   executed.
-* `srp.filter(uids=['u.00000'], inplace=True).duration('NEW', 'DONE')`
+* `session.filter(uids=['u.00000'], inplace=True).duration('NEW', 'DONE')`
   calculates the overall duration of a single unit. If the unit has no state
   'DONE' an error is risen.
-* `srp.filter(states=['FAILED'], inplace=True).duration('NEW', 'FAILED')`
+* `session.filter(states=['FAILED'], inplace=True).duration('NEW', 'FAILED')`
   calculates the overall duration of every entity that has failed.
-* `srp.filter(entities=['unit'], inplace=True).filter(states=['FAILED'],
+* `session.filter(entities=['unit'], inplace=True).filter(states=['FAILED'],
   inplace=True).duration('NEW', 'FAILED')` calculates the overall duration
   of every unit that has failed.
 
@@ -187,7 +189,7 @@ Check the integrity of the data collected for each session:
   the same quantity.
 * Accuracy: clock synchronization.
 
-### `srp.consistency(test='timestamps', [{sname: int|ename: int}]|test='comparison', [{dname: float}])`
+### `session.consistency(test='timestamps', [{sname: int|ename: int}]|test='comparison', [{dname: float}])`
 
 Evaluates the internal consistency of the data of the session with two tests:
 
@@ -200,13 +202,13 @@ Evaluates the internal consistency of the data of the session with two tests:
 
 * `'timestamps'`: Selects the test _timestamps_.
 * `[{sname: int}]`: Description of a state model as returned by
-  `srp.describe('smodel', entities=['ename'])`.
+  `session.describe('smodel', entities=['ename'])`.
 * `[{ename: int}]`: Description of an event model as returned by
-  `srp.describe('emodel', entities=['ename'])`.
+  `session.describe('emodel', entities=['ename'])`.
 * `'comparison'`: Selects the test _comparison_.
 * `[{dname: float}]`: List of dictionaries where `dname` is the name
   given to a duration and `float` is the quantity of that duration as returned
-  by `srp.duration('start_state|event', 'end_state|event')`.
+  by `session.duration('start_state|event', 'end_state|event')`.
 
 #### Returns:
 
@@ -214,7 +216,7 @@ Dictionary of Lists `{['sname|ename|dname', Passed|Failed, float]}`, where
 `float` is the measure used to evaluate the consistency.
 
 
-### `srp.accuracy([{sname: int|ename: int}])`
+### `session.accuracy([{sname: int|ename: int}])`
 
 Quantifies the accuracy of the timestamps used to evaluate the durations.
 Timestamps are collected on independent machines that can have non
@@ -226,9 +228,9 @@ heuristic for each timestamp.
 #### Arguments:
 
 * `[{sname: int}]`: Description of a state model as returned by
-  `srp.describe('smodel', entities=['ename'])`.
+  `session.describe('smodel', entities=['ename'])`.
 * `[{ename: int}]`: Description of an event model as returned by
-  `srp.describe('emodel', entities=['ename'])`.
+  `session.describe('emodel', entities=['ename'])`.
 
 #### Returns:
 
@@ -242,7 +244,7 @@ normalized.
 ## Plotting
 
 `
-srp.plot_durations (ptype, ldurations,
+session.plot_durations (ptype, ldurations,
                     title, xname,
                     yname, fname)                      # PDF file
 `
