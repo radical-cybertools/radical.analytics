@@ -1,4 +1,7 @@
 
+import sys
+
+
 # ------------------------------------------------------------------------------
 #
 class Entity(object):
@@ -129,10 +132,81 @@ class Entity(object):
 
     # --------------------------------------------------------------------------
     #
-    def duration(self):
+    def duration(self, state=None, event=None):
+        """
+        This method accepts a set of initial and final conditions, in the form
+        of range of state and or event specifiers:
 
-        # FIXME
-        return 0.0
+          print entity.duration(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'], 
+                                        'FINAL_STATE_1',   'FINAL_STATE_2']], 
+                                event=['initial_event_1', 'final_event'])
+
+        More specifically, the `state` and `event` parameter are expected to be
+        a tuple, where the first element defines the initial condition, and the
+        second element defines the final condition. Each element can be a string
+        or a list of strings.
+
+        The parameters are interpreted as follows: the method will 
+
+          - determine the *earliest* timestamp when any of the given initial
+            conditions have been met (`t_start`); 
+          - determine the *latest* timestamp when any of the given final
+            conditions have been met (`t_stop`);
+          - return the difference (`t_stop - t_start`)
+        """
+
+        t_start = sys.float_info.max
+        t_stop  = sys.float_info.min
+
+        if not state and not event:
+            raise ValueError('duration needs state and/or event arguments')
+
+        if not state: state = [[], []]
+        if not event: event = [[], []]
+
+        s_init  = state[0]
+        s_final = state[1]
+        e_init  = event[0]
+        e_final = event[1]
+
+        if not isinstance(s_init,  list): s_init  = [s_init ]
+        if not isinstance(s_final, list): s_final = [s_final]
+        if not isinstance(e_init,  list): e_init  = [e_init ]
+        if not isinstance(e_final, list): e_final = [e_final]
+
+
+        for s in s_init:
+            s_info = self._states.get(s)
+            if s_info:
+                t_start = min(t_start, s_info['time'])
+
+        for s in s_final:
+            s_info = self._states.get(s)
+            if s_info:
+                t_stop = max(t_stop, s_info['time'])
+
+
+        for e in e_init:
+            e_infos = self._events.get(e, [])
+            for e_info in e_infos:
+                t_start = min(t_start, e_info['time'])
+
+        for e in e_final:
+            e_infos = self._events.get(e, [])
+            for e_info in e_infos:
+                t_stop = max(t_stop, e_info['time'])
+
+
+        if t_start == sys.float_info.max:
+            raise ValueError('initial condition did not apply')
+
+        if t_stop == sys.float_info.min:
+            raise ValueError('final condition did not apply')
+
+        if t_stop < t_start:
+            raise ValueError('duration uncovered time inconsistency')
+
+        return t_stop - t_start
 
 
 # ------------------------------------------------------------------------------
