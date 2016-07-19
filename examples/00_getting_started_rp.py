@@ -5,6 +5,7 @@ __license__   = 'MIT'
 
 import os
 import sys
+import glob
 import pprint
 
 import radical.pilot     as rp
@@ -23,10 +24,18 @@ if __name__ == '__main__':
         print "\n\tusage: %s <session_id>\n"
         sys.exit(1)
 
-    sid = sys.argv[1]
+    sid     = sys.argv[1]
+    descr   = rp.utils.get_profile_description(sid=sid)
+    profdir = '%s/%s/' % (os.getcwd(), sid) 
 
-    descr    = rp.utils.get_profile_description(sid=sid)
-    profiles = rp.utils.fetch_profiles(sid=sid, skip_existing=True)
+    if os.path.exists(profdir):
+        # we have profiles locally
+        profiles  = glob.glob("%s/*.prof"   % profdir)
+        profiles += glob.glob("%s/*/*.prof" % profdir)
+    else:
+        # need to fetch profiles
+        profiles = rp.utils.fetch_profiles(sid=sid, skip_existing=True)
+
     profs    = rp.utils.read_profiles(profiles)
     prof     = rp.utils.combine_profiles(profs)
     prof     = rp.utils.clean_profile(prof, sid)
