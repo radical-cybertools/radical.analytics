@@ -34,33 +34,41 @@ if __name__ == '__main__':
         # need to fetch profiles
         profiles = rp.utils.fetch_profiles(sid=sid, skip_existing=True)
 
-    profs    = rp.utils.read_profiles(profiles)
-    prof     = rp.utils.combine_profiles(profs)
-    prof     = rp.utils.clean_profile(prof, sid)
+    profs = rp.utils.read_profiles(profiles)
+    prof  = rp.utils.combine_profiles(profs)
+    prof  = rp.utils.clean_profile(prof, sid)
 
     session = ra.Session(prof, descr)
-
-    print ' ------------------------------------------------------------------ '
 
     # TODO: get session.uid from session.describe.
 
     pnames = session.list()
-    print "\nname of the properties of the session:"
+    print '\n--------------------------------------------------------------'
+    print "name of the properties of the session:"
+    print '--------------------------------------------------------------'
     pprint.pprint(pnames)
 
     etypes = session.list('etype')
-    print "\nname of the entities' type of the session:"
+    print '\n--------------------------------------------------------------'
+    print "name of the entities' type of the session:"
+    print '--------------------------------------------------------------'
     pprint.pprint(etypes)
 
-    print "\nunique identifiers (uid) of all entities of the session:"
+    print '\n--------------------------------------------------------------'
+    print "unique identifiers (uid) of all entities of the session:"
+    print '--------------------------------------------------------------'
     uids = session.list('uid')
     pprint.pprint(uids)
 
-    print "\nunique names of the states of all entities of the session:"
+    print '\n--------------------------------------------------------------'
+    print "unique names of the states of all entities of the session:"
+    print '--------------------------------------------------------------'
     states = session.list('state')
     pprint.pprint(states)
 
-    print "\nunique names of the events of all entities of the session:"
+    print '\n--------------------------------------------------------------'
+    print "unique names of the events of all entities of the session:"
+    print '--------------------------------------------------------------'
     events = session.list('event')
     pprint.pprint(events)
 

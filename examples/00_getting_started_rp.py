@@ -47,32 +47,8 @@ if __name__ == '__main__':
     print ' ------------------------------------------------------------------ '
     units = session.get(etype='unit')
     for unit in units:
-        print "%s: %5.3fs" % (unit.uid, 
+        print "%s: %5.3fs" % (unit.uid,
                 unit.duration(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
-
-    print ' ------------------------------------------------------------------ '
-
-    # TODO: get session.uid from session.describe.
-
-    pnames = session.list()
-    print "\nname of the properties of the session:"
-    pprint.pprint(pnames)
-
-    etypes = session.list('etype')
-    print "\nname of the entities of the session:"
-    pprint.pprint(etypes)
-
-    print "\nunique identifiers of all entities:"
-    uids = session.list('uid')
-    pprint.pprint(uids)
-
-    print "\nunique names of the states of all entities:"
-    states = session.list('state')
-    pprint.pprint(states)
-
-    print "\nunique names of the events of all entities:"
-    events = session.list('event')
-    pprint.pprint(events)
 
     print ' ------------------------------------------------------------------ '
 
