@@ -213,7 +213,8 @@ Evaluates the internal consistency of the data of the session with two tests:
 Dictionary of Lists `{['sname|ename|dname', Passed|Failed, float]}`, where
 `float` is the measure used to evaluate the consistency.
 
-### `srp.accuracy`
+
+### `srp.accuracy([{sname: int|ename: int}])`
 
 Quantifies the accuracy of the timestamps used to evaluate the durations.
 Timestamps are collected on independent machines that can have non
@@ -224,8 +225,18 @@ heuristic for each timestamp.
 
 #### Arguments:
 
+* `[{sname: int}]`: Description of a state model as returned by
+  `srp.describe('smodel', entities=['ename'])`.
+* `[{ename: int}]`: Description of an event model as returned by
+  `srp.describe('emodel', entities=['ename'])`.
+
 #### Returns:
 
+Dictionary of Lists `{['sname|ename|dname', Measured|Normalized, float]}`,
+where: `Measured` indicates that the value is used as measured by the RADICAL
+Cybertool, `Normalized` that the value has been altered to enforce model
+consistency, and `float` is the percentage of the timestamp that has been
+normalized.
 
 
 ## Plotting
