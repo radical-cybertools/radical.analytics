@@ -1,4 +1,7 @@
 
+
+import radical.utils as ru
+
 from .entity import Entity
 
 
@@ -269,28 +272,66 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def duration(self, start_states=None, end_states=None, 
-                       start_events=None, end_events=None):
+    def range(self, state=None, event=None):
+        """
+        This method accepts a set of initial and final conditions, in the form
+        of range of state and or event specifiers:
 
-        if not start_states and not start_events:
-            raise ValueError('duration needs either start_states or start_events')
+          entity.range(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'], 
+                               'FINAL_STATE_1',   'FINAL_STATE_2']], 
+                       event=['initial_event_1', 'final_event'])
 
-        if not end_states and not end_events:
-            raise ValueError('duration needs either end_states or end_events')
+        More specifically, the `state` and `event` parameter are expected to be
+        a tuple, where the first element defines the initial condition, and the
+        second element defines the final condition. Each element can be a string
+        or a list of strings.
 
-        if start_states and not end_states:
-            raise ValueError('duration needs start_states and end_states')
+        The parameters are interpreted as follows: 
 
-        if start_events and not end_events:
-            raise ValueError('duration needs start_events and end_events')
+          - for any entity known to the session
+            - determine the maximum range during which the entity has been
+              between initial and final conditions
 
-        if start_states and end_states:
-            # magic goes here
-            pass
+          - collapse the resulting set of ranges into the smallest possible set
+            of ranges which cover the same, but not more nor less, of the
+            domain (floats).
 
-        elif start_events and end_events:
-            # magic goes here
-            pass
+
+        Example:
+
+           session.range(state=[rp.NEW, rp.FINAL]))
+
+        where `rp.FINAL` is a list of final unit states.
+        """
+
+        ranges = list()
+        for uid,entity in self._entities.iteritems():
+            ranges.append(entity.range(state, event))
+
+        return ru.collapse_ranges(ranges)
+
+
+    # --------------------------------------------------------------------------
+    #
+    def duration(self, state=None, event=None):
+        """
+        This method accepts the same set of parameters as the `range()` method,
+        and will use the range method to obtain a set of ranges.  It will return
+        the sum of the durations for all resulting ranges.
+
+        Example:
+
+           session.duration(state=[rp.NEW, rp.FINAL]))
+
+        where `rp.FINAL` is a list of final unit states.
+        """
+
+        ret    = 0.0
+        ranges = self.range(state, event)
+        for range in ranges:
+            ret += range[1] - range[0]
+
+        return ret
 
 
 # ------------------------------------------------------------------------------
