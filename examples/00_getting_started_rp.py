@@ -44,13 +44,26 @@ if __name__ == '__main__':
     session = ra.Session(prof, descr)
   # session.dump()
 
-    print ' ------------------------------------------------------------------ '
-    units = session.get(etype='unit')
-    for unit in units:
+    print ' ranges    -------------------------------------------------------- '
+    units = session.filter(etype='unit', inplace=False)
+    for unit in units.get():
+        print "%s: %s" % (unit.uid,
+                unit.range(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
+    print "%s: %s" % ('session',
+            units.range(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
+
+    print ' durations -------------------------------------------------------- '
+    for unit in units.get():
         print "%s: %5.3fs" % (unit.uid,
                 unit.duration(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
+    print "%s: %5.3fs" % ('session',
+            units.duration(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
+
+    sys.exit()
 
     print ' ------------------------------------------------------------------ '
+
+    etypes = session.list('etype')
 
     print "\nstate models:"
     pprint.pprint(session.describe('state_model', etype=etypes))

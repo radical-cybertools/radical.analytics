@@ -134,12 +134,26 @@ class Entity(object):
     #
     def duration(self, state=None, event=None):
         """
+        This method accepts a set of initial and final conditions, interprets
+        them as documented in the `range()` method (which has the same
+        signature), and then returns the difference between the resulting
+        timestamps.
+        """
+        t_start, t_stop = self.range(state, event)
+
+        return t_stop - t_start
+
+
+    # --------------------------------------------------------------------------
+    #
+    def range(self, state=None, event=None):
+        """
         This method accepts a set of initial and final conditions, in the form
         of range of state and or event specifiers:
 
-          entity.duration(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'], 
-                                  'FINAL_STATE_1',   'FINAL_STATE_2']], 
-                          event=['initial_event_1', 'final_event'])
+          entity.range(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'], 
+                               'FINAL_STATE_1',   'FINAL_STATE_2']], 
+                       event=['initial_event_1', 'final_event'])
 
         More specifically, the `state` and `event` parameter are expected to be
         a tuple, where the first element defines the initial condition, and the
@@ -152,14 +166,13 @@ class Entity(object):
             conditions have been met (`t_start`); 
           - determine the *latest* timestamp when any of the given final
             conditions have been met (`t_stop`);
-          - return the difference (`t_stop - t_start`)
+          - return the tuple `[t_stop, t_start]`
 
         Example:
 
-           unit.duration(state=[rp.NEW, rp.FINAL]))
+           unit.range(state=[rp.NEW, rp.FINAL]))
 
         where `rp.FINAL` is a list of final unit states.
-
         """
 
         t_start = sys.float_info.max
@@ -213,7 +226,7 @@ class Entity(object):
         if t_stop < t_start:
             raise ValueError('duration uncovered time inconsistency')
 
-        return t_stop - t_start
+        return [t_start, t_stop]
 
 
 # ------------------------------------------------------------------------------
