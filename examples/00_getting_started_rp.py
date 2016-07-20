@@ -46,6 +46,7 @@ if __name__ == '__main__':
 
     print ' ------------------------------------------------------------------ '
 
+    print session.list(['etype', 'state'])
     etypes = session.list('etype')
 
     print "\nstate models:"

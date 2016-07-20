@@ -218,7 +218,7 @@ class Session(object):
             if _pname not in self._properties:
                 raise KeyError('no such property known (%s) / %s' \
                         % (_pname, self._properties.keys()))
-            ret.append(self._properties[pname].keys())
+            ret.append(self._properties[_pname].keys())
 
         if return_list: return ret
         else          : return ret[0]
