@@ -10,9 +10,9 @@ import radical.analytics as ra
 __copyright__ = 'Copyright 2013-2016, http://radical.rutgers.edu'
 __license__   = 'MIT'
 
-# This example demonstrates how RA can be used with RP to analyse RP application
-# performance.  We use RP to obtain a series of profiled events (`profs`) and
-# a session description (`descr`), which we pass to RA for analysis.
+"""
+This example illustrates the use of the method ra.Session.get()
+"""
 
 # ------------------------------------------------------------------------------
 #
