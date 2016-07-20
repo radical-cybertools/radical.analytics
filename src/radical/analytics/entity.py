@@ -49,6 +49,10 @@ class Entity(object):
     def ttc(self):
         return self._ttc
 
+    @property
+    def t_range(self):
+        return [self._t_start, self._t_stop]
+
 
     # --------------------------------------------------------------------------
     #
