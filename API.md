@@ -119,7 +119,7 @@ Note: single parameters can be passed without a list.
 * `['sname', ...]`: List of names of states.
 * `['ename', ...]`: List of names of events.
 * `True|False`: switch on and off in-place replacement of the given
-  session. False is the default behavior and can be omitted.
+  session. True is the default behavior and can be omitted.
 
 #### Returns:
 
