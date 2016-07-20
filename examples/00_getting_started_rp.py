@@ -48,27 +48,27 @@ if __name__ == '__main__':
     units = session.filter(etype='unit', inplace=False)
     for unit in units.get():
         print "%s: %s" % (unit.uid,
-                    unit.range(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
-
+                unit.range(state=[rp.NEW, rp.FINAL]))
     print "%s: %s" % ('session',
-                units.range(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
+            units.range(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
 
     print ' durations -------------------------------------------------------- '
     for unit in units.get():
         print "%s: %5.3fs" % (unit.uid,
-                    unit.duration(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
+                unit.duration(state=[rp.NEW, rp.FINAL]))
     print "%s: %5.3fs" % ('session',
-                units.duration(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
+            units.duration(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
 
-    # print ' ------------------------------------------------------------------ '
+    print ' ------------------------------------------------------------------ '
 
-    # sevents = session.filter(etype=etype)
-    # suids   = session.filter(uid=uid)
-    # ssnames = session.filter(state=state)
-    # senames = session.filter(event=event)
+    etypes = session.list('etype')
 
-    # print ' ------------------------------------------------------------------ '
+    print "\nstate models:"
+    pprint.pprint(session.describe('state_model', etype=etypes))
 
-    # session.duration('start_state|event', 'end_state|event')
+    print "\nevents models:"
+    pprint.pprint(session.describe('event_model', etype=etypes))
+
+    print ' ------------------------------------------------------------------ '
 
     sys.exit(0)

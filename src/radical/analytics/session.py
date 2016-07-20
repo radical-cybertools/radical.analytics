@@ -228,9 +228,6 @@ class Session(object):
                            _entities   = entities)
 
 
-
-
-
     # --------------------------------------------------------------------------
     #
     def describe(self, mode=None, etype=None):
