@@ -10,6 +10,7 @@ import radical.analytics as ra
 __copyright__ = 'Copyright 2013-2016, http://radical.rutgers.edu'
 __license__   = 'MIT'
 
+
 # This example demonstrates how RA can be used with RP to analyse RP application
 # performance.  We use RP to obtain a series of profiled events (`profs`) and
 # a session description (`descr`), which we pass to RA for analysis.
@@ -55,7 +56,8 @@ if __name__ == '__main__':
     print "\nevents models:"
     pprint.pprint(session.describe('event_model', etype=etypes))
 
-    units = session.filter(etype='unit', state=rp.FINAL, time=[25, 27], inplace=False)
+    units = session.filter(etype='unit', state=rp.FINAL, time=[0, 127], inplace=False)
+  # units = session.filter(time=[0, 127], inplace=False)
 
     print '\ndurations --------------------------------------------------------- '
     for unit in units.get():
@@ -67,17 +69,26 @@ if __name__ == '__main__':
     print '\nranges in state---------------------------------------------------- '
     for unit in units.get():
         print "%-12s: %s" % (unit.uid,
-                unit.range(state=[rp.NEW, rp.FINAL]))
+                unit.ranges(state=[rp.NEW, rp.FINAL]))
     print "%-12s: %s" % ('session',
-            units.range(state=[rp.NEW, rp.FINAL]))
+            units.ranges(state=[rp.NEW, rp.FINAL]))
 
     print '\nranges in state and time ------------------------------------------ '
     for unit in units.get():
         print "%-12s: %s" % (unit.uid,
-                unit.range(state=[rp.NEW, rp.FINAL], time=[10.0, 30.0]))
+                unit.ranges(state=[rp.NEW, rp.FINAL], time=[10.0, 30.0]))
     print "%-12s: %s" % ('session',
-            units.range(state=[rp.NEW, rp.FINAL], time=[10.0, 30.0]))
+            units.ranges(state=[rp.NEW, rp.FINAL], time=[10.0, 30.0]))
 
-    print ' ------------------------------------------------------------------- '
+    print '\nconcurrency ------------------------------------------------------ '
+    pprint.pprint(units.concurrency(state=[rp.NEW, rp.EXECUTING]))
+
+    print '\nconcurrency ------------------------------------------------------ '
+    pprint.pprint(units.concurrency(state=[rp.NEW, rp.EXECUTING], sampling=0.1))
+
+    print '\n ----------------------------------------------------------------- '
 
     sys.exit(0)
+
+# ------------------------------------------------------------------------------
+

@@ -136,35 +136,35 @@ class Entity(object):
     def duration(self, state=None, event=None, time=None):
         """
         This method accepts a set of initial and final conditions, interprets
-        them as documented in the `range()` method (which has the same
+        them as documented in the `ranges()` method (which has the same
         signature), and then returns the difference between the resulting
         timestamps.
         """
         ret = 0.0
-        for range in self.range(state, event, time):
-            ret += range[1] - range[0]
+        for r in self.ranges(state, event, time):
+            ret += r[1] - r[0]
 
         return ret
 
 
     # --------------------------------------------------------------------------
     #
-    def range(self, state=None, event=None, time=None):
+    def ranges(self, state=None, event=None, time=None):
         """
         This method accepts a set of initial and final conditions, in the form
         of range of state and or event specifiers:
 
-          entity.range(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'],
-                               'FINAL_STATE_1',   'FINAL_STATE_2']],
-                       event=['initial_event',  'final_event'],
-                       time =[[2.0, 2.5], [3.0, 3.5]])
+          entity.ranges(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'],
+                                'FINAL_STATE_1',   'FINAL_STATE_2']],
+                        event=['initial_event',  'final_event'],
+                        time =[[2.0, 2.5], [3.0, 3.5]])
 
         More specifically, the `state` and `event` parameter are expected to be
         a tuple, where the first element defines the initial condition, and the
         second element defines the final condition. Each element can be a string
         or a list of strings.  The `time` parameter is expected to be a single
         tuple, or a list of tuples, each defining a pair of start and end time
-        which are used to constrain the resulting range.
+        which are used to constrain the resulting ranges.
 
         The parameters are interpreted as follows: the method will
 
@@ -181,7 +181,7 @@ class Entity(object):
 
         Example:
 
-           unit.range(state=[rp.NEW, rp.FINAL]))
+           unit.ranges(state=[rp.NEW, rp.FINAL]))
 
         where `rp.FINAL` is a list of final unit states.
         """

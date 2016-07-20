@@ -298,15 +298,15 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def range(self, state=None, event=None, time=None):
+    def ranges(self, state=None, event=None, time=None):
         """
         This method accepts a set of initial and final conditions, in the form
         of range of state and or event specifiers:
 
-          entity.range(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'], 
-                               'FINAL_STATE_1',   'FINAL_STATE_2']], 
-                       event=['initial_event_1',  'final_event'],
-                       time =[[2.0, 2.5], [3.0, 3.5]])
+          entity.ranges(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'], 
+                                'FINAL_STATE_1',   'FINAL_STATE_2']], 
+                        event=['initial_event_1',  'final_event'],
+                        time =[[2.0, 2.5], [3.0, 3.5]])
 
         More specifically, the `state` and `event` parameter are expected to be
         a tuple, where the first element defines the initial condition, and the
@@ -331,14 +331,14 @@ class Session(object):
 
         Example:
 
-           session.range(state=[rp.NEW, rp.FINAL]))
+           session.ranges(state=[rp.NEW, rp.FINAL]))
 
         where `rp.FINAL` is a list of final unit states.
         """
 
         ranges = list()
         for uid,entity in self._entities.iteritems():
-            ranges += entity.range(state, event, time)
+            ranges += entity.ranges(state, event, time)
 
         return ru.collapse_ranges(ranges)
 
@@ -347,9 +347,9 @@ class Session(object):
     #
     def duration(self, state=None, event=None, time=None):
         """
-        This method accepts the same set of parameters as the `range()` method,
-        and will use the range method to obtain a set of ranges.  It will return
-        the sum of the durations for all resulting ranges.
+        This method accepts the same set of parameters as the `ranges()` method,
+        and will use the `ranges()` method to obtain a set of ranges.  It will
+        return the sum of the durations for all resulting ranges.
 
         Example:
 
@@ -359,23 +359,29 @@ class Session(object):
         """
 
         ret    = 0.0
-        ranges = self.range(state, event, time)
-        for range in ranges:
-            ret += range[1] - range[0]
+        ranges = self.ranges(state, event, time)
+        for r in ranges:
+            ret += r[1] - r[0]
 
         return ret
 
 
     # --------------------------------------------------------------------------
     #
-    def concurrency(self, state=None, event=None, time=None):
+    def concurrency(self, state=None, event=None, time=None, sampling=None):
         """
-        This method accepts the same set of parameters as the `range()` method,
-        and will use the range method to obtain a set of ranges.  It will return
-        a time series, counting the number of units which are concurrently
-        matching the range filter at any point in time.  The descrete points in
-        time for which the concurrency is computed are all points at which the
-        concurrency changes.
+        This method accepts the same set of parameters as the `ranges()` method,
+        and will use the `ranges()` method to obtain a set of ranges.  It will
+        return a time series, counting the number of units which are
+        concurrently matching the ranges filter at any point in time.  
+        
+        The additional parameter `smpling` determines the exact points in time
+        for which the concurrency is computed, and thus determines the sampling
+        rate for the returned time series.  If not specified, the time series
+        will contain all points at which the concurrency changed.  If specified,
+        it is interpreted as second (float) interval at which, after the
+        starting point (begin of first event matching the filters) the
+        concurrency is computed.
 
         Returned is an ordered list of tuples:
 
@@ -390,13 +396,50 @@ class Session(object):
 
            session.concurrency(state=[rp.EXECUTING, 
                                       rp.AGENT_STAGING_OUTPUT_PENDING]))
-
         """
 
-        ret    = 0.0
-        ranges = self.range(state, event, time)
-        for range in ranges:
-            ret += range[1] - range[0]
+        ranges = list()
+        for uid,e in self._entities.iteritems():
+            ranges += e.ranges(state, event, time)
+
+        if not ranges:
+            # nothing to do
+            return []
+
+
+        ret   = list()
+        times = list()
+        if sampling:
+            # get min and max of ranges, and add create timestamps at regular
+            # intervals
+            r_min = ranges[0][0]
+            r_max = ranges[0][1]
+            for r in ranges:
+                r_min = min(r_min, r[0])
+                r_max = max(r_max, r[1])
+
+            t = r_min
+            while t < r_max:
+                times.append(t)
+                t += sampling
+            times.append(t)
+
+        else:
+            # get all start and end times for all ranges, and use the resulting
+            # set as time sequence
+            for r in ranges:
+                times.append(r[0])
+                times.append(r[1])
+            times.sort()
+
+        # we have the time sequence, now compute concurrency at those points
+        for t in times:
+            cnt = 0
+            for r in ranges:
+                if t >= r[0] and t <= r[1]:
+                    cnt += 1
+            
+            ret.append([t, cnt])
 
         return ret
 
