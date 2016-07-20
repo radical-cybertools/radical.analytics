@@ -44,21 +44,6 @@ if __name__ == '__main__':
     session = ra.Session(prof, descr)
     # session.dump()
 
-    print ' ranges    -------------------------------------------------------- '
-    units = session.filter(etype='unit', inplace=False)
-    for unit in units.get():
-        print "%s: %s" % (unit.uid,
-                unit.range(state=[rp.NEW, rp.FINAL]))
-    print "%s: %s" % ('session',
-            units.range(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
-
-    print ' durations -------------------------------------------------------- '
-    for unit in units.get():
-        print "%s: %5.3fs" % (unit.uid,
-                unit.duration(state=[rp.NEW, rp.FINAL]))
-    print "%s: %5.3fs" % ('session',
-            units.duration(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
-
     print ' ------------------------------------------------------------------ '
 
     etypes = session.list('etype')
@@ -69,6 +54,29 @@ if __name__ == '__main__':
     print "\nevents models:"
     pprint.pprint(session.describe('event_model', etype=etypes))
 
-    print ' ------------------------------------------------------------------ '
+    units = session.filter(etype='unit', state=rp.FINAL, time=[25, 27], inplace=False)
+
+    print '\ndurations --------------------------------------------------------- '
+    for unit in units.get():
+        print "%-12s: %5.3fs" % (unit.uid,
+                unit.duration(state=[rp.NEW, rp.FINAL]))
+    print "%-12s: %5.3fs" % ('session',
+            units.duration(state=[rp.NEW, rp.FINAL]))
+
+    print '\nranges in state---------------------------------------------------- '
+    for unit in units.get():
+        print "%-12s: %s" % (unit.uid,
+                unit.range(state=[rp.NEW, rp.FINAL]))
+    print "%-12s: %s" % ('session',
+            units.range(state=[rp.NEW, rp.FINAL]))
+
+    print '\nranges in state and time ------------------------------------------ '
+    for unit in units.get():
+        print "%-12s: %s" % (unit.uid,
+                unit.range(state=[rp.NEW, rp.FINAL], time=[10.0, 30.0]))
+    print "%-12s: %s" % ('session',
+            units.range(state=[rp.NEW, rp.FINAL], time=[10.0, 30.0]))
+
+    print ' ------------------------------------------------------------------- '
 
     sys.exit(0)

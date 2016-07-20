@@ -132,19 +132,24 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def _apply_filter(self, etype=None, uid=None, state=None, event=None):
+    def _apply_filter(self, etype=None, uid=None, state=None, 
+                            event=None, time=None):
 
         # iterate through all self._entities and collect UIDs of all entities
-        # which match the given set of filters
+        # which match the given set of filters (after removing all events which
+        # are not in the given time ranges)
         if not etype: etype = []
         if not uid  : uid   = []
         if not state: state = []
         if not event: event = []
+        if not time : time  = []
 
         if etype and not isinstance(etype, list): etype = [etype]
         if uid   and not isinstance(uid  , list): uid   = [uid  ]
         if state and not isinstance(state, list): state = [state]
         if event and not isinstance(event, list): event = [event]
+
+        if time and len(time) and not isinstance(time[0], list): time = [time]
 
         ret = list()
         for eid,entity in self._entities.iteritems():
@@ -154,19 +159,23 @@ class Session(object):
             
             if state:
                 match = False
-                for s in entity.states:
+                for s,sdict in entity.states.iteritems():
+                    if time and not ru.in_range(sdict['time'], time):
+                        continue
                     if s in state:
                         match = True
-                        continue
+                        break
                 if not match:
                      continue
 
             if event:
                 match = False
-                for e in entity.events:
+                for e,edict in entity.events.iteritems():
+                    if time and not ru.in_range(edict['time'], time):
+                        continue
                     if e in event:
                         match = True
-                        continue
+                        break
                 if not match:
                      continue
 
@@ -217,17 +226,20 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def get(self, etype=None, uid=None, state=None, event=None):
+    def get(self, etype=None, uid=None, state=None, event=None, time=None):
 
-        uids = self._apply_filter(etype=etype, uid=uid, state=state, event=event)
+        uids = self._apply_filter(etype=etype, uid=uid, state=state,
+                                  event=event, time=time)
         return [self._entities[uid] for uid in uids]
 
 
     # --------------------------------------------------------------------------
     #
-    def filter(self, etype=None, uid=None, state=None, event=None, inplace=True):
+    def filter(self, etype=None, uid=None, state=None, event=None, time=None, 
+               inplace=True):
 
-        uids = self._apply_filter(etype=etype, uid=uid, state=state, event=event)
+        uids = self._apply_filter(etype=etype, uid=uid, state=state,
+                                  event=event, time=time)
 
         if inplace:
             # filter our own entity list, and refresh the properties based on
@@ -286,29 +298,35 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def range(self, state=None, event=None):
+    def range(self, state=None, event=None, time=None):
         """
         This method accepts a set of initial and final conditions, in the form
         of range of state and or event specifiers:
 
           entity.range(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'], 
                                'FINAL_STATE_1',   'FINAL_STATE_2']], 
-                       event=['initial_event_1', 'final_event'])
+                       event=['initial_event_1',  'final_event'],
+                       time =[[2.0, 2.5], [3.0, 3.5]])
 
         More specifically, the `state` and `event` parameter are expected to be
         a tuple, where the first element defines the initial condition, and the
         second element defines the final condition. Each element can be a string
-        or a list of strings.
+        or a list of strings.  The `time` parameter is expected to be a single
+        tuple, or a list of tuples, each defining a pair of start and end time
+        which are used to constrain the resulting ranges.
 
         The parameters are interpreted as follows: 
 
           - for any entity known to the session
-            - determine the maximum range during which the entity has been
+            - determine the maximum time range during which the entity has been
               between initial and final conditions
 
           - collapse the resulting set of ranges into the smallest possible set
             of ranges which cover the same, but not more nor less, of the
             domain (floats).
+
+          - limit the resulting ranges by the `time` constraints, if such are
+            given.
 
 
         Example:
@@ -320,14 +338,14 @@ class Session(object):
 
         ranges = list()
         for uid,entity in self._entities.iteritems():
-            ranges.append(entity.range(state, event))
+            ranges += entity.range(state, event, time)
 
         return ru.collapse_ranges(ranges)
 
 
     # --------------------------------------------------------------------------
     #
-    def duration(self, state=None, event=None):
+    def duration(self, state=None, event=None, time=None):
         """
         This method accepts the same set of parameters as the `range()` method,
         and will use the range method to obtain a set of ranges.  It will return
@@ -341,7 +359,42 @@ class Session(object):
         """
 
         ret    = 0.0
-        ranges = self.range(state, event)
+        ranges = self.range(state, event, time)
+        for range in ranges:
+            ret += range[1] - range[0]
+
+        return ret
+
+
+    # --------------------------------------------------------------------------
+    #
+    def concurrency(self, state=None, event=None, time=None):
+        """
+        This method accepts the same set of parameters as the `range()` method,
+        and will use the range method to obtain a set of ranges.  It will return
+        a time series, counting the number of units which are concurrently
+        matching the range filter at any point in time.  The descrete points in
+        time for which the concurrency is computed are all points at which the
+        concurrency changes.
+
+        Returned is an ordered list of tuples:
+
+          [ [time_0, concurrency_0] ,
+            [time_1, concurrency_1] ,
+            ...
+            [time_n, concurrency_n] ]
+
+        where `time_n` is represented s `float`, and `concurrency_n` as `int`.
+
+        Example:
+
+           session.concurrency(state=[rp.EXECUTING, 
+                                      rp.AGENT_STAGING_OUTPUT_PENDING]))
+
+        """
+
+        ret    = 0.0
+        ranges = self.range(state, event, time)
         for range in ranges:
             ret += range[1] - range[0]
 

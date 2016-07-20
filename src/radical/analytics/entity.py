@@ -75,6 +75,7 @@ class Entity(object):
 
         # FIXME: assert state model adherence here
         # FIXME: where to get state model from?
+        # FIXME: sort events by time
 
 
     # --------------------------------------------------------------------------
@@ -132,41 +133,52 @@ class Entity(object):
 
     # --------------------------------------------------------------------------
     #
-    def duration(self, state=None, event=None):
+    def duration(self, state=None, event=None, time=None):
         """
         This method accepts a set of initial and final conditions, interprets
         them as documented in the `range()` method (which has the same
         signature), and then returns the difference between the resulting
         timestamps.
         """
-        t_start, t_stop = self.range(state, event)
+        ret = 0.0
+        for range in self.range(state, event, time):
+            ret += range[1] - range[0]
 
-        return t_stop - t_start
+        return ret
 
 
     # --------------------------------------------------------------------------
     #
-    def range(self, state=None, event=None):
+    def range(self, state=None, event=None, time=None):
         """
         This method accepts a set of initial and final conditions, in the form
         of range of state and or event specifiers:
 
           entity.range(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'], 
                                'FINAL_STATE_1',   'FINAL_STATE_2']], 
-                       event=['initial_event_1', 'final_event'])
+                       event=['initial_event_1',  'final_event'], 
+                       time =[[2.0, 2.5], [3.0, 3.5]])
 
         More specifically, the `state` and `event` parameter are expected to be
         a tuple, where the first element defines the initial condition, and the
         second element defines the final condition. Each element can be a string
-        or a list of strings.
+        or a list of strings.  The `time` parameter is expected to be a single
+        tuple, or a list of tuples, each defining a pair of start and end time
+        which are used to constrain the resulting range.
 
         The parameters are interpreted as follows: the method will 
 
           - determine the *earliest* timestamp when any of the given initial
             conditions have been met (`t_start`); 
+
           - determine the *latest* timestamp when any of the given final
             conditions have been met (`t_stop`);
-          - return the tuple `[t_stop, t_start]`
+
+          - limit the resulting range by the `time` constraints, if such are
+            given.
+
+          - return the resulting list of time tuples signifying the set of
+            ranges where all constraints apply.
 
         Example:
 
@@ -226,7 +238,38 @@ class Entity(object):
         if t_stop < t_start:
             raise ValueError('duration uncovered time inconsistency')
 
-        return [t_start, t_stop]
+        # apply time filter, if such one is given
+        ret = list()
+        if time and len(time):
+
+            # we actually inverse the logic here: we assume that all given time
+            # filters are ranges to consider valid, but constrain them by the
+            # one range we have determined by the state and event filter above.
+
+            if not isinstance(time[0], list):
+                time = [time]
+
+            for trange in time:
+
+                trange_start = trange[0]
+                trange_stop  = trange[1]
+
+                assert(trange_start <= trange_stop)
+
+                if trange_start < t_start:
+                    trange_start = t_start
+
+                if trange_stop > t_stop:
+                    trange_stop = t_stop
+
+                if trange_start < trange_stop:
+                    ret.append([trange_start, trange_stop])
+
+        else:
+            # no time filters defined
+            ret.append([t_start, t_stop])
+
+        return ret
 
 
 # ------------------------------------------------------------------------------
