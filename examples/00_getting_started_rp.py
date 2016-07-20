@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     session = ra.Session(prof, descr)
     # session.dump()
-
+    
     print ' ------------------------------------------------------------------ '
 
     print session.list(['etype', 'state'])
@@ -42,6 +42,9 @@ if __name__ == '__main__':
 
     print "\nstate models:"
     pprint.pprint(session.describe('state_model', etype=etypes))
+
+    print "\nstate values:"
+    pprint.pprint(session.describe('state_values', etype=etypes))
 
     print "\nevents models:"
     pprint.pprint(session.describe('event_model', etype=etypes))

@@ -298,7 +298,7 @@ class Session(object):
     #
     def describe(self, mode=None, etype=None):
 
-        if mode not in [None, 'state_model', 'event_model']:
+        if mode not in [None, 'state_model', 'state_values', 'event_model']:
             raise ValueError('describe parameter "mode" invalid')
 
         if not etype:
@@ -311,24 +311,30 @@ class Session(object):
         ret = dict()
         for et in etype:
             if et in self._description['entities']:
-                state_model = self._description['entities'][et]['state_model']
-                event_model = self._description['entities'][et]['event_model']
+                state_model  = self._description['entities'][et]['state_model']
+                state_values = self._description['entities'][et]['state_values']
+                event_model  = self._description['entities'][et]['event_model']
                         
             else:
                 # we don't have any state or event model -- return minimalistic
                 # ones
-                state_model = {'ALIVE' : 0},
-                event_model = {}
+                state_model  = {'ALIVE' : 0},
+                state_values = {0 : 'ALIVE'},
+                event_model  = {}
 
             if not mode:
-                ret[et] = {'state_model' : state_model,
-                           'event_model' : event_model}
+                ret[et] = {'state_model'  : state_model,
+                           'state_values' : state_values, 
+                           'event_model'  : event_model}
 
             elif mode == 'state_model':
-                ret[et] = {'state_model' : state_model}
+                ret[et] = {'state_model'  : state_model}
+
+            elif mode == 'state_values':
+                ret[et] = {'state_values' : state_values}
 
             elif mode == 'event_model':
-                ret[et] = {'event_model' : event_model}
+                ret[et] = {'event_model'  : event_model}
 
         return ret
 
