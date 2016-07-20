@@ -28,7 +28,26 @@ class Entity(object):
         self._states     = dict()
         self._events     = dict()
 
+        self._t_start    = None
+        self._t_stop     = None
+        self._ttc        = None
+
         self._initialize(_profile)
+
+
+    # --------------------------------------------------------------------------
+    #
+    @property
+    def t_start(self):
+        return self._t_start
+
+    @property
+    def t_stop(self):
+        return self._t_stop
+
+    @property
+    def ttc(self):
+        return self._ttc
 
 
     # --------------------------------------------------------------------------
@@ -55,12 +74,19 @@ class Entity(object):
         assert (not self._states)
         assert (not self._events)
 
+        if profile:
+            self._t_start = sys.float_info.max
+            self._t_stop  = sys.float_info.min
+
         # we expect each event to have `time` and `name`, and expect events
         # named 'state' to signify a state transition, and thus to always have
         # the property 'state' set, too
         for event in profile:
 
-            assert('time' in event)
+            t = event['time']
+
+            self._t_start = min(self._t_start, t)
+            self._t_stop  = max(self._t_stop,  t)
 
             name = event['event_name']
             if name == 'state':
@@ -72,6 +98,9 @@ class Entity(object):
             if name not in self._events:
                 self._events[name] = list()
             self._events[name].append(event)
+
+        if profile:
+            self._ttc = self._t_stop - self._t_start
 
         # FIXME: assert state model adherence here
         # FIXME: where to get state model from?

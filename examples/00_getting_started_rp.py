@@ -77,6 +77,7 @@ if __name__ == '__main__':
     pprint.pprint(units.concurrency(state=[rp.NEW, rp.EXECUTING], sampling=0.1))
 
     print '\n ----------------------------------------------------------------- '
+    print units.ttc, units.t_start, units.t_stop
 
     sys.exit(0)
 

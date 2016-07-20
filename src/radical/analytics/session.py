@@ -1,5 +1,7 @@
 
 
+import sys
+
 import radical.utils as ru
 
 from .entity import Entity
@@ -43,16 +45,17 @@ class Session(object):
     # --------------------------------------------------------------------------
     #
     @property
-    def ttc(self):
-        return self._ttc
-
-    @property
     def t_start(self):
         return self._t_start
 
     @property
     def t_stop(self):
         return self._t_stop
+
+    @property
+    def ttc(self):
+        return self._ttc
+
 
     # --------------------------------------------------------------------------
     #
@@ -71,23 +74,12 @@ class Session(object):
         # create entities from the profile events: 
         entity_events = dict()
 
-        if len(self._profile):
-            self._t_start = self._profile[0]['time']
-            self._t_end   = self._profile[0]['time']
-
         for event in self._profile:
-            t   = event['time']
             uid = event['uid']
-
-            self._t_start = min(self._t_start, t)
-            self._t_end   = max(self._t_stop,  t)
 
             if uid not in entity_events:
                 entity_events[uid] = list()
             entity_events[uid].append(event)
-
-        if len(self._profile):
-            self._ttc = self._t_stop - self._t_start
 
         # for all uids found,  create and store an entity.  We look up the
         # entity type in one of the events (and assume it is consistent over 
@@ -139,7 +131,14 @@ class Session(object):
                              'event' : dict(),
                              'state' : dict()}
 
+        if self._entities:
+            self._t_start = sys.float_info.max
+            self._t_stop  = sys.float_info.min
+
         for euid,e in self._entities.iteritems():
+
+            self._t_start = min(self._t_start, e.t_start)
+            self._t_stop  = max(self._t_stop,  e.t_stop )
 
             if euid in self._properties['uid']:
                 raise RuntimeError('duplicated uid %s' % euid)
@@ -158,6 +157,10 @@ class Session(object):
                 if event not in self._properties['event']:
                     self._properties['event'][event] = 0
                 self._properties['event'][event] += 1
+
+
+        if self._entities:
+            self._ttc = self._t_stop - self._t_start
 
 
     # --------------------------------------------------------------------------
