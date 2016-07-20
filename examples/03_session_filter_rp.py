@@ -45,7 +45,7 @@ if __name__ == '__main__':
         separator = '\n' + 78 * '-' + '\n'
         print separator + message + separator
 
-    # and here we go. As seen in example 01, we use ra.Session.get() to get all
+    # and here we go. As seen in example 02, we use ra.Session.get() to get all
     # the objects of type Entity with one or more type, uid, or state. Runs with
     # thousands of entities produce an amount of data large enough that, once
     # loaded inside the ra.session object, can slow down the analysis.
