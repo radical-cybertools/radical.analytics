@@ -4,7 +4,7 @@ import os
 import sys
 import glob
 import pprint
-import radical.pilot     as rp
+import radical.pilot as rp
 import radical.analytics as ra
 
 __copyright__ = 'Copyright 2013-2016, http://radical.rutgers.edu'
@@ -40,52 +40,78 @@ if __name__ == '__main__':
 
     session = ra.Session(prof, descr)
 
-    # Use list() to get the name of all the entities' type of the session.
+    # A formatting helper before starting...
+    def ppheader(message):
+        separator = '\n' + 78 * '-' + '\n'
+        print separator + message + separator
+
+    # and here we go. As seen in example 01, we use ra.Session.list() to get the
+    # name of all the entities' type of the session.
     etypes = session.list('etype')
+    pprint.pprint(etypes)
 
-    # Then print out the first entity's object (of type Entity) for each type of
-    # entity. If your head is spinning overleaded by the use of the term
-    # `entity', everything is going as planned :)
-    for etype in etypes:
+    # We limit ourselves to the types 'unit' and 'pilot'. We use the method
+    # ra.Session.get() to get all the objects in our session with etype units
+    ppheader("properties of the entities with etype 'unit'")
+    units = session.get(etype='unit')
+    pprint.pprint(units)
 
-        entity = session.get(etype=etype)[0]
-        uid    = entity.uid
+    # and pilots.
+    ppheader("properties of the entities with etype 'pilot'")
+    units = session.get(etype='pilot')
+    pprint.pprint(units)
 
-        print '\n--------------------------------------------------------------'
-        print "properties of the entity %s of type %s" % (entity.uid, etype)
-        print '--------------------------------------------------------------'
-        entity.dump()
+    # Mmmm, still a bit too many. We limit ourself to the first unit and pilot.
+    # We use ra.Session.get() to select all the objects in the session with
+    # etype 'units' and uid 'unit.000000' and return them into a list
+    ppheader("properties of the entities with etype 'unit' and uid 'unit.000000'")
+    unit = session.get(etype='unit', uid='unit.000000')
+    pprint.pprint(unit)
 
-        print '\n--------------------------------------------------------------'
-        print "properties of the entities with uid %s" % uid
-        print '--------------------------------------------------------------'
-        entities = session.get(uid=uid)
-        pprint.pprint(entities)
+    # but because the uid is guaranteed to be unique within the scope of our
+    # session, we can omit to specify etype obtaining the same list as a result.
+    ppheader("properties of the entities with uid 'unit.000000'")
+    unit = session.get(uid='unit.000000')
+    pprint.pprint(unit)
 
-        print '\n--------------------------------------------------------------'
-        print "properties of the entities with etype %s" % etype
-        print '--------------------------------------------------------------'
-        entities = session.get(etype=etype)
-        pprint.pprint(entities)
+    # We want to look into the states of this unit
+    ppheader("states of the entities with uid 'unit.000000'")
+    states = unit[0].states
+    pprint.pprint(states)
 
-        # Entities' objects expose the list of states and events of that entity.
-        # These lists may be empty when the entity is stateless or eventless.
-        # Here we print just one state's and event's object. Removing `break'
-        # prints all the states' and events' objects.
-        for state in entity.states:
-            print '\n----------------------------------------------------------'
-            print "properties of the entities with state %s" % state
-            print '----------------------------------------------------------'
-            entities = session.get(state=state)
-            pprint.pprint(entities)
-            break
+    # and extract the state we need. For example, the state that indicates that
+    # the unit has been created, i.e., the state NEW. To refer to the state NEW
+    # we use the rp.NEW property that guarantees type checking.
+    ppheader("Properties of the state rp.NEW of the entities with uid 'unit.000000'")
+    state = unit[0].states[rp.NEW]
+    pprint.pprint(state)
 
-        for event in entity.events:
-            print '\n----------------------------------------------------------'
-            print "properties of the entities with event %s" % event
-            print '----------------------------------------------------------'
-            entities = session.get(event=event)
-            pprint.pprint(entities)
-            break
+    # Finally, we extract a property we need from this state. For example, the
+    # timestamp of when the unit has been created, i.e., the property 'time' of
+    # the state NEW.
+    ppheader("Property 'time' of the state rp.NEW of the entities with uid 'unit.000000'")
+    timestamp = unit[0].states[rp.NEW]['time']
+    pprint.pprint(timestamp)
+
+    # ra.Session.get() can also been used to to get all the entities in our
+    # session that have a specific state. For example, the following gets
+    # entities of type 'unit' and 'pilot':
+    ppheader("Entities with state rp.NEW")
+    entities = session.get(state=rp.NEW)
+    pprint.pprint(entities)
+
+    # We can then print the timestamp of the state rp.NEW for all the entities
+    # with that state in our session by using something like:
+    ppheader("Timestamp of all the entities with state rp.NEW")
+    timestamps = [entity.states[rp.NEW]['time'] for entity in entities]
+    pprint.pprint(timestamps)
+
+    # We can create tailored data structures for further analyis. For example,
+    # using tuples to name entities, state, and timestamp:
+    ppheader("Named entities with state rp.NEW and its timestamp")
+    named_timestamps = [(entity.uid,
+                         entity.states[rp.NEW]['state'],
+                         entity.states[rp.NEW]['time']) for entity in entities]
+    pprint.pprint(named_timestamps)
 
     sys.exit(0)

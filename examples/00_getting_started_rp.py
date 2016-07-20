@@ -14,7 +14,7 @@ __license__   = 'MIT'
 # performance.  We use RP to obtain a series of profiled events (`profs`) and
 # a session description (`descr`), which we pass to RA for analysis.
 
-#-------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #
 if __name__ == '__main__':
 
@@ -42,81 +42,33 @@ if __name__ == '__main__':
     pprint.pprint(descr)
 
     session = ra.Session(prof, descr)
-  # session.dump()
+    # session.dump()
 
     print ' ranges    -------------------------------------------------------- '
     units = session.filter(etype='unit', inplace=False)
     for unit in units.get():
         print "%s: %s" % (unit.uid,
-                unit.range(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
+                    unit.range(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
+
     print "%s: %s" % ('session',
-            units.range(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
+                units.range(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
 
     print ' durations -------------------------------------------------------- '
     for unit in units.get():
         print "%s: %5.3fs" % (unit.uid,
-                unit.duration(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
+                    unit.duration(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
     print "%s: %5.3fs" % ('session',
-            units.duration(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
+                units.duration(state=[rp.UMGR_STAGING_INPUT, rp.FINAL]))
 
-    sys.exit()
+    # print ' ------------------------------------------------------------------ '
 
-    print ' ------------------------------------------------------------------ '
+    # sevents = session.filter(etype=etype)
+    # suids   = session.filter(uid=uid)
+    # ssnames = session.filter(state=state)
+    # senames = session.filter(event=event)
 
-    etypes = session.list('etype')
-
-    print "\nstate models:"
-    pprint.pprint(session.describe('state_model', etype=etypes))
-
-    print "\nevents models:"
-    pprint.pprint(session.describe('event_model', etype=etypes))
-
-    print ' ------------------------------------------------------------------ '
-
-    for etype in etypes:
-
-        entity = session.get(etype=etype)[0]
-        uid    = entity.uid
-
-        print "\nproperties of the entity %s of type %s" % (entity.uid, etype)
-        entity.dump()
-
-        print "\nproperties of the entities with uid %s" % uid
-        entities = session.get(uid=uid)
-        pprint.pprint(entities)
-
-        print "\nproperties of the entities with etype %s" % etype
-        entities = session.get(etype=etype)
-        pprint.pprint(entities)
-
-        # TODO:
-        # - check the entity state to see whether we have access to a list of
-        #   states and events.
-        # - check state UID.
-        # - check event UID.
-        for state in entity.states:
-            print "\nproperties of the entities with state %s" % state
-            entities = session.get(state=state)
-            pprint.pprint(entities)
-            break
-
-        for event in entity.events:
-            print "\nproperties of the entities with event %s" % event
-            entities = session.get(event=event)
-            pprint.pprint(entities)
-            break
-
-    print ' ------------------------------------------------------------------ '
-
-    sevents = session.filter(etype=etype)
-    suids   = session.filter(uid=uid)
-    ssnames = session.filter(state=state)
-    senames = session.filter(event=event)
-
-    print ' ------------------------------------------------------------------ '
+    # print ' ------------------------------------------------------------------ '
 
     # session.duration('start_state|event', 'end_state|event')
 
     sys.exit(0)
-
-#-------------------------------------------------------------------------------
