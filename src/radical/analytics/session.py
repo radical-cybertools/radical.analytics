@@ -95,6 +95,11 @@ class Session(object):
           - event (names of events)
           - state (state identifiers)
         """
+
+        # FIXME: initializing properties can be expensive, and we might not
+        #        always need them anyway.  So we can lazily defer this 
+        #        initialization stop until the first query which requires them.
+
         # we do *not* look at profile and descriptions anymore, those are only
         # evaluated once on construction, in `_initialize_entities()`.  Now we
         # don't parse all that stuff again, but only re-initialize after
@@ -219,6 +224,7 @@ class Session(object):
             if uids != self._entities.keys():
                 self._entities = {uid:self._entities[uid] for uid in uids}
                 self._initialize_properties()
+            return self
 
         else:
             # create a new session with the resulting property list
