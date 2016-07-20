@@ -38,38 +38,31 @@ if __name__ == '__main__':
     prof  = rp.utils.combine_profiles(profs)
     prof  = rp.utils.clean_profile(prof, sid)
 
+    # A formatting helper before starting...
+    def ppheader(message):
+        separator = '\n' + 78 * '-' + '\n'
+        print separator + message + separator
+
     session = ra.Session(prof, descr)
 
-    # TODO: get session.uid from session.describe.
-
     pnames = session.list()
-    print '\n--------------------------------------------------------------'
-    print "name of the properties of the session:"
-    print '--------------------------------------------------------------'
+    ppheader("name of the properties of the session")
     pprint.pprint(pnames)
 
     etypes = session.list('etype')
-    print '\n--------------------------------------------------------------'
-    print "name of the entities' type of the session:"
-    print '--------------------------------------------------------------'
+    ppheader("name of the entities' type of the session")
     pprint.pprint(etypes)
 
-    print '\n--------------------------------------------------------------'
-    print "unique identifiers (uid) of all entities of the session:"
-    print '--------------------------------------------------------------'
+    ppheader("unique identifiers (uid) of all entities of the session")
     uids = session.list('uid')
     pprint.pprint(uids)
 
-    print '\n--------------------------------------------------------------'
-    print "unique names of the states of all entities of the session:"
-    print '--------------------------------------------------------------'
+    ppheader("unique names of the states of all entities of the session")
     states = session.list('state')
     pprint.pprint(states)
 
-    print '\n--------------------------------------------------------------'
-    print "unique names of the events of all entities of the session:"
-    print '--------------------------------------------------------------'
+    ppheader("unique names of the events of all entities of the session")
     events = session.list('event')
     pprint.pprint(events)
 
-# ------------------------------------------------------------------------------
+    sys.exit(0)

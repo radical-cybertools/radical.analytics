@@ -59,12 +59,14 @@ entity. The class of this objects is called _Entity_.
 The following are the methods of the class Session.
 
 
-### `session.list('etype'|'uid'|'state'|'event')`
+### `session.list(['etype', 'uid', 'state', 'event'])`
 
 Returns a list of values for the values of the properties 'entities', 'uids',
 'states', 'events' of the given session.
 
 #### Arguments:
+
+Note: single parameters can be passed without a list.
 
 * `'etype'`: List the name of the type of all the stateful entities of the
   given session. In principle, the names of the type of the entities are not
@@ -106,7 +108,7 @@ Note: single parameters can be passed without a list.
 * List of Objects of type Sentity
 
 
-### `session.filter(etype=['etname', ...]|uid=['uidname', ...]|state=['sname', ...]|event=['ename', ...], inplace=False|True)`
+### `session.filter(etype=['etname', ...]|uid=['uidname', ...]|state=['sname', ...]|event=['ename', ...],  time=[float, float]inplace=False|True)`
 
 Returns a session with a subset of the entities of the given session.
 
@@ -118,8 +120,9 @@ Note: single parameters can be passed without a list.
 * `['uidname', ...]`: List of names of uids.
 * `['sname', ...]`: List of names of states.
 * `['ename', ...]`: List of names of events.
+* `[float, float]`: Time range in which entities were stateful.
 * `True|False`: switch on and off in-place replacement of the given
-  session. False is the default behavior and can be omitted.
+  session. True is the default behavior and can be omitted.
 
 #### Returns:
 

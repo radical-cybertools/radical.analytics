@@ -36,7 +36,7 @@ class Entity(object):
     def __str__(self):
 
         return "ra.Entity [%s]: %s\n    states: %s\n    events: %s" \
-                % (self.etype, self.uid, 
+                % (self.etype, self.uid,
                    self._states.keys(), self._events.keys())
 
 
@@ -67,7 +67,7 @@ class Entity(object):
                 state = event['state']
                 self._states[state] = event
 
-            # we also treat state transitions as generic event.  
+            # we also treat state transitions as generic event.
             # Because, why not?
             if name not in self._events:
                 self._events[name] = list()
@@ -83,9 +83,9 @@ class Entity(object):
     def as_dict(self):
 
         return {
-                'uid'    : self._uid, 
-                'etype'  : self._etype, 
-                'states' : self._states, 
+                'uid'    : self._uid,
+                'etype'  : self._etype,
+                'states' : self._states,
                 'events' : self._events
                }
 
@@ -102,8 +102,8 @@ class Entity(object):
     #
     @property
     def uid(self):
-        return self._uid 
-    
+        return self._uid
+
     @property
     def etype(self):
         return self._etype
@@ -154,9 +154,9 @@ class Entity(object):
         This method accepts a set of initial and final conditions, in the form
         of range of state and or event specifiers:
 
-          entity.range(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'], 
-                               'FINAL_STATE_1',   'FINAL_STATE_2']], 
-                       event=['initial_event_1',  'final_event'], 
+          entity.range(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'],
+                               'FINAL_STATE_1',   'FINAL_STATE_2']],
+                       event=['initial_event',  'final_event'],
                        time =[[2.0, 2.5], [3.0, 3.5]])
 
         More specifically, the `state` and `event` parameter are expected to be
@@ -166,11 +166,10 @@ class Entity(object):
         tuple, or a list of tuples, each defining a pair of start and end time
         which are used to constrain the resulting range.
 
-        The parameters are interpreted as follows: the method will 
+        The parameters are interpreted as follows: the method will
 
           - determine the *earliest* timestamp when any of the given initial
-            conditions have been met (`t_start`); 
-
+            conditions have been met (`t_start`);
           - determine the *latest* timestamp when any of the given final
             conditions have been met (`t_stop`);
 
