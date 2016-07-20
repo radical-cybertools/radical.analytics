@@ -17,6 +17,10 @@ class Session(object):
         self._profile     = profile
         self._description = description
 
+        self._t_start     = None
+        self._t_stop      = None
+        self._ttc         = None
+
         # internal state is represented by a dict of entities:
         # dict keys are entity uids (which are assumed to be unique per
         # session), dict values are ra.Entity instances
@@ -38,6 +42,20 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
+    @property
+    def ttc(self):
+        return self._ttc
+
+    @property
+    def t_start(self):
+        return self._t_start
+
+    @property
+    def t_stop(self):
+        return self._t_stop
+
+    # --------------------------------------------------------------------------
+    #
     def _initialize_entities(self):
         """
         populate self._entities from self._profile and 
@@ -51,13 +69,25 @@ class Session(object):
         assert (not self._entities)
 
         # create entities from the profile events: 
-        entity_events  = dict()
+        entity_events = dict()
+
+        if len(self._profile):
+            self._t_start = self._profile[0]['time']
+            self._t_end   = self._profile[0]['time']
 
         for event in self._profile:
+            t   = event['time']
             uid = event['uid']
+
+            self._t_start = min(self._t_start, t)
+            self._t_end   = max(self._t_stop,  t)
+
             if uid not in entity_events:
                 entity_events[uid] = list()
             entity_events[uid].append(event)
+
+        if len(self._profile):
+            self._ttc = self._t_stop - self._t_start
 
         # for all uids found,  create and store an entity.  We look up the
         # entity type in one of the events (and assume it is consistent over 
