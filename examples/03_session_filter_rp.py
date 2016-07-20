@@ -45,7 +45,7 @@ if __name__ == '__main__':
         separator = '\n' + 78 * '-' + '\n'
         print separator + message + separator
 
-    # and here we go. As seen in example 01, we use ra.Session.get() to get all
+    # and here we go. As seen in example 02, we use ra.Session.get() to get all
     # the objects of type Entity with one or more type, uid, or state. Runs with
     # thousands of entities produce an amount of data large enough that, once
     # loaded inside the ra.session object, can slow down the analysis.
@@ -64,8 +64,7 @@ if __name__ == '__main__':
     units_pilots_start_end = session.filter(etype=['unit', 'pilot'],
                                             state=[rp.FAILED],
                                             inplace=False)
-    pprint.pprint(units_and_pilots.list('etype'))
-    pprint.pprint(units_and_pilots.list('state'))
+    pprint.pprint(units_and_pilots.list(['etype', 'state']))
 
     # When we are sure that our analysis will be limited to the filtered
     # entities, the filtering can be done in place so to limit memory footprint.
@@ -78,16 +77,12 @@ if __name__ == '__main__':
     session.filter(etype=['unit'], state=[rp.DONE])
     units = sorted(session.list('uid'))
     session.filter(uid=units[:3])
-    pprint.pprint(session.list('etype'))
-    pprint.pprint(session.list('state'))
-    pprint.pprint(session.list('uid'))
+    pprint.pprint(session.list(['etype', 'state', 'uid']))
 
     # Clearly, all this can be done in a one liner. We are nice like that.
     ppheader("Filter the first 3 successful 'unit' - one liner")
     session.filter(etype=['unit'],
                    state=[rp.DONE]).filter(uid=sorted(session.list('uid'))[:3])
-    pprint.pprint(session.list('etype'))
-    pprint.pprint(session.list('state'))
-    pprint.pprint(session.list('uid'))
+    pprint.pprint(session.list(['etype', 'state', 'uid']))
 
     sys.exit(0)
