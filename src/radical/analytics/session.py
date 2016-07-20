@@ -178,7 +178,7 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def dump(self):
+    def _dump(self):
 
         for uid,entity in self._entities.iteritems():
             print "\n\n === %s" % uid
@@ -197,11 +197,22 @@ class Session(object):
             # return the name of all known properties
             return self._properties.keys()
 
-        if pname not in self._properties:
-            raise KeyError('no such property known (%s) / %s' \
-                    % (pname, self._properties.keys()))
+        if isinstance(pname, list):
+            return_list = True
+            pnames = pname
+        else:
+            return_list = False
+            pnames = [pname]
 
-        return self._properties[pname].keys()
+        ret = list()
+        for _pname in pnames:
+            if _pname not in self._properties:
+                raise KeyError('no such property known (%s) / %s' \
+                        % (_pname, self._properties.keys()))
+            ret.append(self._properties[pname].keys())
+
+        if return_list: return ret
+        else          : return ret[0]
 
 
     # --------------------------------------------------------------------------
