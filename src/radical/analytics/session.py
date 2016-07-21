@@ -298,10 +298,11 @@ class Session(object):
     #
     def describe(self, mode=None, etype=None):
 
-        if mode not in [None, 'state_model', 'state_values', 'event_model']:
+        if mode not in [None, 'state_model', 'state_values', 
+                              'event_model', 'relations']:
             raise ValueError('describe parameter "mode" invalid')
 
-        if not etype:
+        if not etype and not mode:
             # no entity filter applied: return the full description
             return self._description
 
@@ -314,6 +315,7 @@ class Session(object):
                 state_model  = self._description['entities'][et]['state_model']
                 state_values = self._description['entities'][et]['state_values']
                 event_model  = self._description['entities'][et]['event_model']
+                relations    = self._description['tree']
                         
             else:
                 # we don't have any state or event model -- return minimalistic
