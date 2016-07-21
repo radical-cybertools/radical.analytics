@@ -306,6 +306,9 @@ class Session(object):
             # no entity filter applied: return the full description
             return self._description
 
+        if not etype:
+            etype = self.list('etype')
+
         if not isinstance(etype,list):
             etype = [etype]
 
@@ -323,11 +326,13 @@ class Session(object):
                 state_model  = {'ALIVE' : 0},
                 state_values = {0 : 'ALIVE'},
                 event_model  = {}
+                relations    = {}
 
             if not mode:
                 ret[et] = {'state_model'  : state_model,
                            'state_values' : state_values, 
-                           'event_model'  : event_model}
+                           'event_model'  : event_model,
+                           'relations'    : event_model}
 
             elif mode == 'state_model':
                 ret[et] = {'state_model'  : state_model}
@@ -337,6 +342,9 @@ class Session(object):
 
             elif mode == 'event_model':
                 ret[et] = {'event_model'  : event_model}
+
+            elif mode == 'relations':
+                ret[et] = {'relations'    : relations}
 
         return ret
 
