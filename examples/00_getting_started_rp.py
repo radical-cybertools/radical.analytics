@@ -44,10 +44,11 @@ if __name__ == '__main__':
     print session.list(['etype', 'state'])
     etypes = session.list('etype')
 
+    print "\nrelations:"
+    pprint.pprint(session.describe('relations'))
+
     print "\nstate models:"
-    pprint.pprint(session.describe('state_model'))
-  # pprint.pprint(session.describe('state_model', etype=etypes))
-    sys.exit()
+    pprint.pprint(session.describe('state_model', etype=etypes))
 
     print "\nstate values:"
     pprint.pprint(session.describe('state_values', etype=etypes))

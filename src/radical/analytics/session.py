@@ -318,7 +318,6 @@ class Session(object):
                 state_model  = self._description['entities'][et]['state_model']
                 state_values = self._description['entities'][et]['state_values']
                 event_model  = self._description['entities'][et]['event_model']
-                relations    = self._description['tree']
                         
             else:
                 # we don't have any state or event model -- return minimalistic
@@ -326,13 +325,11 @@ class Session(object):
                 state_model  = {'ALIVE' : 0},
                 state_values = {0 : 'ALIVE'},
                 event_model  = {}
-                relations    = {}
 
             if not mode:
                 ret[et] = {'state_model'  : state_model,
                            'state_values' : state_values, 
-                           'event_model'  : event_model,
-                           'relations'    : event_model}
+                           'event_model'  : event_model}
 
             elif mode == 'state_model':
                 ret[et] = {'state_model'  : state_model}
@@ -343,8 +340,9 @@ class Session(object):
             elif mode == 'event_model':
                 ret[et] = {'event_model'  : event_model}
 
-            elif mode == 'relations':
-                ret[et] = {'relations'    : relations}
+        if not mode or mode == 'relations':
+           relations    = self._description['tree']
+           ret['relations'] = relations
 
         return ret
 
