@@ -46,14 +46,14 @@ if __name__ == '__main__':
         print separator + message + separator
 
     # and here we go. As seen in example 02, we use ra.Session.get() to get all
-    # the objects of type Entity with one or more type, uid, or state. Runs with
-    # thousands of entities produce an amount of data large enough that, once
-    # loaded inside the ra.session object, can slow down the analysis.
+    # the entity objects with one or more type, uid, or state. Runs with
+    # thousands of entities produce an amount of data large enough to slow down
+    # our analysis, once that has been loaded inside the ra.session object.
     # ra.Session.filter() enables to reduce the size of the session object by
-    # keeping only the data that are relevant to the analysis.
+    # keeping only the data that are relevant to our analysis.
     #
-    # We can keep only the entities we care about, say units and pilots are we
-    # did in example 02:
+    # For example, when using RADICAL-Pilot, We can keep only the data relative
+    # to entities of type 'unit' and 'pilot':
     ppheader("Filter 'unit' and 'pilot' entities")
     units_and_pilots = session.filter(etype=['unit', 'pilot'], inplace=False)
     pprint.pprint(units_and_pilots.list('etype'))
@@ -69,17 +69,16 @@ if __name__ == '__main__':
     # When we are sure that our analysis will be limited to the filtered
     # entities, the filtering can be done in place so to limit memory footprint.
     # For example, let's assume that our analysis needs only the first 3
-    # successful units. First we filter for entities of type 'unit' with state
-    # rp.DONE, then for the first three. As we want to show a bit of
-    # flexibility, we also sort the units based on their uid before selecting
-    # the first three.
+    # successful units. We filter the entities of type 'unit' with state 'DONE'
+    # and then select the first three of them. We also sort the units based on
+    # their uid before selecting the first three of them:
     ppheader("Filter the first 3 successful 'unit'")
     session.filter(etype=['unit'], state=[rp.DONE])
     units = sorted(session.list('uid'))
     session.filter(uid=units[:3])
     pprint.pprint(session.list(['etype', 'state', 'uid']))
 
-    # Clearly, all this can be done in a one liner. We are nice like that.
+    # Clearly, all this can be done in a one liner. We are nice like that:
     ppheader("Filter the first 3 successful 'unit' - one liner")
     session.filter(etype=['unit'],
                    state=[rp.DONE]).filter(uid=sorted(session.list('uid'))[:3])

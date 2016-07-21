@@ -156,10 +156,10 @@ Note: single parameters can be passed without a list.
 ### `session.duration(['start_state|event', ...], ['end_state|event', ...])`
 
 Calculates the duration between two state or event timestamps for all the
-entities in the given session that have those those states or event
-timestamps. When more than one entity exists in the session with the indicated
-state or event timestamps, the duration is calculated taking into account the
-possible overlap among those timestamps.
+entities in the given session that have those state or event timestamps. When
+more than one entity exists in the session with the indicated state or event
+timestamps, the duration is calculated taking into account the possible
+overlap among those timestamps.
 
 The entities used to calculate the duration can be filtered via the filter
 method. For example:
