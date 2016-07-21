@@ -130,7 +130,7 @@ Note: single parameters can be passed without a list.
   of session (inplace=True).
 
 
-### `session.describe(none|'smodel', etype=['etname', ...]|'emodel', etype=['etname', ...])`
+### `session.describe(none|'state_model', etype=['etname', ...]|'event_model', etype=['etname', ...]|'state_values', etype=['etname', ...]|'relations', etype=['etname', ...])`
 
 Returns the description as passed to the Session constructor.
 
@@ -138,11 +138,16 @@ Returns the description as passed to the Session constructor.
 
 Note: single parameters can be passed without a list.
 
-* `none`: Prints the full description as passed to the Session constructor.
-* `'smodel'`: Prints the ordered state model.
-* `'emodel'`: Prints the ordered event model for the profile of the given
-  session.
-* `['etname', ...]`: List of names of entity's types.
+* `none`: Returns the full description as passed to the Session constructor.
+* `'state_model'`: Returns the state model for all the entities of the session
+  object.
+* `'event_model'`: Returns the event runtime model for all the entities of the
+  session object.
+* `'state_values'`: Returns the precedence values for the states of all the
+  entities of the session object.
+* `'relations'`: Returns the set of relations among all the entities of the
+  session object.
+* `['etname', ...]`: List of types of entity.
 
 #### Returns:
 
