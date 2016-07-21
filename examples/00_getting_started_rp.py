@@ -3,6 +3,7 @@
 import os
 import sys
 import glob
+import time
 import pprint
 import radical.pilot     as rp
 import radical.analytics as ra
@@ -27,18 +28,24 @@ if __name__ == '__main__':
 
     print ' ------------------------------------------------------------------ '
     descr = rp.utils.get_session_description(sid=sid)
-    pprint.pprint(descr)
+  # pprint.pprint(descr)
 
     prof = rp.utils.get_session_profile(sid=sid)
     print len(prof)
 
+    t1 = time.time()
+
     session = ra.Session(prof, descr)
     # session.dump()
-    
+    t2 = time.time()
+
     print ' ------------------------------------------------------------------ '
 
     print session.list(['etype', 'state'])
     etypes = session.list('etype')
+
+    print "\nrelations:"
+    pprint.pprint(session.describe('relations'))
 
     print "\nstate models:"
     pprint.pprint(session.describe('state_model', etype=etypes))
@@ -69,9 +76,9 @@ if __name__ == '__main__':
     print '\nranges in state and time ------------------------------------------ '
     for unit in units.get():
         print "%-12s: %s" % (unit.uid,
-                unit.ranges(state=[rp.NEW, rp.FINAL], time=[10.0, 30.0]))
+                unit.ranges(state=[rp.NEW, rp.FINAL], time=[10.0, 60.0]))
     print "%-12s: %s" % ('session',
-            units.ranges(state=[rp.NEW, rp.FINAL], time=[10.0, 30.0]))
+            units.ranges(state=[rp.NEW, rp.FINAL], time=[10.0, 60.0]))
 
     print '\nconcurrency ------------------------------------------------------ '
     pprint.pprint(units.concurrency(state=[rp.NEW, rp.EXECUTING]))
@@ -82,6 +89,11 @@ if __name__ == '__main__':
     print '\n ----------------------------------------------------------------- '
     print units.ttc, units.t_start, units.t_stop
 
+    t3 = time.time()
+
+    print '\n ----------------------------------------------------------------- '
+    print "create session: %5.2fs" % (t2 - t1)
+    print "run examples  : %5.2fs" % (t3 - t2)
     sys.exit(0)
 
 # ------------------------------------------------------------------------------
