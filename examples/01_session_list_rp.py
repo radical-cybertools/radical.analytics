@@ -22,28 +22,16 @@ if __name__ == '__main__':
         print "\n\tusage: %s <session_id>\n" % sys.argv[0]
         sys.exit(1)
 
-    sid     = sys.argv[1]
-    descr   = rp.utils.get_profile_description(sid=sid)
-    profdir = '%s/%s/' % (os.getcwd(), sid)
+    sid   = sys.argv[1]
+    descr = rp.utils.get_session_description(sid=sid)
+    prof  = rp.utils.get_session_profile(sid=sid)
 
-    if os.path.exists(profdir):
-        # we have profiles locally
-        profiles  = glob.glob("%s/*.prof"   % profdir)
-        profiles += glob.glob("%s/*/*.prof" % profdir)
-    else:
-        # need to fetch profiles
-        profiles = rp.utils.fetch_profiles(sid=sid, skip_existing=True)
-
-    profs = rp.utils.read_profiles(profiles)
-    prof  = rp.utils.combine_profiles(profs)
-    prof  = rp.utils.clean_profile(prof, sid)
+    session = ra.Session(prof, descr)
 
     # A formatting helper before starting...
     def ppheader(message):
         separator = '\n' + 78 * '-' + '\n'
         print separator + message + separator
-
-    session = ra.Session(prof, descr)
 
     # and here we go. Once constructed, our session contain information about
     # the entities of the RADICAL-Cybertool that we are using. The first step is
