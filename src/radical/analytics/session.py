@@ -594,8 +594,9 @@ class Session(object):
                 if not isinstance(final_s, list):
                     final_s = [final_s]
 
-                sm_ok  = True
-                sm_log = list()
+                sm_ok    = True
+                sm_log   = list()
+                miss_log = list()
                 for v,s in sv.iteritems():
 
                     if not s:
@@ -619,6 +620,8 @@ class Session(object):
                                 # found a state after a previous one was missing, 
                                 # but we are not final.  Oops
                                 self._rep.warn('+')
+                                sm_log.extend(miss_log)
+                                miss_log = list()
                                 continue
 
                     else:
@@ -633,6 +636,7 @@ class Session(object):
                             # Hmm, might be ok.  Lets see...
                             missing = True
                             self._rep.warn('*')
+                            miss_log.append('missing state(s) %s' % s)
                             continue
 
                     self._rep.ok('+')
