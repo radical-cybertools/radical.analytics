@@ -54,6 +54,7 @@ if __name__ == '__main__':
 
     # Note that the list can be omitted when passing a single value to etype or
     # any other argument key:
+    ppheader("state models of the entities of type 'unit'")
     pprint.pprint(session.describe('state_model', etype='unit'))
 
     # The ordered sequence of states can be described by using:
