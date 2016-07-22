@@ -24,7 +24,7 @@ class Session(object):
         self._t_stop      = None
         self._ttc         = None
 
-        self._rep         = ru.LogReporter('radical.analytics')
+        self._reporter    = None
 
         # internal state is represented by a dict of entities:
         # dict keys are entity uids (which are assumed to be unique per
@@ -43,6 +43,17 @@ class Session(object):
 
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
+
+
+    # --------------------------------------------------------------------------
+    #
+    @property
+    def _rep(self):
+
+        if not self._reporter:
+            self._reporter = ru.LogReporter('radical.analytics')
+
+        return self._reporter
 
 
     # --------------------------------------------------------------------------
