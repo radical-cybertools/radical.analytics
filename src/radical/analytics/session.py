@@ -555,7 +555,7 @@ class Session(object):
         if 'state_model' in mode: 
             ret.extend(self._consistency_state_model())
 
-        return set(ret)  # make list unique
+        return list(set(ret))  # make list unique
 
 
     # --------------------------------------------------------------------------
