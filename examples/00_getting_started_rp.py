@@ -37,6 +37,13 @@ if __name__ == '__main__':
 
     session = ra.Session(prof, descr)
     # session.dump()
+
+    ret = session.consistency()
+    print 'consistency ------------------------------------------------------- '
+    pprint.pprint(ret)
+    sys.exit()
+
+
     t2 = time.time()
 
     print ' ------------------------------------------------------------------ '

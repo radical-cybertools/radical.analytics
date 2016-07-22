@@ -1,6 +1,7 @@
 
 
 import sys
+import pprint
 
 import radical.utils as ru
 
@@ -22,6 +23,8 @@ class Session(object):
         self._t_start     = None
         self._t_stop      = None
         self._ttc         = None
+
+        self._rep         = ru.LogReporter('radical.analytics')
 
         # internal state is represented by a dict of entities:
         # dict keys are entity uids (which are assumed to be unique per
@@ -314,17 +317,19 @@ class Session(object):
 
         ret = dict()
         for et in etype:
+
+            state_model  = None
+            state_values = None
+            event_model  = None
+
             if et in self._description['entities']:
                 state_model  = self._description['entities'][et]['state_model']
                 state_values = self._description['entities'][et]['state_values']
                 event_model  = self._description['entities'][et]['event_model']
                         
-            else:
-                # we don't have any state or event model -- return minimalistic
-                # ones
-                state_model  = {'ALIVE' : 0},
-                state_values = {0 : 'ALIVE'},
-                event_model  = {}
+            if not state_model  : state_model  = dict()
+            if not state_values : state_values = dict()
+            if not event_model  : event_model  = dict()
 
             if not mode:
                 ret[et] = {'state_model'  : state_model,
@@ -491,6 +496,154 @@ class Session(object):
                     cnt += 1
             
             ret.append([t, cnt])
+
+        return ret
+
+
+    # --------------------------------------------------------------------------
+    #
+    def consistency(self, mode=None):
+        """
+
+        Perform a number of data consistency checks, and return a set of UIDs
+        for entities which have been found to be inconsistent.  
+        The method accepts a single parameter `mode` which can be a list of
+        strings defining what consistency checks are to be performed.  Valid
+        strings are:
+
+            'state_model' : check if all entity states are in adherence to the
+                            respective entity state model
+            'event_model' : check if all entity events are in adherence to the
+                            respective entity event model
+            'timestamps'  : check if events and states are recorded with correct
+                            ordering in time.
+
+        If not specified, the method will execute all thre checks.
+        
+        After this method has been run, each checked entity will have more
+        detailed consistency information available via:
+
+            entity.consistency['state_model'] (bool)
+            entity.consistency['event_model'] (bool)
+            entity.consistency['timestamps' ] (bool)
+            entity.consistency['log' ]        (list of strings)
+
+        The boolean values each indicate consistency of the respective test, the
+        `log` will contain human readable informtion about specific consistency
+        violations.
+        """
+
+        # FIXME: we could move the method to the entity, so that we can check
+        #        consistency for each entity individually.
+
+
+        self._rep.header('running consistency checks')
+
+        ret   = list()
+        MODES = ['state_model', 'event_model', 'timestamps']
+
+        if not mode:
+            mode = MODES
+
+        if not isinstance(mode, list):
+            mode = [mode]
+
+        for m in mode:
+            if m not in MODES:
+                raise ValueError('unknown consistency mode %s' % m)
+
+        if 'state_model' in mode: 
+            ret.extend(self._consistency_state_model())
+
+        return set(ret)  # make list unique
+
+
+    # --------------------------------------------------------------------------
+    #
+    def _consistency_state_model(self):
+
+        ret = list()  # list of inconsistent entity IDs
+
+        for et in self.list('etype'):
+
+            self._rep.info('%s state model\n' % et)
+            sm = self.describe('state_model', etype=et)
+            sv = self.describe('state_values', etype=et)[et]['state_values']
+
+          # print
+          # print et
+          # print sv
+          # print
+
+            for e in self.get(etype=et):
+
+                es = e.states
+
+                if not sv:
+                    if es:
+                        self._rep.warn('  %-30s : %s' % (et, es.keys()))
+                        e._consistency['state_model'] = None
+                    continue
+
+                self._rep.info('  %-30s :' % e.uid)
+
+                missing = False   # did we miss any state so far?
+                final_v = sorted(sv.keys())[-1]
+                final_s = sv[final_v]
+
+                if not isinstance(final_s, list):
+                    final_s = [final_s]
+
+                sm_ok  = True
+                sm_log = list()
+                for v,s in sv.iteritems():
+
+                    if not s:
+                        continue
+
+                    if not isinstance(s, list):
+                        s = [s]
+
+                    # check if we have that state
+                    found = None
+                    for _s in s:
+                        if _s in es:
+                            found = _s
+                            break
+
+                    if found:
+
+                        if missing:
+
+                            if found not in final_s:
+                                # found a state after a previous one was missing, 
+                                # but we are not final.  Oops
+                                self._rep.warn('+')
+                                continue
+
+                    else:
+                        if s == final_s:
+                            # no final state?  Oops
+                            self._rep.error('no final state! ')
+                            sm_ok = False
+                            sm_log.append('missing final state')
+                            continue
+
+                        else:
+                            # Hmm, might be ok.  Lets see...
+                            missing = True
+                            self._rep.warn('*')
+                            continue
+
+                    self._rep.ok('+')
+
+                e._consistency['state_model'] = sm_ok
+                e._consistency['log'].extend(sm_log)
+
+                if not sm_ok:
+                    ret.append(e.uid)
+
+                self._rep.plain('\n')
 
         return ret
 

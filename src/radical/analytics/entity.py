@@ -23,14 +23,18 @@ class Entity(object):
         assert(_uid)
         assert(_profile)
 
-        self._uid        = _uid
-        self._etype      = _etype
-        self._states     = dict()
-        self._events     = dict()
+        self._uid         = _uid
+        self._etype       = _etype
+        self._states      = dict()
+        self._events      = dict()
+        self._consistency = { 'log'         : list(), 
+                              'state_model' : None, 
+                              'event_model' : None, 
+                              'timestamps'  : None}
 
-        self._t_start    = None
-        self._t_stop     = None
-        self._ttc        = None
+        self._t_start     = None
+        self._t_stop      = None
+        self._ttc         = None
 
         self._initialize(_profile)
 
@@ -52,6 +56,26 @@ class Entity(object):
     @property
     def t_range(self):
         return [self._t_start, self._t_stop]
+
+    @property
+    def uid(self):
+        return self._uid
+
+    @property
+    def etype(self):
+        return self._etype
+
+    @property
+    def states(self):
+        return self._states
+
+    @property
+    def events(self):
+        return self._events
+
+    @property
+    def consistency(self):
+        return self._consistency
 
 
     # --------------------------------------------------------------------------
@@ -129,25 +153,6 @@ class Entity(object):
 
         import pprint
         pprint.pprint(self.as_dict())
-
-
-    # --------------------------------------------------------------------------
-    #
-    @property
-    def uid(self):
-        return self._uid
-
-    @property
-    def etype(self):
-        return self._etype
-
-    @property
-    def states(self):
-        return self._states
-
-    @property
-    def events(self):
-        return self._events
 
 
     # --------------------------------------------------------------------------
