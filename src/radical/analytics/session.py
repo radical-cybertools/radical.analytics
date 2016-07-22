@@ -79,7 +79,7 @@ class Session(object):
     #
     def _initialize_entities(self):
         """
-        populate self._entities from self._profile and 
+        populate self._entities from self._profile and
         self._description.
 
         NOTE: We derive entity types via some heuristics for now: we assume the
@@ -89,7 +89,7 @@ class Session(object):
         # this method can only be called once
         assert (not self._entities)
 
-        # create entities from the profile events: 
+        # create entities from the profile events:
         entity_events = dict()
 
         for event in self._profile:
@@ -100,12 +100,12 @@ class Session(object):
             entity_events[uid].append(event)
 
         # for all uids found,  create and store an entity.  We look up the
-        # entity type in one of the events (and assume it is consistent over 
+        # entity type in one of the events (and assume it is consistent over
         # all events for that uid)
         for uid,events in entity_events.iteritems():
             etype = events[0]['entity_type']
-            self._entities[uid] = Entity(_uid=uid, 
-                                         _etype=etype, 
+            self._entities[uid] = Entity(_uid=uid,
+                                         _etype=etype,
                                          _profile=events)
 
 
@@ -137,7 +137,7 @@ class Session(object):
         """
 
         # FIXME: initializing properties can be expensive, and we might not
-        #        always need them anyway.  So we can lazily defer this 
+        #        always need them anyway.  So we can lazily defer this
         #        initialization stop until the first query which requires them.
 
         # we do *not* look at profile and descriptions anymore, those are only
@@ -183,7 +183,7 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def _apply_filter(self, etype=None, uid=None, state=None, 
+    def _apply_filter(self, etype=None, uid=None, state=None,
                             event=None, time=None):
 
         # iterate through all self._entities and collect UIDs of all entities
@@ -207,7 +207,7 @@ class Session(object):
 
             if etype and entity.etype not in etype: continue
             if uid   and entity.uid   not in uid  : continue
-            
+
             if state:
                 match = False
                 for s,sdict in entity.states.iteritems():
@@ -286,7 +286,7 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def filter(self, etype=None, uid=None, state=None, event=None, time=None, 
+    def filter(self, etype=None, uid=None, state=None, event=None, time=None,
                inplace=True):
 
         uids = self._apply_filter(etype=etype, uid=uid, state=state,
@@ -304,7 +304,7 @@ class Session(object):
             # create a new session with the resulting property list
             entities = {uid:self._entities[uid] for uid in uids}
             return Session(profile     = self._profile,
-                           description = self._description, 
+                           description = self._description,
                            _entities   = entities)
 
 
@@ -312,7 +312,7 @@ class Session(object):
     #
     def describe(self, mode=None, etype=None):
 
-        if mode not in [None, 'state_model', 'state_values', 
+        if mode not in [None, 'state_model', 'state_values',
                               'event_model', 'relations']:
             raise ValueError('describe parameter "mode" invalid')
 
@@ -337,14 +337,14 @@ class Session(object):
                 state_model  = self._description['entities'][et]['state_model']
                 state_values = self._description['entities'][et]['state_values']
                 event_model  = self._description['entities'][et]['event_model']
-                        
+
             if not state_model  : state_model  = dict()
             if not state_values : state_values = dict()
             if not event_model  : event_model  = dict()
 
             if not mode:
                 ret[et] = {'state_model'  : state_model,
-                           'state_values' : state_values, 
+                           'state_values' : state_values,
                            'event_model'  : event_model}
 
             elif mode == 'state_model':
@@ -370,8 +370,8 @@ class Session(object):
         This method accepts a set of initial and final conditions, in the form
         of range of state and or event specifiers:
 
-          entity.ranges(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'], 
-                                'FINAL_STATE_1',   'FINAL_STATE_2']], 
+          entity.ranges(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'],
+                                'FINAL_STATE_1',   'FINAL_STATE_2']],
                         event=['initial_event_1',  'final_event'],
                         time =[[2.0, 2.5], [3.0, 3.5]])
 
@@ -382,7 +382,7 @@ class Session(object):
         tuple, or a list of tuples, each defining a pair of start and end time
         which are used to constrain the resulting ranges.
 
-        The parameters are interpreted as follows: 
+        The parameters are interpreted as follows:
 
           - for any entity known to the session
             - determine the maximum time range during which the entity has been
@@ -440,8 +440,8 @@ class Session(object):
         This method accepts the same set of parameters as the `ranges()` method,
         and will use the `ranges()` method to obtain a set of ranges.  It will
         return a time series, counting the number of units which are
-        concurrently matching the ranges filter at any point in time.  
-        
+        concurrently matching the ranges filter at any point in time.
+
         The additional parameter `smpling` determines the exact points in time
         for which the concurrency is computed, and thus determines the sampling
         rate for the returned time series.  If not specified, the time series
@@ -461,7 +461,7 @@ class Session(object):
 
         Example:
 
-           session.concurrency(state=[rp.EXECUTING, 
+           session.concurrency(state=[rp.EXECUTING,
                                       rp.AGENT_STAGING_OUTPUT_PENDING]))
         """
 
@@ -505,7 +505,7 @@ class Session(object):
             for r in ranges:
                 if t >= r[0] and t <= r[1]:
                     cnt += 1
-            
+
             ret.append([t, cnt])
 
         return ret
@@ -517,7 +517,7 @@ class Session(object):
         """
 
         Perform a number of data consistency checks, and return a set of UIDs
-        for entities which have been found to be inconsistent.  
+        for entities which have been found to be inconsistent.
         The method accepts a single parameter `mode` which can be a list of
         strings defining what consistency checks are to be performed.  Valid
         strings are:
@@ -530,7 +530,7 @@ class Session(object):
                             ordering in time.
 
         If not specified, the method will execute all thre checks.
-        
+
         After this method has been run, each checked entity will have more
         detailed consistency information available via:
 
@@ -563,7 +563,7 @@ class Session(object):
             if m not in MODES:
                 raise ValueError('unknown consistency mode %s' % m)
 
-        if 'state_model' in mode: 
+        if 'state_model' in mode:
             ret.extend(self._consistency_state_model())
 
         return list(set(ret))  # make list unique
@@ -628,7 +628,7 @@ class Session(object):
                         if missing:
 
                             if found not in final_s:
-                                # found a state after a previous one was missing, 
+                                # found a state after a previous one was missing,
                                 # but we are not final.  Oops
                                 self._rep.warn('+')
                                 sm_log.extend(miss_log)

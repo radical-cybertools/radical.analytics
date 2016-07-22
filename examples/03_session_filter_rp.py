@@ -36,11 +36,11 @@ if __name__ == '__main__':
     # and here we go. As seen in example 02, we use ra.Session.get() to get all
     # the entity objects with one or more type, uid, or state. Runs with
     # thousands of entities produce an amount of data large enough to slow down
-    # our analysis, once that has been loaded inside the ra.session object.
-    # ra.Session.filter() enables to reduce the size of the session object by
-    # keeping only the data that are relevant to our analysis.
+    # the analysis, once loaded into the ra.session object. ra.Session.filter()
+    # enables to reduce the size of the session object by keeping only the data
+    # that are relevant to our analysis.
     #
-    # For example, when using RADICAL-Pilot, We can keep only the data relative
+    # For example, when using RADICAL-Pilot, we can keep only the data relative
     # to entities of type 'unit' and 'pilot':
     ppheader("Filter 'unit' and 'pilot' entities")
     units_and_pilots = session.filter(etype=['unit', 'pilot'], inplace=False)
