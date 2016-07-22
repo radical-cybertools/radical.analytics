@@ -72,8 +72,10 @@ if __name__ == '__main__':
 
     # We can restrict the type of entities to describe also for the last two
     # calls:
-    ppheader("runtime event model and relations for the entities of type 'unit'")
+    ppheader("runtime event model for the entities of type 'unit'")
     pprint.pprint(session.describe('event_model', etype='unit'))
+
+    ppheader("relations for the entities of type 'unit'")
     pprint.pprint(session.describe('relations', etype='unit'))
 
     sys.exit(0)

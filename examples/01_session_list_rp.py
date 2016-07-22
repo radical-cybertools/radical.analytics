@@ -34,14 +34,15 @@ if __name__ == '__main__':
         print separator + message + separator
 
     # and here we go. Once constructed, our session contain information about
-    # the entities of the RADICAL-Cybertool that we are using. The first step is
-    # to be able to list these entities and their properties. We can list all
-    # the entities:
+    # the entities of the RADICAL-Cybertool that we are using. We can list these
+    # entities and their properties with:
     pnames = session.list()
     ppheader("name of the properties of the session")
     pprint.pprint(pnames)
 
-    # Or we can list one of their four properties. The types of entity:
+    # Each entity has at least four properties--etype, uid, state, and
+    # event--and we can indipendently list one or more of these properties. The
+    # following list the types of every entity in the session:
     etypes = session.list('etype')
     ppheader("name of the types of entity of the session")
     pprint.pprint(etypes)
@@ -62,5 +63,11 @@ if __name__ == '__main__':
     ppheader("unique names of the events of all entities of the session")
     events = session.list('event')
     pprint.pprint(events)
+
+    # Finally, when useful, we can list subset of properties by using a list
+    # notation:
+    ppheader("names of the types and states of entity of the session")
+    etypes_states = session.list(['etype', 'state'])
+    pprint.pprint(etypes_states)
 
     sys.exit(0)
