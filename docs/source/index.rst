@@ -33,9 +33,8 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   intro
    installation
-   examples/
+   examples/index
    apidoc
 
 Indices and tables
