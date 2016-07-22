@@ -622,6 +622,7 @@ class Session(object):
                                 self._rep.warn('+')
                                 sm_log.extend(miss_log)
                                 miss_log = list()
+                                sm_ok = False
                                 continue
 
                     else:
