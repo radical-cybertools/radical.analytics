@@ -67,7 +67,7 @@ Contents
 --------
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    00_session_describe_rp
    01_session_list_rp
