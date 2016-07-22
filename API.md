@@ -1,44 +1,45 @@
 
 # Analytics API
 
-Generic analytics API for systems implementing RADICAL-Utils Session.  Systems
-have to implement listing of stateful entities and state and event
-timestamping. Systems are assumed to provide information about: the stateful
-entities and their states via a json description file; the timestamps via a
-csv file.
+Roadmap:
 
-* Phase 1 (P1): state model.
-* Phase 2 (P2): extended to event models.
-* Phase 3 (P3): extended to statistical analysis.
+* Phase 1 (P1): state model. [Done]
+* Phase 2 (P2): extended to event models. [Partial]
+* Phase 3 (P3): extended to statistical analysis. [not implemented]
 
 
 
 ## Classes
 
-The API has two classes: one with with the raw data and methods relative to
-the stateful entities of the experimental run; the other with the details of
-each stateful entity.
+The API has two classes:
+
+1. Session(): public.
+2. Entity(): private.
 
 
-### `session = Session(profiles, description)`
+### Session()
 
-Stores information about the properties of an execution of a RADICAL Cybertool
+```
+session = Session(profiles, description)
+```
+
+Stores information about the properties of an execution of a RADICAL-Cybertool
 and exposes methods to list, get, and filter this information. The class
-assumes the existence of the following properties: _etype_, _uid_, _state_,
-and _event_. Entities are stateful, have a unique type (etype), identifier
-(uid), one or more states (state) and events (event). Both states and events
-are assumed to be explicitly defined and documented within the RADICAL
-Cybertool used to produce the data that need analyses.
+assumes the existence of the following properties:
 
-The method _duration_ is exposed to calculate the amount of time between two
-states or events. Durations can be calculated for single and multiple
-entities, both of the same and different type. This method accounts for the
-overlapping among durations of multiple entities both of the same and
-different type.
+* _etype_;
+* _uid_;
+* _state_;
+* _event_.
 
-Internally, this class acts as a factory of entities objects. Each entity has
-a set of properties that are collected within a private object, one for each
-entity. The class of this objects is called _Entity_.
+Entities are stateful, have a unique type (etype), identifier (uid), and one
+or more states (state) and events (event). Both states and events are assumed
+to be explicitly defined and documented within the RADICAL_Cybertool used to
+produce the data that need analyses.
+
+Internally, this class acts as a factory of objects of type _Entity_. Each
+entity has a set of properties that are collected within a private object, one
+for each entity.
 
 #### Arguments:
 
@@ -59,7 +60,51 @@ entity. The class of this objects is called _Entity_.
 The following are the methods of the class Session.
 
 
-### `session.list(['etype', 'uid', 'state', 'event'])`
+
+
+### session.describe()
+
+```
+session.describe(none                                 |
+                 'state_model' , etype=['etname', ...]|
+                 'event_model' , etype=['etname', ...]|
+                 'state_values', etype=['etname', ...]|
+                 'relations'   , etype=['etname', ...])
+```
+
+Returns the description as passed to the Session constructor.
+
+#### Arguments:
+
+Note: single parameters can be passed without a list.
+
+* `none`: Returns the full description as passed to the Session constructor.
+* `'state_model'`: Returns the state model for all the entities of the session
+  object.
+* `'event_model'`: Returns the event runtime model for all the entities of the
+  session object.
+* `'state_values'`: Returns the precedence values for the states of all the
+  entities of the session object.
+* `'relations'`: Returns the set of relations among all the entities of the
+  session object.
+* `['etname', ...]`: List of types of entity.
+
+#### Returns:
+
+* List of Dictionaries. In the dictionaries of the state and event models,
+  Keys are strings, values integers. Keys are the name of each state or event,
+  values represent the temporal ordering of the states or events. Give two
+  numbers x and y, if x < y, x has to happen before y. When x == y, the two
+  states or events are mutually exclusive.
+
+
+
+
+### session.list()
+
+```
+session.list(['etype', 'uid', 'state', 'event'])
+```
 
 Returns a list of values for the values of the properties 'entities', 'uids',
 'states', 'events' of the given session.
@@ -88,7 +133,17 @@ Note: single parameters can be passed without a list.
 * Enforce naming for events in RP (and RADICAL Cybertools in general, when
   needed)
 
-### `session.get(etype=['etname', ...]|uid=['uidname', ...]|state=['sname', ...]|event=['ename', ...])`
+
+
+
+### session.get()
+
+```
+session.get(etype=['etname' , ...]|
+            uid  =['uidname', ...]|
+            state=['sname'  , ...]|
+            event=['ename'  , ...])
+```
 
 List all the objects in the given session of one or more named entities. The
 list of the names of the entities available in the given session is returned
@@ -108,7 +163,19 @@ Note: single parameters can be passed without a list.
 * List of Objects of type Sentity
 
 
-### `session.filter(etype=['etname', ...]|uid=['uidname', ...]|state=['sname', ...]|event=['ename', ...],  time=[float, float]inplace=False|True)`
+
+
+
+### session.filter()
+
+```
+session.filter(etype  =['etname' , ...]|
+               uid    =['uidname', ...]|
+               state  =['sname'  , ...]|
+               event  =['ename'  , ...],
+               time   =[float, float],
+               inplace=False|True)
+```
 
 Returns a session with a subset of the entities of the given session.
 
@@ -130,35 +197,31 @@ Note: single parameters can be passed without a list.
   of session (inplace=True).
 
 
-### `session.describe(none|'state_model', etype=['etname', ...]|'event_model', etype=['etname', ...]|'state_values', etype=['etname', ...]|'relations', etype=['etname', ...])`
 
-Returns the description as passed to the Session constructor.
+
+### session.ranges()
+
+```
+session.ranges()
+```
 
 #### Arguments:
 
-Note: single parameters can be passed without a list.
-
-* `none`: Returns the full description as passed to the Session constructor.
-* `'state_model'`: Returns the state model for all the entities of the session
-  object.
-* `'event_model'`: Returns the event runtime model for all the entities of the
-  session object.
-* `'state_values'`: Returns the precedence values for the states of all the
-  entities of the session object.
-* `'relations'`: Returns the set of relations among all the entities of the
-  session object.
-* `['etname', ...]`: List of types of entity.
+* .
 
 #### Returns:
 
-* List of Dictionaries. In the dictionaries of the state and event models,
-  Keys are strings, values integers. Keys are the name of each state or event,
-  values represent the temporal ordering of the states or events. Give two
-  numbers x and y, if x < y, x has to happen before y. When x == y, the two
-  states or events are mutually exclusive.
+* .
 
 
-### `session.duration(['start_state|event', ...], ['end_state|event', ...])`
+
+
+### session.duration()
+
+```
+session.duration(['start_state', ...], ['end_state', ...]|
+                 ['start_event', ...], ['end_event', ...])
+```
 
 Calculates the duration between two state or event timestamps for all the
 entities in the given session that have those state or event timestamps. When
@@ -184,10 +247,14 @@ method. For example:
 
 Note: single parameters can be passed without a list.
 
-* `['start_state', ...]` = Time stamp of the name of the state(s) used as the
+* `['start_state', ...]`: Time stamp of the name of the state(s) used as the
   start of the duration.
-* `['end_state', ...]`   = Time stamp of the name of the state(s) used as the
-  end of the duration.
+* `['end_state', ...]`: Time stamp of the name of the state(s) used as the end
+  of the duration.
+* `['start_event', ...]`: Time stamp of the name of the state(s) used as the
+  start of the duration.
+* `['end_event', ...]`: Time stamp of the name of the state(s) used as the end
+  of the duration.
 
 #### Returns:
 
@@ -196,15 +263,31 @@ Note: single parameters can be passed without a list.
 
 
 
-## Integrity
 
-Check the integrity of the data collected for each session:
+### session.concurrency()
 
-* Consistency: timestamps order; identity among independent measurements of
-  the same quantity.
-* Accuracy: clock synchronization.
+```
+session.concurrency()
+```
 
-### `session.consistency(test='timestamps', [{sname: int|ename: int}, ...]|test='comparison', [{dname: float}, ...])`
+#### Arguments:
+
+* .
+
+#### Returns:
+
+* .
+
+
+
+
+### session.consistency() [not implemented]
+
+```
+session.consistency(test='timestamps', [{state_name: int, ...}, ...]|
+                                       [{event_name: int, ...}, ...]|
+                    test='comparison', [{duration_name: float, ...}, ...])`
+```
 
 Evaluates the internal consistency of the data of the session with two tests:
 
@@ -216,22 +299,28 @@ Evaluates the internal consistency of the data of the session with two tests:
 #### Arguments:
 
 * `'timestamps'`: Selects the test _timestamps_.
-* `[{sname: int}, ...]`: Description of a state model as returned by
+* `[{state_name: int}, ...]`: Description of a state model as returned by
   `session.describe('smodel', etype=['etname'])`.
-* `[{ename: int}, ...]`: Description of an event model as returned by
+* `[{event_name: int}, ...]`: Description of an event model as returned by
   `session.describe('emodel', etype=['etname'])`.
 * `'comparison'`: Selects the test _comparison_.
-* `[{dname: float}, ...]`: List of dictionaries where `dname` is the name
-  given to a duration and `float` is the quantity of that duration as returned
-  by `session.duration('start_state|event', 'end_state|event')`.
+* `[{duration_name: float}, ...]`: List of dictionaries where `dname` is the
+  name given to a duration and `float` is the quantity of that duration as
+  returned by `session.duration('start_state|start_event', 'end_state|end_event')`.
 
 #### Returns:
 
-Dictionary of Lists `{['sname|ename|dname', Passed|Failed, float]}`, where
-`float` is the measure used to evaluate the consistency.
+Dictionary of Lists `{['state_name|event_name|duration_name', Passed|Failed, float]}`, where `float` is the measure used to evaluate the consistency.
 
 
-### `session.accuracy([{sname: int|ename: int}, ...])`
+
+
+### session.accuracy() [not implemented]
+
+```
+session.accuracy([{state_name: int, ...}, ...]|
+                 [{event_name: int, ...}, ...])
+```
 
 Quantifies the accuracy of the timestamps used to evaluate the durations.
 Timestamps are collected on independent machines that can have non
@@ -242,24 +331,14 @@ heuristic for each timestamp.
 
 #### Arguments:
 
-* `[{sname: int}, ...]`: Description of a state model as returned by
+* `[{state_name: int}, ...]`: Description of a state model as returned by
   `session.describe('smodel', etype='etname')`.
-* `[{ename: int}, ...]`: Description of an event model as returned by
-  `session.describe('emodel', etype='etname')`.
+* `[{event_name: int}, ...]`: Description of an event model as returned by
+  `session.describe('event_model', etype='entity_type_name')`.
 
 #### Returns:
 
-Dictionary of Lists `{['sname|ename|dname', Measured|Normalized, float]}`,
-where: `Measured` indicates that the value is used as measured by the RADICAL
-Cybertool, `Normalized` that the value has been altered to enforce model
-consistency, and `float` is the percentage of the timestamp that has been
-normalized.
-
-
-## Plotting
-
-`
-session.plot_durations (ptype, ldurations,
-                    title, xname,
-                    yname, fname)                      # PDF file
-`
+Dictionary of Lists `{['state_name|entity)name|duration_name', Measured|Normalized, float]}`, where: `Measured` indicates that the value is
+used as measured by the RADICAL Cybertool, `Normalized` that the value has
+been altered to enforce model consistency, and `float` is the percentage of
+the timestamp that has been normalized.
