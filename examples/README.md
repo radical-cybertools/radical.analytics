@@ -16,7 +16,10 @@
   ```
 
 * Perform a run with RADICAL-Pilot and take note of the name of the session of your run. For example:
-  `rp.session.thinkie.merzky.017003.0023`.
+  
+  ```
+  rp.session.thinkie.merzky.017003.0023`.
+  ```
 
 * Execute the examples with `<example> <session_name>`. For example:
 
