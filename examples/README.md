@@ -30,10 +30,10 @@
 * Open the example file in your editor and read the comments to make sense of
   the output.
 
-* NOTE: The following:
+* In every example, the following:
 
   ```
-  sid   = sys.argv[1]
+  sid = sys.argv[1]
   descr = rp.utils.get_session_description(sid=sid)
   prof = rp.utils.get_session_profile(sid=sid)
   ```
