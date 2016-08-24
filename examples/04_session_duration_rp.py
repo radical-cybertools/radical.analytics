@@ -4,6 +4,7 @@ import os
 import sys
 import glob
 import pprint
+import radical.utils as ru
 import radical.pilot as rp
 import radical.analytics as ra
 
@@ -18,13 +19,26 @@ This example illustrates the use of the method ra.Session.duration()
 #
 if __name__ == '__main__':
 
-    if len(sys.argv) <= 1:
-        print "\n\tusage: %s <session_id>\n" % sys.argv[0]
+    if len(sys.argv) != 2:
+        print "\n\tusage: %s <dir>\n" % sys.argv[0]
         sys.exit(1)
 
-    sid   = sys.argv[1]
-    descr = rp.utils.get_session_description(sid=sid)
-    prof  = rp.utils.get_session_profile(sid=sid)
+    loc = sys.argv[1]
+
+    # find json file in dir, and derive session id
+    json_files = glob.glob('%s/*.json' % loc)
+
+    if len(json_files) < 1: raise ValueError('%s contains no json file!' % loc)
+    if len(json_files) > 1: raise ValueError('%s contains more than one json file!' % loc)
+
+    json_file = json_files[0]
+    json      = ru.read_json(json_file)
+    sid       = os.path.basename(json_file)[:-5]
+
+    print 'sid: %s' % sid
+
+    descr     = rp.utils.get_session_description(sid=sid, src=loc)
+    prof      = rp.utils.get_session_profile(sid=sid, src=loc)
 
     session = ra.Session(prof, descr)
 
