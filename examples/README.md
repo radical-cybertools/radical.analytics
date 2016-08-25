@@ -14,7 +14,7 @@
   ```  
   NOTE: at the moment, only the following branch of RP works with RADICAL-Analytics:
   ```  
-  git clone
+  git clone git@github.com:radical-cybertools/radical.analytics.git
   git checkout experiment/aimes
   pip install --upgrade .
   ```
