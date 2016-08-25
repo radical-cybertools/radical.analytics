@@ -234,7 +234,7 @@ into account the possible overlap among those timestamps.
 The entities used to calculate the duration can be filtered via the
 filter method. For example:
 
--  ``session.filter(entity='unit', inplace=True).duration('NEW', 'DONE')``
+-  ``session.filter(etype='unit', inplace=True).duration('NEW', 'DONE')``
    calculates the overall duration of all the units that have been
    successfully executed.
 -  ``session.filter(uid='u.00000', inplace=True).duration('NEW', 'DONE')``
