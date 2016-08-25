@@ -60,7 +60,7 @@ if __name__ == '__main__':
 
     # and 'pilot':
     ppheader("properties of the entities with etype 'pilot'")
-    units = session.get(etype='pilot')
+    pilots = session.get(etype='pilot')
     pprint.pprint(units)
 
     # Mmmm, still a bit too many entities. We limit our analysis to a single
