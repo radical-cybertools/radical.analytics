@@ -4,6 +4,8 @@
 Installation
 ************
 
+.. Warning:: The following requirements and installation procedure are currently BROKEN due to the undergoing development of RADICAL-Pilot OSG support. This will be fixed with the next release of RADICAL-Pilot and RADICAL-Utils (see `Ticket #10 <https://github.com/radical-cybertools/radical.analytics/issues/10>`_). Meanwhile, please refer to `examples/README.md <https://github.com/radical-cyb ertools/radical.analytics/blob/devel/examples/>`_ for a viable installation procedure.
+
 Requirements
 ============
 
