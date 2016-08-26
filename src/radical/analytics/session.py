@@ -51,7 +51,7 @@ class Session(object):
     def _rep(self):
 
         if not self._reporter:
-            self._reporter = ru.LogReporter('radical.analytics')
+            self._reporter = ru.LogReporter()
 
         return self._reporter
 
