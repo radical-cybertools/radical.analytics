@@ -106,9 +106,9 @@ class Entity(object):
             self._t_start = sys.float_info.max
             self._t_stop  = sys.float_info.min
 
-        # we expect each event to have `time` and `name`, and expect events
-        # named 'state' to signify a state transition, and thus to always have
-        # the property 'state' set, too
+        # we expect each event to have `time` and `event_type`, and expect
+        # 'state' events to signify a state transition, and thus to always 
+        # have the property 'state' set, too
         for event in profile:
 
             t = event['time']
@@ -116,16 +116,16 @@ class Entity(object):
             self._t_start = min(self._t_start, t)
             self._t_stop  = max(self._t_stop,  t)
 
-            name = event['event_name']
-            if name == 'state':
+            etype = event['event_type']
+            if etype == 'state':
                 state = event['state']
                 self._states[state] = event
 
             # we also treat state transitions as generic event.
             # Because, why not?
-            if name not in self._events:
-                self._events[name] = list()
-            self._events[name].append(event)
+            if etype not in self._events:
+                self._events[etype] = list()
+            self._events[etype].append(event)
 
         if profile:
             self._ttc = self._t_stop - self._t_start
