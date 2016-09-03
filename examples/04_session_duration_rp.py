@@ -23,13 +23,13 @@ if __name__ == '__main__':
         print "\n\tusage: %s <dir>\n" % sys.argv[0]
         sys.exit(1)
 
-    loc = sys.argv[1]
+    src = sys.argv[1]
 
     # find json file in dir, and derive session id
-    json_files = glob.glob('%s/*.json' % loc)
+    json_files = glob.glob('%s/*.json' % src)
 
-    if len(json_files) < 1: raise ValueError('%s contains no json file!' % loc)
-    if len(json_files) > 1: raise ValueError('%s contains more than one json file!' % loc)
+    if len(json_files) < 1: raise ValueError('%s contains no json file!' % src)
+    if len(json_files) > 1: raise ValueError('%s contains more than one json file!' % src)
 
     json_file = json_files[0]
     json      = ru.read_json(json_file)
@@ -37,10 +37,7 @@ if __name__ == '__main__':
 
     print 'sid: %s' % sid
 
-    descr     = rp.utils.get_session_description(sid=sid, src=loc)
-    prof      = rp.utils.get_session_profile(sid=sid,     src=loc)
-
-    session = ra.Session(prof, descr)
+    session = ra.Session(sid, 'radical.pilot', src=src)
 
     # A formatting helper before starting...
     def ppheader(message):

@@ -1,7 +1,8 @@
 
 
+import os
 import sys
-import pprint
+import copy
 
 import radical.utils as ru
 
@@ -12,13 +13,29 @@ from .entity import Entity
 #
 class Session(object):
 
-    def __init__(self, profile, description, _entities=None):
+    def __init__(self, sid, stype, src=None, _entities=None):
+        """
+        Create a radical.analytics session for analysis.
 
-        # we can't do any analysis on empty profile
-        assert(profile)
+        The session is created from a set of profiles, which usually have been
+        produced from some other session object in the RCT stack, such as
+        radical.pilot.  The `ra.Session` constructor expects the respecive
+        session ID and session type.  It optionally accepts a `src` parameter
+        which can point to a location where the profiles are expected to be
+        found, or where they will be stored after fetching them.  The default
+        value for `src` is `$PWD/sid`.
+        """
 
-        self._profile     = profile
-        self._description = description
+        if not src:
+            src = "%s/%s" % (os.getcwd(), sid)
+
+        if stype == 'radical.pilot':
+            import radical.pilot as rp
+            self._profile     = rp.utils.get_session_profile(sid=sid,     src=src)
+            self._description = rp.utils.get_session_description(sid=sid, src=src)
+
+        else:
+            raise ValueError('unsupported session type [%s]' % stype)
 
         self._t_start     = None
         self._t_stop      = None
@@ -28,13 +45,9 @@ class Session(object):
 
         # internal state is represented by a dict of entities:
         # dict keys are entity uids (which are assumed to be unique per
-        # session), dict values are ra.Entity instances
-        # if `_entities` are given, we don't need to initialize them
-        if _entities is not None:
-            self._entities = _entities
-        else:
-            self._entities = dict()
-            self._initialize_entities()
+        # session), dict values are ra.Entity instances.
+        self._entities = dict()
+        self._initialize_entities()
 
         # we do some bookkeeping in self._properties where we keep a list of
         # property values around which we encountered in self._entities.
@@ -43,6 +56,38 @@ class Session(object):
 
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
+
+
+    # --------------------------------------------------------------------------
+    #
+    def __deepcopy___(self, memo):
+
+        cls = self.__class__
+        ret = cls.__new__(cls)
+
+        memo[id(self)] = ret
+
+        for k, v in self.__dict__.items():
+            setattr(ret, k, deepcopy(v, memo))
+
+        return ret
+
+
+    # --------------------------------------------------------------------------
+    #
+    def _reinit(self, entities):
+        """
+        After creating a session clone, we have identical sets of descriptions,
+        profiles, and entities.  However, if we apply a filter during the clone
+        creation, we end up with a deep copy which should have a *different* set
+        of entities.  This method applies that new entity set to such a cloned
+        session.
+        """
+
+        self._entities = entities
+
+        # FIXME: we may want to filter the session description etc. wrt. to the
+        #        entity types remaining after a filter.
 
 
     # --------------------------------------------------------------------------
@@ -293,7 +338,7 @@ class Session(object):
                                   event=event, time=time)
 
         if inplace:
-            # filter our own entity list, and refresh the properties based on
+            # filter our own entity list, and refresh the entity based on
             # the new list
             if uids != self._entities.keys():
                 self._entities = {uid:self._entities[uid] for uid in uids}
@@ -301,11 +346,10 @@ class Session(object):
             return self
 
         else:
-            # create a new session with the resulting property list
-            entities = {uid:self._entities[uid] for uid in uids}
-            return Session(profile     = self._profile,
-                           description = self._description,
-                           _entities   = entities)
+            # create a new session with the resulting entity list
+            ret = copy.deepcopy(self)
+            ret._reinit(entities = {uid:self._entities[uid] for uid in uids})
+            return ret
 
 
     # --------------------------------------------------------------------------
