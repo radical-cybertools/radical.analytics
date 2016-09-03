@@ -412,6 +412,28 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
+    def timestamps(self, state=None, event=None):
+        """
+        This method accepts a set of conditions, and returns the list of
+        timestamps for which those conditions applied, i.e. for which state
+        transitions or events are known which match the given 'state' or 'event'
+        parameter.  If no match is found, an empty list is returned.
+
+        Both `state` and `event` can be lists, in which case the union of all
+        timestamps are returned.
+
+        The returned list will be sorted.
+        """
+
+        ret = list()
+        for uid,entity in self._entities.iteritems():
+            ret += entity.timestamps(state=state, event=event)
+
+        return sorted(ret)
+
+
+    # --------------------------------------------------------------------------
+    #
     def duration(self, state=None, event=None, time=None):
         """
         This method accepts the same set of parameters as the `ranges()` method,

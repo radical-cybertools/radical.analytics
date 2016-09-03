@@ -187,6 +187,44 @@ class Entity(object):
 
     # --------------------------------------------------------------------------
     #
+    def timestamps(self, state=None, event=None):
+        """
+        This method accepts a set of conditions, and returns the list of
+        timestamps for which those conditions applied, i.e. for which state
+        transitions or events are known which match the given 'state' or 'event'
+        parameter.  If no match is found, an empty list is returned.
+
+        Both `state` and `event` can be lists, in which case the union of all
+        timestamps are returned.
+
+        The returned list will be sorted.
+        """
+
+        if not event:
+            event = []
+        elif not isinstance(event, list):
+            event = [event]
+
+        if not state:
+            state = []
+        elif not isinstance(state, list):
+            state = [state]
+        
+        ret = []
+
+        for e in event:
+            for x in self._events.get(e, []):
+                ret.append(x['time'])
+
+        for s in state:
+            if s in self._states:
+                ret.append(self._states[s]['time'])
+
+        return sorted(ret)
+
+
+    # --------------------------------------------------------------------------
+    #
     def ranges(self, state=None, event=None, time=None):
         """
         This method accepts a set of initial and final conditions, in the form

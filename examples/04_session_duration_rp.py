@@ -38,7 +38,7 @@ if __name__ == '__main__':
     print 'sid: %s' % sid
 
     descr     = rp.utils.get_session_description(sid=sid, src=loc)
-    prof      = rp.utils.get_session_profile(sid=sid, src=loc)
+    prof      = rp.utils.get_session_profile(sid=sid,     src=loc)
 
     session = ra.Session(prof, descr)
 
@@ -89,6 +89,15 @@ if __name__ == '__main__':
     units = session.filter(etype='unit', state=rp.DONE, inplace=False)
     duration_sout = units.duration([rp.AGENT_STAGING_OUTPUT_PENDING, [rp.DONE, rp.CANCELED, rp.FAILED]])
     pprint.pprint(duration_sout)
+
+    # we print the timestamps for the units for when they entered certain states
+    ppheader("Timestamps for state transitions")
+    print '[rp.AGENT_STAGING_OUTPUT_PENDING]:'
+    pprint.pprint(units.timestamps(state=[rp.AGENT_STAGING_OUTPUT_PENDING]))
+    print 'rp.AGENT_EXECUTING'
+    pprint.pprint(units.timestamps(state=rp.AGENT_EXECUTING))
+    print '[rp.AGENT_EXECUTING, rp.AGENT_STAGING_OUTPUT_PENDING]'
+    pprint.pprint(units.timestamps(state=[rp.AGENT_EXECUTING, rp.AGENT_STAGING_OUTPUT_PENDING]))
 
     print """ The very careful reader may have noticed that the sum of the time
     spent by the units to execute their kernel and performing staging out may be
