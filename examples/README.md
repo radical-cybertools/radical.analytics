@@ -12,18 +12,18 @@
   ```
   pip install radical.pilot
   ```  
-  NOTE: at the moment, only the following branch of RP works with RADICAL-Analytics:
+  **NOTE: At the moment, only the `analytics` branch of RP works with RADICAL-Analytics**:
   ```  
-  git clone git@github.com:radical-cybertools/radical.analytics.git
-  git checkout experiment/aimes
+  git clone git@github.com:radical-cybertools/radical.pilot.git
+  git checkout analytics
   pip install --upgrade .
   ```
 
 * Perform a run with RADICAL-Pilot and take note of the name of the session of your run. For example:  
   ```
-  rp.session.thinkie.merzky.017003.0023`.
+  rp.session.thinkie.merzky.017003.0023
   ```  
-  NOTE: RADICAL-Analytics requires the profile files for every RP component (e.g., pilot, umgr, or pmgr) and the an aggregated json file of the session as downloaded from the MongoDB server used to run the RP session (e.g., rp.session.radical.mingtha.017035.0010.json). These files need to be collected into a directory named with the name of the session, with the following structure:  
+  NOTE: RADICAL-Analytics requires the profile files for every RP component (e.g., pilot, umgr, or pmgr) and the an aggregated json file of the session as downloaded from the MongoDB server used to run the RP session (e.g., `rp.session.radical.mingtha.017035.0010.json`). These files need to be collected into a directory named with the name of the session, with the following structure:  
   ```
   rp.session.radical.mingtha.017035.0010\
     pilot.0000/
