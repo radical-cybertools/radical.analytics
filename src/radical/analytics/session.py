@@ -13,7 +13,7 @@ from .entity import Entity
 #
 class Session(object):
 
-    def __init__(self, sid, stype, src=None, _entities=None):
+    def __init__(self, sid, stype, src=None, _entities=None, _init=True):
         """
         Create a radical.analytics session for analysis.
 
@@ -25,6 +25,9 @@ class Session(object):
         found, or where they will be stored after fetching them.  The default
         value for `src` is `$PWD/sid`.
         """
+
+        self._sid   = sid
+        self._stype = stype
 
         if not src:
             src = "%s/%s" % (os.getcwd(), sid)
@@ -47,12 +50,14 @@ class Session(object):
         # dict keys are entity uids (which are assumed to be unique per
         # session), dict values are ra.Entity instances.
         self._entities = dict()
-        self._initialize_entities()
+        if _init:
+            self._initialize_entities()
 
         # we do some bookkeeping in self._properties where we keep a list of
         # property values around which we encountered in self._entities.
         self._properties = dict()
-        self._initialize_properties()
+        if _init:
+            self._initialize_properties()
 
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
@@ -63,7 +68,7 @@ class Session(object):
     def __deepcopy___(self, memo):
 
         cls = self.__class__
-        ret = cls.__new__(cls)
+        ret = cls(sid=self._sid, stype=self._stype, _init=False)
 
         memo[id(self)] = ret
 
@@ -130,9 +135,6 @@ class Session(object):
         NOTE: We derive entity types via some heuristics for now: we assume the
         first part of any dot-separated uid to signify an entity type.
         """
-
-        # this method can only be called once
-        assert (not self._entities)
 
         # create entities from the profile events:
         entity_events = dict()
@@ -347,8 +349,9 @@ class Session(object):
 
         else:
             # create a new session with the resulting entity list
-            ret = copy.deepcopy(self)
+            ret = Session(sid=self._sid, stype=self._stype, _init=False)
             ret._reinit(entities = {uid:self._entities[uid] for uid in uids})
+            ret._initialize_properties()
             return ret
 
 
