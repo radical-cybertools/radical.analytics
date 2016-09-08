@@ -8,33 +8,30 @@
   ```
 
 * Install the chosen RADICAL-Cybertool in the same virtualenv.
-  Currently, RADICAL-Analytics supports only:  
-  ```
-  pip install radical.pilot
+  Currently, RADICAL-Analytics supports only the `analytics` branch of RP:
   ```  
-  NOTE: at the moment, only the following branch of RP works with RADICAL-Analytics:
-  ```  
-  git clone git@github.com:radical-cybertools/radical.analytics.git
-  git checkout experiment/aimes
+  git clone git@github.com:radical-cybertools/radical.pilot.git
+  cd radical.pilot
+  git checkout analytics
   pip install --upgrade .
   ```
 
 * Perform a run with RADICAL-Pilot and take note of the name of the session of your run. For example:  
   ```
-  rp.session.thinkie.merzky.017003.0023`.
+  rp.session.thinkie.merzky.017003.0023
   ```  
-  NOTE: RADICAL-Analytics requires the profile files for every RP component (e.g., pilot, umgr, or pmgr) and the an aggregated json file of the session as downloaded from the MongoDB server used to run the RP session (e.g., rp.session.radical.mingtha.017035.0010.json). These files need to be collected into a directory named with the name of the session, with the following structure:  
+  NOTE: RADICAL-Analytics requires the profile files for every RP component (e.g., pilot, umgr, or pmgr) and the an aggregated json file of the session as downloaded from the MongoDB server used to run the RP session (e.g., `rp.session.radical.mingtha.017035.0010.json`). These files need to be collected into a directory named with the name of the session. Files have to be organized with the following structure:  
   ```
   rp.session.radical.mingtha.017035.0010\
-    pilot.0000/
-    pilot.0001/
-    pilot.000*/
+    pilot.0000/*.prof
+    pilot.0001/*.prof
+    pilot.000*/*.prof
     *.prof
     *.json
   ```  
-  Only a single json file is allowed in the directory. An error should be thrown by the script utilizing RADICAL-Analytics when more than one json file is present (to be implemented in RADICAL-Analytics soon).
+  Currently, only a single file with extension `.json` is allowed in the directory.
 
-* Execute the examples with `<example> <session_name>`. For example:  
+* Execute the examples with `<example> <src_data_dir>`. For example:  
   ```
   ./00_session_describe_rp.py rp.session.thinkie.merzky.017003.0023
   ```
@@ -44,8 +41,11 @@
 
 * In every example, the following:  
   ```
-  sid = sys.argv[1]
-  descr = rp.utils.get_session_description(sid=sid)
-  prof = rp.utils.get_session_profile(sid=sid)
+  src = sys.argv[1]
+  json_file = json_files[0]
+    json      = ru.read_json(json_file)
+    sid       = os.path.basename(json_file)[:-5]
+
+  session = ra.Session(sid, 'radical.pilot', src=src)
   ```  
-  looks for the session description (in JSON format) and for the profiles created for each component of RADICAL-Pilot in the current or indicated directory. If they cannot be found, the two methods download the session description from the MongoDB used with RADICAL-Pilot and the profiles from the resources on which the pilots and CU have been submitted and executed.
+  looks for the session description (in JSON format) and for the profiles created for each component of RADICAL-Pilot in the indicated `src` directory. If these files cannot be found, the `ra.Session()` constructor downloads the session description from the MongoDB used with RADICAL-Pilot and the profiles from the resources on which the pilots and CU have been submitted and executed.
