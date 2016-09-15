@@ -404,8 +404,29 @@ class Session(object):
                 ret[et] = {'event_model'  : event_model}
 
         if not mode or mode == 'relations':
-           relations    = self._description['tree']
-           ret['relations'] = relations
+
+           if len(etype) != 2:
+               raise ValueError('relations expect an etype *tuple*')
+
+           # we interpret the query as follows: for the two given etypes, walk
+           # through the relationship tree and for all entities of etype[0]
+           # return a list of all child entities of etype[1].  The result is
+           # returned as a dict.
+
+           parent_uids = self._apply_filter(etype=etype[0])
+           child_uids  = self._apply_filter(etype=etype[1])
+
+           rel = self._description['tree']
+           for p in parent_uids:
+
+               ret[p] = list()
+               if p not in rel:
+                   print 'inconsistent : no relations for %s' % p
+                   continue
+
+               for c in rel[p]['children']:
+                   if c in child_uids:
+                       ret[p].append(c)
 
         return ret
 
