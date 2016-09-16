@@ -32,10 +32,12 @@ class Session(object):
         if not src:
             src = "%s/%s" % (os.getcwd(), sid)
 
+        self._src = src
+
         if stype == 'radical.pilot':
             import radical.pilot as rp
-            self._profile     = rp.utils.get_session_profile(sid=sid,     src=src)
-            self._description = rp.utils.get_session_description(sid=sid, src=src)
+            self._profile     = rp.utils.get_session_profile(sid=sid,     src=self._src)
+            self._description = rp.utils.get_session_description(sid=sid, src=self._src)
 
         else:
             raise ValueError('unsupported session type [%s]' % stype)
@@ -349,7 +351,8 @@ class Session(object):
 
         else:
             # create a new session with the resulting entity list
-            ret = Session(sid=self._sid, stype=self._stype, _init=False)
+            ret = Session(sid=self._sid, stype=self._stype, src=self._src,
+                          _init=False)
             ret._reinit(entities = {uid:self._entities[uid] for uid in uids})
             ret._initialize_properties()
             return ret
