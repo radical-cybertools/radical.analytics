@@ -178,8 +178,13 @@ class Entity(object):
         signature), and then returns the difference between the resulting
         timestamps.
         """
+        ranges = self.ranges(state, event, time)
+
+        if not ranges:
+            raise ValueError('no duration defined for given constraints')
+
         ret = 0.0
-        for r in self.ranges(state, event, time):
+        for r in ranges:
             ret += r[1] - r[0]
 
         return ret

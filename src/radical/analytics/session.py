@@ -482,6 +482,9 @@ class Session(object):
                 # ignore entities for which the conditions did not apply
                 pass
 
+        if not ranges:
+            raise ValueError('no duration defined for given constraints')
+
         return ru.collapse_ranges(ranges)
 
 
