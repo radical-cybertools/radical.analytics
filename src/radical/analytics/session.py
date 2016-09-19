@@ -476,7 +476,11 @@ class Session(object):
 
         ranges = list()
         for uid,entity in self._entities.iteritems():
-            ranges += entity.ranges(state, event, time)
+            try:
+                ranges += entity.ranges(state, event, time)
+            except ValueError:
+                # ignore entities for which the conditions did not apply
+                pass
 
         return ru.collapse_ranges(ranges)
 
