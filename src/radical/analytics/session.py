@@ -483,14 +483,10 @@ class Session(object):
 
         ranges = list()
         for uid,entity in self._entities.iteritems():
-            try:
-                ranges += entity.ranges(state, event, time)
-            except ValueError:
-                # ignore entities for which the conditions did not apply
-                pass
+            ranges += entity.ranges(state, event, time)
 
         if not ranges:
-            raise ValueError('no duration defined for given constraints')
+            return []
 
         return ru.collapse_ranges(ranges)
 
