@@ -333,15 +333,15 @@ class Entity(object):
 
 
         if t_start == sys.float_info.max:
-            return None
+            return []
           # raise ValueError('initial condition did not apply')
 
         if t_stop == sys.float_info.min:
-            return None
+            return []
           # raise ValueError('final condition did not apply')
 
         if t_stop < t_start:
-            return None
+            return []
           # raise ValueError('duration uncovered time inconsistency')
 
         # apply time filter, if such one is given
