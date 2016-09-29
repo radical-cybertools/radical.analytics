@@ -542,7 +542,7 @@ class Session(object):
         return a time series, counting the number of units which are
         concurrently matching the ranges filter at any point in time.
 
-        The additional parameter `smpling` determines the exact points in time
+        The additional parameter `sampling` determines the exact points in time
         for which the concurrency is computed, and thus determines the sampling
         rate for the returned time series.  If not specified, the time series
         will contain all points at which the concurrency changed.  If specified,
@@ -557,12 +557,12 @@ class Session(object):
             ...
             [time_n, concurrency_n] ]
 
-        where `time_n` is represented s `float`, and `concurrency_n` as `int`.
+        where `time_n` is represented as `float`, and `concurrency_n` as `int`.
 
         Example:
 
-           session.concurrency(state=[rp.EXECUTING,
-                                      rp.AGENT_STAGING_OUTPUT_PENDING]))
+           session.filter(etype='unit').concurrency(state=[rp.AGENT_EXECUTING,
+                                        rp.AGENT_STAGING_OUTPUT_PENDING])
         """
 
         ranges = list()
@@ -629,7 +629,7 @@ class Session(object):
             'timestamps'  : check if events and states are recorded with correct
                             ordering in time.
 
-        If not specified, the method will execute all thre checks.
+        If not specified, the method will execute all three checks.
 
         After this method has been run, each checked entity will have more
         detailed consistency information available via:
@@ -640,7 +640,7 @@ class Session(object):
             entity.consistency['log' ]        (list of strings)
 
         The boolean values each indicate consistency of the respective test, the
-        `log` will contain human readable informtion about specific consistency
+        `log` will contain human readable information about specific consistency
         violations.
         """
 
