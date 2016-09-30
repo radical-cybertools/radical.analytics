@@ -58,7 +58,7 @@ if __name__ == '__main__':
     # and 'pilot':
     ppheader("properties of the entities with etype 'pilot'")
     pilots = session.get(etype='pilot')
-    pprint.pprint(units)
+    pprint.pprint(pilots)
 
     # Mmmm, still a bit too many entities. We limit our analysis to a single
     # unit and pilot. We use ra.Session.get() to select all the objects in the
