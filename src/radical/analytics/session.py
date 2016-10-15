@@ -46,7 +46,7 @@ class Session(object):
         self._t_stop      = None
         self._ttc         = None
 
-        self._reporter    = None
+        self._log         = None
 
         # internal state is represented by a dict of entities:
         # dict keys are entity uids (which are assumed to be unique per
@@ -102,10 +102,10 @@ class Session(object):
     @property
     def _rep(self):
 
-        if not self._reporter:
-            self._reporter = ru.LogReporter()
+        if not self._log:
+            self._log = ru.get_logger('radical.analytics')
 
-        return self._reporter
+        return self._log.report
 
 
     # --------------------------------------------------------------------------
