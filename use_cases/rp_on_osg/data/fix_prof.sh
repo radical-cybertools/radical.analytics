@@ -6,6 +6,7 @@ tmpfile="/tmp/awk_tmp_$(id -u)"
 awk_cmd='
 BEGIN {
     FS=",";
+    OFS=",";
 }
 {
     if ($1 == 1.0) {
@@ -42,4 +43,6 @@ do
         done
     done
 done
+
+cd $base
 
