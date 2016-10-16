@@ -1,4 +1,5 @@
 
+import os
 import sys
 
 
@@ -106,10 +107,17 @@ class Entity(object):
             self._t_start = sys.float_info.max
             self._t_stop  = sys.float_info.min
 
+      # if self.uid == os.environ.get('FILTER'):
+      #     print '\n\n%s' % self.uid
+
         # we expect each event to have `time` and `event_type`, and expect
         # 'state' events to signify a state transition, and thus to always 
         # have the property 'state' set, too
-        for event in profile:
+        for event in sorted(profile, key=lambda (x): (x['time'])):
+
+          # if self.uid == os.environ.get('FILTER'):
+          #     if 'Listen' not in event['msg']:
+          #         print event
 
             t = event['time']
 
@@ -119,6 +127,9 @@ class Entity(object):
             etype = event['event_type']
             if etype == 'state':
                 state = event['state']
+              # if self.uid == os.environ.get('FILTER'):
+              #     print '%s  %-25s  %8.2f' % (self.uid, state, event['time'])
+              #     print event
                 self._states[state] = event
 
             # we also treat state transitions as generic event.

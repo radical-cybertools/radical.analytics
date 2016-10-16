@@ -36,8 +36,8 @@ class Session(object):
 
         if stype == 'radical.pilot':
             import radical.pilot as rp
-            self._profile     = rp.utils.get_session_profile(sid=sid,     src=self._src)
-            self._description = rp.utils.get_session_description(sid=sid, src=self._src)
+            self._profile, self._accuracy = rp.utils.get_session_profile    (sid=sid, src=self._src)
+            self._description             = rp.utils.get_session_description(sid=sid, src=self._src)
 
         else:
             raise ValueError('unsupported session type [%s]' % stype)
