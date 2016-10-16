@@ -30,6 +30,9 @@ class Entity(object):
         self._description = self._details.get('description', dict())
         self._cfg         = self._details.get('cfg',         dict())
 
+        # FIXME: this should be sorted out on RP level
+        self._cfg['hostid'] = self._details['hostid']
+
         self._states      = dict()
         self._events      = dict()
         self._consistency = { 'log'         : list(), 

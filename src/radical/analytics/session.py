@@ -36,8 +36,12 @@ class Session(object):
 
         if stype == 'radical.pilot':
             import radical.pilot as rp
-            self._profile, self._accuracy = rp.utils.get_session_profile    (sid=sid, src=self._src)
-            self._description             = rp.utils.get_session_description(sid=sid, src=self._src)
+            self._profile, accuracy, hostmap \
+                              = rp.utils.get_session_profile    (sid=sid, src=self._src)
+            self._description = rp.utils.get_session_description(sid=sid, src=self._src)
+
+            self._description['accuracy'] = accuracy
+            self._description['hostmap']  = hostmap
 
         else:
             raise ValueError('unsupported session type [%s]' % stype)
@@ -154,6 +158,7 @@ class Session(object):
         for uid,events in entity_events.iteritems():
             etype   = events[0]['entity_type']
             details = self._description['tree'].get(uid, dict())
+            details['hostid'] = self._description['hostmap'].get(uid)
             self._entities[uid] = Entity(_uid=uid,
                                          _etype=etype,
                                          _profile=events, 
