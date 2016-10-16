@@ -57,6 +57,5 @@ if __name__ == '__main__':
 
     ppheader("show pilot-to-resource mapping")
     for pilot in session.get(etype=['pilot']):
-        uid = pilot.uid
-        print '%s : %s' % (uid, session.describe()['tree'][uid]['cfg']['resource'])
+        print '%s : %s' % (pilot.uid, pilot.description['resource'])
 

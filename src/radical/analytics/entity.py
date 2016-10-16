@@ -7,7 +7,7 @@ import sys
 #
 class Entity(object):
 
-    def __init__(self, _uid, _etype, _profile):
+    def __init__(self, _uid, _etype, _profile, _details):
         """
         This is a private constructor for an RA Entity: it gets a series of
         events and sorts it into its properties.  We have 4 properties:
@@ -26,6 +26,10 @@ class Entity(object):
 
         self._uid         = _uid
         self._etype       = _etype
+        self._details     = _details
+        self._description = self._details.get('description', dict())
+        self._cfg         = self._details.get('cfg',         dict())
+
         self._states      = dict()
         self._events      = dict()
         self._consistency = { 'log'         : list(), 
@@ -69,6 +73,14 @@ class Entity(object):
     @property
     def states(self):
         return self._states
+
+    @property
+    def description(self):
+        return self._description
+
+    @property
+    def cfg(self):
+        return self._cfg
 
     @property
     def events(self):
