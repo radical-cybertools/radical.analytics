@@ -56,7 +56,7 @@ if __name__ == '__main__':
     pprint.pprint(session.describe('relations', ['pilot', 'unit']))
 
     ppheader("show pilot-to-resource mapping")
-    for pilot in session.filter(etype=['pilot'], inplace=False).get():
+    for pilot in session.get(etype=['pilot']):
         uid = pilot.uid
         print '%s : %s' % (uid, session.describe()['tree'][uid]['cfg']['resource'])
 
