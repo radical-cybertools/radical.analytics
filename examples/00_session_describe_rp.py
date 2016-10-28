@@ -78,16 +78,12 @@ if __name__ == '__main__':
     ppheader("runtime event model of all the entities of the session")
     pprint.pprint(session.describe('event_model'))
 
-    # or the relations among all the entities of the session:
-    ppheader("relations among all the entities of the session")
-    pprint.pprint(session.describe('relations'))
-
     # We can restrict the type of entities to describe also for the last two
     # calls:
     ppheader("runtime event model for the entities of type 'unit'")
     pprint.pprint(session.describe('event_model', etype='unit'))
 
-    ppheader("relations for the entities of type 'unit'")
-    pprint.pprint(session.describe('relations', etype='unit'))
+    ppheader("relations of type 'pilot' -> 'unit'")
+    pprint.pprint(session.describe('relations', etype=['pilot', 'unit']))
 
     sys.exit(0)

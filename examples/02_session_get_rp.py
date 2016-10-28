@@ -85,6 +85,7 @@ if __name__ == '__main__':
     # to all the other states of RADICAL-Pilot, we use the rp.NEW property that
     # guarantees type checking.
     ppheader("Properties of the state rp.NEW of the entities with uid 'unit.000000'")
+    pprint.pprint(unit[0].states)
     state = unit[0].states[rp.NEW]
     pprint.pprint(state)
 

@@ -159,6 +159,24 @@ class Entity(object):
         # FIXME: assert state model adherence here
         # FIXME: where to get state model from?
         # FIXME: sort events by time
+        import pprint
+
+        # for pilots, we may not have any states.  If thst is the case, we dig
+        # them out of the state hostory
+        if 'pilot' in self.uid:
+            print 'check pilot'
+            if not self._states:
+                print 'fix   pilot'
+                for s in self._details['json'].get('statehistory', list()):
+                    self._states[s['state']] = {
+                            'entity_type' : 'pilot', 
+                            'event_type'  : 'state', 
+                            'msg'         : s['state'],
+                            'name'        : '', 
+                            'time'        : s['timestamp'],
+                            'uid'         : self._uid
+                            }
+
 
 
     # --------------------------------------------------------------------------

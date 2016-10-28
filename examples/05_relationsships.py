@@ -55,6 +55,7 @@ if __name__ == '__main__':
     ppheader("show pilot-to-unit mapping")
     pprint.pprint(session.describe('relations', ['pilot', 'unit']))
 
+    import pprint
     ppheader("show pilot-to-resource mapping")
     for pilot in session.get(etype=['pilot']):
         print '%s : %-35s : %s' % (pilot.uid, 

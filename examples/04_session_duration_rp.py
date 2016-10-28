@@ -62,6 +62,7 @@ if __name__ == '__main__':
     # 'CANCELED', 'FAILED' of all the entities of RP.
     ppheader("Time spent by the pilots being active")
     pilots = session.filter(etype='pilot', inplace=False)
+    pprint.pprint(pilots.get()[0])
     durations = pilots.duration([rp.ACTIVE, [rp.DONE, rp.CANCELED, rp.FAILED]])
     pprint.pprint(durations)
 
