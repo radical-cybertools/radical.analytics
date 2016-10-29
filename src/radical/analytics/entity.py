@@ -24,7 +24,7 @@ class Entity(object):
         """
 
         assert(_uid)
-        assert(_profile)
+      # assert(_profile)
 
         self._uid         = _uid
         self._etype       = _etype
@@ -120,9 +120,8 @@ class Entity(object):
         assert (not self._states)
         assert (not self._events)
 
-        if profile:
-            self._t_start = sys.float_info.max
-            self._t_stop  = sys.float_info.min
+        self._t_start = sys.float_info.max
+        self._t_stop  = sys.float_info.min
 
       # if self.uid == os.environ.get('FILTER'):
       #     print '\n\n%s' % self.uid
@@ -155,9 +154,6 @@ class Entity(object):
                 self._events[etype] = list()
             self._events[etype].append(event)
 
-        if profile:
-            self._ttc = self._t_stop - self._t_start
-
         # FIXME: assert state model adherence here
         # FIXME: where to get state model from?
         # FIXME: sort events by time
@@ -177,19 +173,35 @@ class Entity(object):
                         'uid'         : self._uid
                         }
 
+                t = float(e['timestamp'])
+                self._t_start = min(self._t_start, t)
+                self._t_stop  = max(self._t_stop,  t)
+
+
         # if we don't have a final state, we assume last entry as FAILED
-        if 'pilot' in self.uid:
         if  rp.DONE     not in self._states and \
             rp.FAILED   not in self._states and \
             rp.CANCELED not in self._states :
-            self._states[rp.FAILED] = {
-                    'entity_type' : self._etype,
-                    'event_type'  : 'state',
-                    'msg'         : rp.FAILED,
-                    'name'        : '', 
-                    'time'        : profile[-1]['time'],
-                    'uid'         : self._uid
-                    }
+            if not profile:
+                self._states[rp.FAILED] = {
+                        'entity_type' : self._etype,
+                        'event_type'  : 'state',
+                        'msg'         : rp.FAILED,
+                        'name'        : '', 
+                        'time'        : self._details['t_max'],
+                        'uid'         : self._uid
+                        }
+            else:
+                self._states[rp.FAILED] = {
+                        'entity_type' : self._etype,
+                        'event_type'  : 'state',
+                        'msg'         : rp.FAILED,
+                        'name'        : '', 
+                        'time'        : profile[-1]['time'],
+                        'uid'         : self._uid
+                        }
+
+        self._ttc = self._t_stop - self._t_start
 
 
 

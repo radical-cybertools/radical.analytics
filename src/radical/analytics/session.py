@@ -154,11 +154,25 @@ class Session(object):
         # for all uids found,  create and store an entity.  We look up the
         # entity type in one of the events (and assume it is consistent over
         # all events for that uid)
-        for uid,events in entity_events.iteritems():
-            etype   = events[0]['entity_type']
-            details = self._description['tree'].get(uid, dict())
-            details['hostid'] = self._description['hostmap'].get(uid)
-            details['t_min']  = self._t_min
+        # we also make sure that all pilots and units are represented, even if
+        # they don't have a profile
+        for uid in self._description['tree']:
+            if uid in entity_events:
+                events  = entity_events[uid]
+                etype   = events[0]['entity_type']
+                details = self._description['tree'][uid]
+                details['hostid'] = self._description['hostmap'].get(uid)
+                details['t_min']  = float(self._t_min)
+                details['t_max']  = float(self._profile[-1]['time'])
+            else:
+                # no events, just json
+                events  = list()
+                etype   = uid.split('.')[0]
+                details = self._description['tree'][uid]
+                details['hostid'] = self._description['hostmap'].get(uid)
+                details['t_min']  = float(self._t_min)
+                details['t_max']  = float(self._profile[-1]['time'])
+
             self._entities[uid] = Entity(_uid=uid,
                                          _etype=etype,
                                          _profile=events, 
