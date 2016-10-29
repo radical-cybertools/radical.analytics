@@ -179,8 +179,6 @@ class Entity(object):
 
         # if we don't have a final state, we assume last entry as FAILED
         if 'pilot' in self.uid:
-            print self._uid, self._states.keys()
-            print profile[-1]
         if  rp.DONE     not in self._states and \
             rp.FAILED   not in self._states and \
             rp.CANCELED not in self._states :
