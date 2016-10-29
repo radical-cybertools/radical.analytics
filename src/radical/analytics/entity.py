@@ -163,19 +163,17 @@ class Entity(object):
 
         # for pilots, we may not have any states.  If thst is the case, we dig
         # them out of the state hostory
-        if 'pilot' in self.uid:
-            print 'check pilot'
-            if not self._states:
-                print 'fix   pilot'
-                for s in self._details['json'].get('statehistory', list()):
-                    self._states[s['state']] = {
-                            'entity_type' : 'pilot', 
-                            'event_type'  : 'state', 
-                            'msg'         : s['state'],
-                            'name'        : '', 
-                            'time'        : s['timestamp'],
-                            'uid'         : self._uid
-                            }
+        statehist = self._details.get('json', {}).get('statehistory', [])
+        for e in statehist:
+            if e['state'] not in self._states:
+                self._states[e['state']] = {
+                        'entity_type' : self._etype,
+                        'event_type'  : 'state', 
+                        'msg'         : e['state'],
+                        'name'        : '', 
+                        'time'        : float(e['timestamp']) - float(self._details['t_min']),
+                        'uid'         : self._uid
+                        }
 
 
 

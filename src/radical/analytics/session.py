@@ -36,8 +36,8 @@ class Session(object):
 
         if stype == 'radical.pilot':
             import radical.pilot as rp
-            self._profile         = rp.utils.get_session_profile    (sid=sid, src=self._src)
-            self._description, hm = rp.utils.get_session_description(sid=sid, src=self._src)
+            self._profile, self._t_min = rp.utils.get_session_profile    (sid=sid, src=self._src)
+            self._description, hm      = rp.utils.get_session_description(sid=sid, src=self._src)
 
             self._description['accuracy'] = None
             self._description['hostmap']  = hm
@@ -158,6 +158,7 @@ class Session(object):
             etype   = events[0]['entity_type']
             details = self._description['tree'].get(uid, dict())
             details['hostid'] = self._description['hostmap'].get(uid)
+            details['t_min']  = self._t_min
             self._entities[uid] = Entity(_uid=uid,
                                          _etype=etype,
                                          _profile=events, 
