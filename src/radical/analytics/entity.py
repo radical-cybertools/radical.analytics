@@ -251,7 +251,8 @@ class Entity(object):
         ranges = self.ranges(state, event, time)
 
         if not ranges:
-            raise ValueError('no duration defined for given constraints')
+            return None
+          # raise ValueError('no duration defined for given constraints')
 
         ret = 0.0
         for r in ranges:
@@ -380,12 +381,15 @@ class Entity(object):
 
 
         if t_start == sys.float_info.max:
-            raise ValueError('initial condition did not apply')
+            return []
+          # raise ValueError('initial condition did not apply')
 
         if t_stop == sys.float_info.min:
-            raise ValueError('final condition did not apply')
+            return []
+          # raise ValueError('final condition did not apply')
 
-        if t_stop < t_start:
+        accuracy = 0.1
+        if t_start - t_stop > accuracy:
             raise ValueError('duration uncovered time inconsistency')
 
         # apply time filter, if such one is given
