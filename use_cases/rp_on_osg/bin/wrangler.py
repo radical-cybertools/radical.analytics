@@ -19,61 +19,58 @@ import pandas as pd
 import radical.analytics as ra
 
 
-def load_dfs(datadir, dfs, dfspaths):
-    for df in dfspaths.keys():
-        if os.path.exists(dfspaths[df]):
-            try:
-                dfs[df] = pd.read_csv(dfspaths[df])
-            except:
-                print "WARNING: File %s is empty or not valid." % dfspaths[df]
-    return dfs
+def load_stored_sessions(datadir, filecsv):
+    sessions = pd.DataFrame({  # 'SID': [],
+                             'session': [],
+                             'experiment': []})
+    try:
+        sessions = pd.read_csv(filecsv, index_col=0)
+    except:
+        print "WARNING: File %s is empty or not valid." % datadir
+    print sessions
+    sys.exit(0)
+    return sessions
 
 
-def load_data(datadir, sessions):
-    old_df = sessions
-    new_sids = {}
-    new_sessions = {}
-    new_experiments = {}
+def load_new_sessions(datadir, stored_ids):
+    sids = []
+    paths = []
+    experiments = []
+    sras = []
+
+    # Get sessions ID from .json file names. Assume:
+    # datadir/exp*/sessiondir/session.json
     start = datadir.rfind(os.sep)+1
-
     for path, dirs, files in os.walk(datadir):
         folders = path[start:].split(os.sep)
-        if len(path[start:].split(os.sep)) == 2:
-
-            # Get session ID from .json file name.
+        if len(folders) == 2:
             sid = os.path.basename(glob.glob('%s/*.json' % path)[0])[:-5]
+            if sid in stored_ids:
+                continue
 
-            # Skip sessions we have already loaded it into a DataFrame.
-            if old_df is not None:
-                print 'I got sessions'
-                # print sessions.index.values
-                # sys.exit(0)
+            if sid == folders[1]:
+                sids.append(sid)
+                paths.append(path)
+                experiments.append(folders[0])
+                sras.append(ra.Session(sid, 'radical.pilot', src=path))
 
-                if sid in old_df['SID'].values:
-                    print 'Skipping %s' % sid
-                    continue
-                else:
-                    print "Loading %s" % sid
+            else:
+                error = 'ERROR: session folder and json file name differ'
+                print '%s: %s != %s' % (error, folders[1], sid)
 
-            # Add session and the experiment to which it belongs to the new
-            # dict.
-            if sid not in new_sessions.keys():
-                new_sessions[sid] = {}
-            new_sessions[sid] = ra.Session(sid, 'radical.pilot', src=path)
-            new_experiments[sid] = folders[0]
-            new_sids[sid] = sid
+    sessions = pd.DataFrame({  # 'SID': sids,
+                             'session': sras,
+                             'experiment': experiments},
+                            index=sids)
 
-    if new_sessions:
-        new_df = pd.DataFrame({'SID': new_sids,
-                               'session': new_sessions,
-                               'experiment': new_experiments})
+    return sessions
 
-        if old_df is not None:
-            old_df.append(new_df)
-        else:
-            old_df = new_df
 
-    return old_df.reset_index(drop=True)
+def load_sessions(datadir, filecsv):
+    stored_sessions = load_stored_sessions(datadir, filecsv)
+    new_sessions = load_new_sessions(datadir, stored_sessions.index.tolist())
+    sessions = stored_sessions.append(new_sessions)
+    return sessions
 
 
 def sessions_TTC():
@@ -86,31 +83,28 @@ def sessions_nunits():
 
 if __name__ == '__main__':
     datadir = '../data/'
+    sessions_csv = '%s/sessions.csv' % datadir
 
-    dfs = {'sessions': None,
-           'pilots': None,
-           'units': None}
+    sessions = load_sessions(datadir, sessions_csv)
 
-    dfspaths = {'sessions': '%s/sessions.csv' % datadir,
-                'pilots': '%s/pilots.csv' % datadir,
-                'units': '%s/units.csv' % datadir}
-
-    old_dfs = load_dfs(datadir, dfs, dfspaths)
-
-    print old_dfs
-    sessions = load_data(datadir, old_dfs['sessions'])
     print sessions
 
     # Save session DataFrame to a csv file.
-    sessions.to_csv(dfspaths['sessions'], index=False)
+    sessions.to_csv(sessions_csv)  # , index=False)
 
-    # # Populate sessions DataFrame with derivative values
-    # # Time To Completion (TTC)
-    # for sid in sessions.index:
-    #     sessions.ix[sid, 'TTC'] = sessions.ix[sid, 'session'].ttc
-    #
-    # # Save session DataFrame to a csv file.
-    # sessions.to_csv(dfspaths['sessions'])
+    # Populate sessions DataFrame with derivative values
+    # Time To Completion (TTC)
+    # for sid in sessions['SID'].values:
+    #     if 'TTC' in sessions.columns:
+    #         if sessions[sessions['SID'] == sid]['TTC']:
+    #             print 'Ciao'
+    #             continue
+    #     # sessions[sessions['SID'] == sid]['TTC'] = sessions[sessions['SID'] == sid]['session'].values.ttc
+    #     print sessions[sessions['SID'] == sid]['session'].values[0].ttc
+    # sessions
+
+    # Save session DataFrame to a csv file.
+    # sessions.to_csv(dfspaths['sessions'], index=False)
     #
     # # Number of units for each session (nunit)
     # for sid in sessions.index:
