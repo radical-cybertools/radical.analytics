@@ -30,6 +30,8 @@ def load_dfs(datadir, dfs, dfspaths):
 
 
 def load_data(datadir, sessions):
+    old_df = sessions
+    new_sids = {}
     new_sessions = {}
     new_experiments = {}
     start = datadir.rfind(os.sep)+1
@@ -42,12 +44,12 @@ def load_data(datadir, sessions):
             sid = os.path.basename(glob.glob('%s/*.json' % path)[0])[:-5]
 
             # Skip sessions we have already loaded it into a DataFrame.
-            if sessions is not None:
+            if old_df is not None:
                 print 'I got sessions'
                 # print sessions.index.values
                 # sys.exit(0)
 
-                if sid in sessions.index.values:
+                if sid in old_df['SID'].values:
                     print 'Skipping %s' % sid
                     continue
                 else:
@@ -59,8 +61,19 @@ def load_data(datadir, sessions):
                 new_sessions[sid] = {}
             new_sessions[sid] = ra.Session(sid, 'radical.pilot', src=path)
             new_experiments[sid] = folders[0]
+            new_sids[sid] = sid
 
-    return new_sessions, new_experiments
+    if new_sessions:
+        new_df = pd.DataFrame({'SID': new_sids,
+                               'session': new_sessions,
+                               'experiment': new_experiments})
+
+        if old_df is not None:
+            old_df.append(new_df)
+        else:
+            old_df = new_df
+
+    return old_df.reset_index(drop=True)
 
 
 def sessions_TTC():
@@ -85,18 +98,11 @@ if __name__ == '__main__':
     old_dfs = load_dfs(datadir, dfs, dfspaths)
 
     print old_dfs
-    sessions, experiments = load_data(datadir, old_dfs['sessions'])
+    sessions = load_data(datadir, old_dfs['sessions'])
     print sessions
-    print experiments
-
-    # Sessions
-    # Create base sessions DataFrame
-    sessions = pd.DataFrame({'session': sessions,
-                             'SID': sessions.keys(),
-                             'experiment': experiments})
 
     # Save session DataFrame to a csv file.
-    sessions.to_csv(dfspaths['sessions'])
+    sessions.to_csv(dfspaths['sessions'], index=False)
 
     # # Populate sessions DataFrame with derivative values
     # # Time To Completion (TTC)
