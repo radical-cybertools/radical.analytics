@@ -20,12 +20,31 @@ Analogously, we measure also the queueing time of each pilot (Tq), studying its 
 
 ## Directories
 
-data/  :
+Raw data divided by experiment. Each experiment is a collection of runs repeated for a certain number of times. A single ... variable is changed for every run. Note: the number of pilots requested is a ... variable, the number of pilots used is instead a ... variable. Thus, each run has two ... variables.
+
+Analytics requires agent profiles retrieved postmortem from the remote resources on which the pilots have been instantiated, and the json file of the session retrieved postmortem from the MongoDB service used for the execution.
+
+```
+data/
+ |- exp*/
+ |   |- rp.session.*.*.*.*/
+ |   |   |- pilot.*/
+ |   |   |   |- *.prof
+ |   |   |- *.prof
+ |   |   |- rp.session.*.*.*.*.json
+```
+```
 bin/   :
 plots/ :
-
+```
 ## Installation
 
+To run these experiments the full RADICAL and AIMES stacks are needed alongside several other packages. All the python packages have to be installed in a virtualenv.
+
+### Requirements
+
 ## Analysis
+
+### Requirements
 
 ## Plotting
