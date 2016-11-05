@@ -19,57 +19,51 @@ import pandas as pd
 import radical.analytics as ra
 
 
-def load_stored_sessions(datadir, filecsv):
-    sessions = pd.DataFrame({  # 'SID': [],
-                             'session': [],
-                             'experiment': []})
+def load_stored_sessions(datadir, filecsv, sessions):
     try:
         sessions = pd.read_csv(filecsv, index_col=0)
     except:
         print "WARNING: File %s is empty or not valid." % datadir
     print sessions
-    sys.exit(0)
     return sessions
 
 
 def load_new_sessions(datadir, stored_ids):
     sids = []
-    paths = []
-    experiments = []
     sras = []
+    ttcs = []
+    paths = []
+    nunits = []
+    experiments = []
 
     # Get sessions ID from .json file names. Assume:
     # datadir/exp*/sessiondir/session.json
-    start = datadir.rfind(os.sep)+1
+    start = datadir.rfind(os.sep) + 1
     for path, dirs, files in os.walk(datadir):
         folders = path[start:].split(os.sep)
         if len(folders) == 2:
             sid = os.path.basename(glob.glob('%s/*.json' % path)[0])[:-5]
             if sid in stored_ids:
                 continue
-
+            sra = ra.Session(sid, 'radical.pilot', src=path)
+            ttc = sra.ttc
+            units = sra.filter(etype='unit', inplace=False).get()
             if sid == folders[1]:
                 sids.append(sid)
+                sras.append(sra)
+                ttcs.append(ttc)
                 paths.append(path)
+                nunits.append(len(units))
                 experiments.append(folders[0])
-                sras.append(ra.Session(sid, 'radical.pilot', src=path))
-
             else:
                 error = 'ERROR: session folder and json file name differ'
                 print '%s: %s != %s' % (error, folders[1], sid)
 
-    sessions = pd.DataFrame({  # 'SID': sids,
-                             'session': sras,
-                             'experiment': experiments},
+    sessions = pd.DataFrame({'session': sras,
+                             'experiment': experiments,
+                             'TTC': ttcs,
+                             'nunit': nunits},
                             index=sids)
-
-    return sessions
-
-
-def load_sessions(datadir, filecsv):
-    stored_sessions = load_stored_sessions(datadir, filecsv)
-    new_sessions = load_new_sessions(datadir, stored_sessions.index.tolist())
-    sessions = stored_sessions.append(new_sessions)
     return sessions
 
 
@@ -85,7 +79,14 @@ if __name__ == '__main__':
     datadir = '../data/'
     sessions_csv = '%s/sessions.csv' % datadir
 
-    sessions = load_sessions(datadir, sessions_csv)
+    sessions_df = pd.DataFrame({'session'   : [],
+                                'experiment': [],
+                                'TTC'       : [],
+                                'nunit'     : []})
+
+    stored_sessions = load_stored_sessions(datadir, sessions_csv, sessions_df)
+    new_sessions = load_new_sessions(datadir, stored_sessions.index.tolist())
+    sessions = stored_sessions.append(new_sessions)
 
     print sessions
 
