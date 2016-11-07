@@ -34,14 +34,21 @@ def load_new_sessions(datadir, ttpdm, ttudm, stored_sessions):
     paths = []           # Paths of sessions on disk
     nunits = []          # Sessions number of units
     npilots = []         # Sessions number of pilots
+    experiments = []     # Sessions experiment
+    npilots_active = []  # Sessions number of active pilots
+
     pt_l_sc = []         # Pilots total PMGR scheduling time
     pt_l_qs = []         # Pilots total PMGR queueing time
     pt_l_ss = []         # Pilots total PMGR submission time
     pt_r_qs = []         # Pilots total LRMS queueing time
     pt_r_rs = []         # Pilots total LRMS running time
-    ut_a_xs = []         # Units total AGENT execution time
-    experiments = []     # Sessions experiment
-    npilots_active = []  # Sessions number of active pilots
+
+    ut_l_ss = []         # Units total UMGR scheduling time
+    ut_l_bs = []         # Units total UMGR binding time
+    ut_r_qs = []         # Units total AGENT queueing time
+    ut_r_ss = []         # Units total AGENT scheduling time
+    ut_r_qxs = []        # Units total AGENT queueing time for execution
+    ut_r_xs = []         # Units total AGENT execution time
 
     # Get sessions ID, experiment number and RA object. Assume:
     # datadir/exp*/sessiondir/session.json.
@@ -73,6 +80,8 @@ def load_new_sessions(datadir, ttpdm, ttudm, stored_sessions):
 
                 sp = sra.filter(etype='pilot', inplace=False)
                 su = sra.filter(etype='unit', inplace=False)
+
+                # Session properties
                 sras.append(sra)
                 sids.append(sid)
                 ttcs.append(sra.ttc)
@@ -81,29 +90,43 @@ def load_new_sessions(datadir, ttpdm, ttudm, stored_sessions):
                 npilots.append(len(sp.get()))
                 experiments.append(folders[0])
                 npilots_active.append(len(sp.timestamps(state='PMGR_ACTIVE')))
+
+                # Pilots total durations
                 pt_l_sc.append(sp.duration(ttpdm['ttp_pmgr_scheduling']))
                 pt_l_qs.append(sp.duration(ttpdm['ttp_pmgr_queuing']))
                 pt_l_ss.append(sp.duration(ttpdm['ttp_lrms_submitting']))
                 pt_r_qs.append(sp.duration(ttpdm['ttp_lrms_queuing']))
                 pt_r_rs.append(sp.duration(ttpdm['ttp_lrms_running']))
-                ut_a_xs.append(su.duration(ttudm['ttu_agent_executing']))
+
+                # Units total durations
+                ut_l_ss.append(su.duration(ttudm['ttu_umgr_scheduling']))
+                ut_l_bs.append(su.duration(ttudm['ttu_umgr_binding']))
+                ut_r_qs.append(su.duration(ttudm['ttu_agent_queuing']))
+                ut_r_ss.append(su.duration(ttudm['ttu_agent_scheduling']))
+                ut_r_qxs.append(su.duration(ttudm['ttu_agent_queuing_exec']))
+                ut_r_xs.append(su.duration(ttudm['ttu_agent_executing']))
             else:
                 error = 'ERROR: session folder and json file name differ'
                 print '%s: %s != %s' % (error, folders[1], sid)
 
     # Create sessions Pandas DataFrame.
-    new_sessions = pd.DataFrame({'session'            : sras,
-                                 'experiment'         : experiments,
-                                 'TTC'                : ttcs,
-                                 'nunit'              : nunits,
-                                 'npilot'             : npilots,
-                                 'npilot_active'      : npilots_active,
-                                 'ttp_pmgr_scheduling': pt_l_sc,
-                                 'ttp_pmgr_queuing'   : pt_l_qs,
-                                 'ttp_lrms_submitting': pt_l_ss,
-                                 'ttp_lrms_queuing'   : pt_r_qs,
-                                 'ttp_lrms_running'   : pt_r_rs,
-                                 'ttu_agent_executing': ut_a_xs},
+    new_sessions = pd.DataFrame({'session'               : sras,
+                                 'experiment'            : experiments,
+                                 'TTC'                   : ttcs,
+                                 'nunit'                 : nunits,
+                                 'npilot'                : npilots,
+                                 'npilot_active'         : npilots_active,
+                                 'ttp_pmgr_scheduling'   : pt_l_sc,
+                                 'ttp_pmgr_queuing'      : pt_l_qs,
+                                 'ttp_lrms_submitting'   : pt_l_ss,
+                                 'ttp_lrms_queuing'      : pt_r_qs,
+                                 'ttp_lrms_running'      : pt_r_rs,
+                                 'ttu_umgr_scheduling'   : ut_l_ss,
+                                 'ttu_umgr_binding'      : ut_l_bs,
+                                 'ttu_agent_queuing'     : ut_r_qs,
+                                 'ttu_agent_scheduling'  : ut_r_ss,
+                                 'ttu_agent_queuing_exec': ut_r_qxs,
+                                 'ttu_agent_executing'   : ut_r_xs},
                                 index=sids)
 
     return stored_sessions.append(new_sessions)
@@ -115,18 +138,23 @@ if __name__ == '__main__':
     objdir = '../data/ra_objects'
     sessions_csv = '%s/sessions.csv' % datadir
 
-    sessions_df = pd.DataFrame({'session': [],
-                                'experiment': [],
-                                'TTC': [],
-                                'nunit': [],
-                                'npilot': [],
-                                'npilot_active': [],
-                                'ttp_pmgr_scheduling': [],
-                                'ttp_pmgr_queuing': [],
-                                'ttp_lrms_submitting': [],
-                                'ttp_lrms_queuing': [],
-                                'ttp_lrms_running': [],
-                                'ttu_agent_executing': []})
+    sessions_df = pd.DataFrame({'session'               : [],
+                                'experiment'            : [],
+                                'TTC'                   : [],
+                                'nunit'                 : [],
+                                'npilot'                : [],
+                                'npilot_active'         : [],
+                                'ttp_pmgr_scheduling'   : [],
+                                'ttp_pmgr_queuing'      : [],
+                                'ttp_lrms_submitting'   : [],
+                                'ttp_lrms_queuing'      : [],
+                                'ttp_lrms_running'      : [],
+                                'ttu_umgr_scheduling'   : [],
+                                'ttu_umgr_binding'      : [],
+                                'ttu_agent_queuing'     : [],
+                                'ttu_agent_scheduling'  : [],
+                                'ttu_agent_queuing_exec': [],
+                                'ttu_agent_executing'   : []})
 
     # Model of TOTAL pilot durations.
     ttpdm = {'ttp_pmgr_scheduling': ['NEW',
