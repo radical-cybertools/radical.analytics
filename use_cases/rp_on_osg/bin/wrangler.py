@@ -7,53 +7,171 @@ Attributes:
 
 Todo:
 
-.. _Google Python Style Guide:
-   http://google.github.io/styleguide/pyguide.html
-
 """
 
 import os
-import glob
 import sys
+import glob
+import numpy as np
 import pandas as pd
 import radical.analytics as ra
 
 
-def load_stored_sessions(filecsv, sessions):
-    try:
-        sessions = pd.read_csv(filecsv, index_col=0)
-    except:
-        print "WARNING: File %s is empty or not valid." % filecsv
-    return sessions
+def initialize_entity(ename=None):
+    entities = {'session': {'session'      : [],   # RA session objects
+                            'experiment'   : [],   # Experiment ID
+                            'TTC'          : [],   # Time to completion
+                            'nhost'        : [],   # #host for CU execution
+                            'nunit'        : [],   # #units
+                            'npilot'       : [],   # #pilots
+                            'npilot_active': []},  # Number of active pilots
+                'pilot'  : {'pid'          : [],   # Pilot ID
+                            'sid'          : [],   # Session ID
+                            'hid'          : [],   # Host ID
+                            'experiment'   : []},  # Experiment ID
+                'unit'   : {'uid'          : [],   # Unit ID
+                            'sid'          : [],   # Session ID
+                            'hid'          : [],   # Host ID
+                            'experiment'   : []}}  # Experiment ID
+
+    # Add the duration label of each state of each entity.
+    for duration in pdm.keys():
+        entities['session'][duration] = []
+        entities['pilot'][duration] = []
+    for duration in udm.keys():
+        entities['session'][duration] = []
+        entities['unit'][duration] = []
+
+    # Return the empty data structure of the requested entity.
+    if ename in ['session', 'pilot', 'unit']:
+        return entities[ename]
+    else:
+        error = 'Cannot itialize entity %s' % ename
+        print error
+        sys.exit(1)
 
 
-def load_new_sessions(datadir, ttpdm, ttudm, stored_sessions):
-    sids = []            # Sessions ID
-    sras = []            # Sessions RA objects
-    ttcs = []            # Sessions TTC
-    paths = []           # Paths of sessions on disk
-    nunits = []          # Sessions number of units
-    npilots = []         # Sessions number of pilots
-    experiments = []     # Sessions experiment
-    npilots_active = []  # Sessions number of active pilots
+def load_df(ename=None):
+    if ename in ['session', 'pilot', 'unit']:
+        df = pd.DataFrame(initialize_entity(ename=ename))
+        try:
+            df = pd.read_csv(csvs[ename], index_col=0)
+        except:
+            pass
+        return df
+    else:
+        error = 'Cannot itialize entity %s' % ename
+        print error
+        sys.exit(1)
 
-    pt_l_sc = []         # Pilots total PMGR scheduling time
-    pt_l_qs = []         # Pilots total PMGR queueing time
-    pt_l_ss = []         # Pilots total PMGR submission time
-    pt_r_qs = []         # Pilots total LRMS queueing time
-    pt_r_rs = []         # Pilots total LRMS running time
 
-    ut_l_ss = []         # Units total UMGR scheduling time
-    ut_l_bs = []         # Units total UMGR binding time
-    ut_r_qs = []         # Units total AGENT queueing time
-    ut_r_ss = []         # Units total AGENT scheduling time
-    ut_r_qxs = []        # Units total AGENT queueing time for execution
-    ut_r_xs = []         # Units total AGENT execution time
+def store_df(new_df, stored=pd.DataFrame(), ename=None):
+    # skip storing if no new data are passed.
+    if not new_df.empty:
+        if ename == 'session':
+            new_sessions = new_df.drop('session', axis=1)
+
+            if not stored.empty:
+                sessions = stored.append(new_sessions)
+            else:
+                sessions = new_sessions
+            sessions.to_csv(csvs[ename])
+
+        elif ename in ['pilot', 'unit']:
+            if not stored.empty:
+                df = old_df.append(new_df)
+            else:
+                df = new_df
+            df.reset_index(inplace=True, drop=True)
+            df.to_csv(csvs[ename])
+
+        else:
+            error = 'Cannot store DF to %s' % ename
+            print error
+            sys.exit(1)
+    else:
+        print 'WARNING: attempting to store an empty DF.'
+
+
+def parse_osg_hostid(hostid):
+    '''
+    Heuristic: eliminate node-specific information from hostID.
+    '''
+    domain = None
+
+    # Split domain name from IP.
+    host = hostid.split(':')
+
+    # Split domain name into words.
+    words = host[0].split('.')
+
+    # Get the words in the domain name that do not contain
+    # numbers. Most hostnames have no number but there are
+    # exceptions.
+    literals = [l for l in words if not
+                any((number in set('0123456789')) for number in l)]
+
+    # Check for exceptions:
+    # a. every word of the domain name has a number
+    if len(literals) == 0:
+
+        # Some hostname use '-' instead of '.' as word separator.
+        # The parser would have returned a single word and the
+        # any of that word may have a number.
+        if '-' in host[0]:
+            words = host[0].split('-')
+            literals = [l for l in words if not
+                        any((number in set('0123456789')) for number in l)]
+
+            # FIXME: We do not check the size of literals.
+            domain = '.'.join(literals)
+
+        # Some hostnames may have only the name of the node. We
+        # have to keep the IP to decide later on whether two nodes
+        # are likely to belong to the same cluster.
+        elif 'nod' in host[0]:
+            domain = '.'.join(host)
+
+        # FIXME: ad hoc parsing
+        elif 'n0' in host[0]:
+            domain = 'n0x.10.2.x.x'
+
+        # The hostname is identified by an alphanumeric string
+        else:
+            domain = '.'.join(host)
+
+    # Some hostnames DO have numbers in their name.
+    elif len(literals) == 1:
+        domain = '.'.join(words[1:])
+
+    # Some hostname are just simple to parse.
+    else:
+        domain = '.'.join(literals)
+
+    # FIXME: When everything else fails, ad hoc manipulations of
+    #        domain string.
+    if 'its.osg' in domain:
+        display(domain)
+        domain = 'its.osg'
+    elif 'nodo' in domain:
+        display(domain)
+        domain = 'nodo'
+    elif 'bu.edu' in domain:
+        display(domain)
+        domain = 'bu.edu'
+
+    return domain
+
+
+def load_new_sessions(datadir, pdm, udm):
+    print '\nLoading sessions:'
+    # Collect the RA objects and return them as a column of the sessions DF.
+    sras = {}
 
     # Get sessions ID, experiment number and RA object. Assume:
     # datadir/exp*/sessiondir/session.json.
     start = datadir.rfind(os.sep) + 1
-    for path, dirs, files in os.walk(datadir):
+    for path, dirs, _ in os.walk(datadir):
         folders = path[start:].split(os.sep)
 
         # Use only exp*/rp.session.* paths.
@@ -69,141 +187,246 @@ def load_new_sessions(datadir, ttpdm, ttudm, stored_sessions):
                 # to be constructed at every run.
                 # TODO: Make RA session objects serializable in msgpack format.
                 sra = ra.Session(sid, 'radical.pilot', src=path)
+                sras[sid] = sra
 
                 # Skip session if we have already saved it on disk. No need to
                 # recompute all the durations and properties for the session
                 # but we need to add the RA session object back to the stored
                 # sessions DF.
+                stored_sessions = load_df(ename='session')
                 if sid in stored_sessions.index.tolist():
                     stored_sessions.ix[sid, 'session'] = sra
+                    print '%s --- %s already stored in %s' % \
+                        (folders[0], sid, csvs['session'])
                     continue
 
-                sp = sra.filter(etype='pilot', inplace=False)
-                su = sra.filter(etype='unit', inplace=False)
+                # Initialize data structures for session DF when a session ID
+                # is found that has not yet been stored.
+                ss = initialize_entity(ename='session')
+                sids = []  # Index of sessions DF
+                sids.append(sid)
 
                 # Session properties
-                sras.append(sra)
-                sids.append(sid)
-                ttcs.append(sra.ttc)
-                paths.append(path)
-                nunits.append(len(su.get()))
-                npilots.append(len(sp.get()))
-                experiments.append(folders[0])
-                npilots_active.append(len(sp.timestamps(state='PMGR_ACTIVE')))
+                sp = sra.filter(etype='pilot', inplace=False)
+                su = sra.filter(etype='unit', inplace=False)
+                ss['session'].append(sra)
+                ss['experiment'].append(folders[0])
+                ss['TTC'].append(sra.ttc)
+                ss['nhost'].append(None)
+                ss['nunit'].append(len(su.get()))
+                ss['npilot'].append(len(sp.get()))
+                ss['npilot_active'].append(
+                    len(sp.timestamps(state='PMGR_ACTIVE')))
 
-                # Pilots total durations
-                pt_l_sc.append(sp.duration(ttpdm['ttp_pmgr_scheduling']))
-                pt_l_qs.append(sp.duration(ttpdm['ttp_pmgr_queuing']))
-                pt_l_ss.append(sp.duration(ttpdm['ttp_lrms_submitting']))
-                pt_r_qs.append(sp.duration(ttpdm['ttp_lrms_queuing']))
-                pt_r_rs.append(sp.duration(ttpdm['ttp_lrms_running']))
+                # Pilots total durations.  NOTE: ss initialization guarantees
+                # the existence of keys.
+                for duration in pdm.keys():
+                    ss[duration].append(sp.duration(pdm[duration]))
 
-                # Units total durations
-                ut_l_ss.append(su.duration(ttudm['ttu_umgr_scheduling']))
-                ut_l_bs.append(su.duration(ttudm['ttu_umgr_binding']))
-                ut_r_qs.append(su.duration(ttudm['ttu_agent_queuing']))
-                ut_r_ss.append(su.duration(ttudm['ttu_agent_scheduling']))
-                ut_r_qxs.append(su.duration(ttudm['ttu_agent_queuing_exec']))
-                ut_r_xs.append(su.duration(ttudm['ttu_agent_executing']))
+                # Units total durations. NOTE: ss initialization guarantees the
+                # existence of ss keys.
+                for duration in udm.keys():
+                    ss[duration].append(su.duration(udm[duration]))
+
+                # Store session DF to csv.
+                session = pd.DataFrame(ss, index=sids)
+                store_df(session, stored=stored_sessions, ename='session')
+                print '%s --- %s stored in %s' % \
+                    (folders[0], sid, csvs['session'])
             else:
                 error = 'ERROR: session folder and json file name differ'
                 print '%s: %s != %s' % (error, folders[1], sid)
 
-    # Create sessions Pandas DataFrame.
-    new_sessions = pd.DataFrame({'session'               : sras,
-                                 'experiment'            : experiments,
-                                 'TTC'                   : ttcs,
-                                 'nunit'                 : nunits,
-                                 'npilot'                : npilots,
-                                 'npilot_active'         : npilots_active,
-                                 'ttp_pmgr_scheduling'   : pt_l_sc,
-                                 'ttp_pmgr_queuing'      : pt_l_qs,
-                                 'ttp_lrms_submitting'   : pt_l_ss,
-                                 'ttp_lrms_queuing'      : pt_r_qs,
-                                 'ttp_lrms_running'      : pt_r_rs,
-                                 'ttu_umgr_scheduling'   : ut_l_ss,
-                                 'ttu_umgr_binding'      : ut_l_bs,
-                                 'ttu_agent_queuing'     : ut_r_qs,
-                                 'ttu_agent_scheduling'  : ut_r_ss,
-                                 'ttu_agent_queuing_exec': ut_r_qxs,
-                                 'ttu_agent_executing'   : ut_r_xs},
-                                index=sids)
+    # Add RA session objects to the df loaded from disk.
+    for sid in sras.keys():
+        stored_sessions.ix[sid, 'session'] = sras[sid]
 
-    return stored_sessions.append(new_sessions)
+    return stored_sessions
+
+
+def add_session_unique_hosts(sessions, pilots):
+    print '\n\nAdding number of unique hosts to sessions:'
+    for sid in sessions.index:
+        if pd.isnull(sessions.ix[sid]['nhost']):
+            sessions.ix[sid, 'nhost'] = len(
+                pilots[pilots['sid'] == sid]['hid'].unique())
+            store_df(sessions, ename='session')
+            sys.stdout.write('\n%s: %s hosts, stored in %s.' %
+                             (sid, sessions.ix[sid]['nhost'], csvs['pilot']))
+
+        else:
+            sys.stdout.write('\n%s: %s hosts already stored in %s' %
+                             (sid, sessions.ix[sid]['nhost'], csvs['pilot']))
+    return sessions
+
+
+def load_new_pilots(pdm, sessions):
+    print '\n\nLoading pilots:'
+    stored_pids = []
+
+    # Calculate the duration for each state of each pilot of each run and
+    # Populate the DataFrame  structure.
+    for sid in sessions.index:
+        sys.stdout.write('\n%s --- %s' % (sessions.ix[sid, 'experiment'], sid))
+        ps = initialize_entity(ename='pilot')
+        stored_pilots = load_df(ename='pilot')
+        if not stored_pilots['sid'].empty:
+            stored_pids = stored_pilots[
+                stored_pilots['sid'] == sid]['pid'].values.tolist()
+
+        # Derive properties of each session's pilot.
+        s = sessions.ix[sid, 'session'].filter(etype='pilot', inplace=False)
+        for pid in sorted(s.list('uid')):
+            # Skip session if its pilots have been already stored.
+            if pid in stored_pids:
+                sys.stdout.write('\n%s already stored in %s' %
+                                 (pid, csvs['pilot']))
+                continue
+
+            sys.stdout.write('\n' + pid + ': ')
+            ps['pid'].append(pid)
+            ps['sid'].append(sid)
+            ps['experiment'].append(sessions.ix[sid, 'experiment'])
+
+            # Derive host ID for each pilot.
+            sf = s.filter(uid=pid, inplace=False)
+            pentity = sf.get(etype=['pilot'])[0]
+            if pentity.cfg['hostid']:
+                ps['hid'].append(parse_osg_hostid(pentity.cfg['hostid']))
+            else:
+                ps['hid'].append(None)
+
+            # Derive durations of each session's pilot.
+            for duration in pdm.keys():
+                if duration not in ps.keys():
+                    ps[duration] = []
+                if (not sf.timestamps(state=pdm[duration][0]) or
+                        not sf.timestamps(state=pdm[duration][1])):
+                    ps[duration].append(None)
+                    continue
+                ps[duration].append(sf.duration(pdm[duration]))
+                sys.stdout.write('.')
+        # Store session DF to csv.
+        if ps['pid']:
+            pilots = pd.DataFrame(ps)
+            store_df(pilots, stored=stored_pilots, ename='pilot')
+            print '\nstored in %s.' % csvs['pilot']
+
+    # Return new DF merged into the one already stored (possibly empty).
+    return stored_pilots
+
+
+# TODO: Repeated code.
+def load_new_units(udm, sessions):
+    print '\nLoading units:'
+    stored_uids = []
+
+    # Calculate the duration for each state of each pilot of each run and
+    # Populate the DataFrame  structure.
+    for sid in sessions.index:
+        sys.stdout.write('\n%s --- %s' % (sessions.ix[sid, 'experiment'], sid))
+
+        us = initialize_entity(ename='unit')
+        stored_units = load_df(ename='unit')
+        if not stored_units['sid'].empty:
+            stored_uids = stored_units[
+                stored_units['sid'] == sid]['uid'].values.tolist()
+
+        # Derive properties of each session's pilot.
+        s = sessions.ix[sid, 'session'].filter(etype='unit', inplace=False)
+        for uid in sorted(s.list('uid')):
+
+            # Skip session if its pilots have been already stored.
+            if uid in stored_uids:
+                sys.stdout.write('\n%s already stored in %s' %
+                                 (uid, csvs['unit']))
+                continue
+
+            sys.stdout.write('\n' + uid + ': ')
+            us['uid'].append(uid)
+            us['sid'].append(sid)
+            us['hid'].append(None)
+            us['experiment'].append(sessions.ix[sid, 'experiment'])
+
+            # Derive durations of each session's pilot.
+            sf = s.filter(uid=uid, inplace=False)
+            for duration in udm.keys():
+                if duration not in us.keys():
+                    us[duration] = []
+                if (not sf.timestamps(state=udm[duration][0]) or
+                        not sf.timestamps(state=udm[duration][1])):
+                    us[duration].append(None)
+                    continue
+                us[duration].append(sf.duration(udm[duration]))
+                sys.stdout.write('.')
+        # Store session DF to csv.
+        if us['uid']:
+            units = pd.DataFrame(us)
+            store_df(units, stored=stored_units, ename='unit')
+            print '\nstored in %s.' % csvs['unit']
+
+    # Return new DF merged into the one already stored (possibly empty).
+    return stored_units
 
 
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    datadir = '../data/'
-    objdir = '../data/ra_objects'
-    sessions_csv = '%s/sessions.csv' % datadir
+    datadir = '../test/'
 
-    sessions_df = pd.DataFrame({'session'               : [],
-                                'experiment'            : [],
-                                'TTC'                   : [],
-                                'nunit'                 : [],
-                                'npilot'                : [],
-                                'npilot_active'         : [],
-                                'ttp_pmgr_scheduling'   : [],
-                                'ttp_pmgr_queuing'      : [],
-                                'ttp_lrms_submitting'   : [],
-                                'ttp_lrms_queuing'      : [],
-                                'ttp_lrms_running'      : [],
-                                'ttu_umgr_scheduling'   : [],
-                                'ttu_umgr_binding'      : [],
-                                'ttu_agent_queuing'     : [],
-                                'ttu_agent_scheduling'  : [],
-                                'ttu_agent_queuing_exec': [],
-                                'ttu_agent_executing'   : []})
+    # Global constants
+    # File names where to save the DF of each entity of each session.
+    csvs = {'session': '%ssessions.csv' % datadir,
+            'pilot'  : '%spilots.csv' % datadir,
+            'unit'   : '%sunits.csv' % datadir}
 
-    # Model of TOTAL pilot durations.
-    ttpdm = {'ttp_pmgr_scheduling': ['NEW',
-                                     'PMGR_LAUNCHING_PENDING'],
-             'ttp_pmgr_queuing'   : ['PMGR_LAUNCHING_PENDING',
-                                     'PMGR_LAUNCHING'],
-             'ttp_lrms_submitting': ['PMGR_LAUNCHING',
-                                     'PMGR_ACTIVE_PENDING'],
-             'ttp_lrms_queuing'   : ['PMGR_ACTIVE_PENDING',
-                                     'PMGR_ACTIVE'],
-             'ttp_lrms_running'   : ['PMGR_ACTIVE',
-                                     ['DONE', 'CANCELED', 'FAILED']]}
+    # Model of pilot durations.
+    pdm = {'P_PMGR_SCHEDULING': ['NEW',
+                                 'PMGR_LAUNCHING_PENDING'],
+           'P_PMGR_QUEUING'   : ['PMGR_LAUNCHING_PENDING',
+                                 'PMGR_LAUNCHING'],
+           'P_LRMS_SUBMITTING': ['PMGR_LAUNCHING',
+                                 'PMGR_ACTIVE_PENDING'],
+           'P_LRMS_QUEUING'   : ['PMGR_ACTIVE_PENDING',
+                                 'PMGR_ACTIVE'],
+           'P_LRMS_RUNNING'   : ['PMGR_ACTIVE',
+                                 ['DONE', 'CANCELED', 'FAILED']]}
 
-    # Model of total unit durations.
-    ttudm = {'ttu_umgr_scheduling'   : ['NEW',
-                                        'UMGR_SCHEDULING_PENDING'],
-             'ttu_umgr_binding'      : ['UMGR_SCHEDULING_PENDING',
-                                        'UMGR_SCHEDULING'],
-             'tti_umgr_scheduling'   : ['UMGR_SCHEDULING',
-                                        'UMGR_STAGING_INPUT_PENDING'],
-             'tti_umgr_queing'       : ['UMGR_STAGING_INPUT_PENDING',
-                                        'UMGR_STAGING_INPUT'],
-             'tti_agent_scheduling'  : ['UMGR_STAGING_INPUT',
-                                        'AGENT_STAGING_INPUT_PENDING'],
-             'tti_agent_queuing'     : ['AGENT_STAGING_INPUT_PENDING',
-                                        'AGENT_STAGING_INPUT'],
-             'tti_agent_transferring': ['AGENT_STAGING_INPUT',
-                                        'AGENT_SCHEDULING_PENDING'],
-             'ttu_agent_queuing'     : ['AGENT_SCHEDULING_PENDING',
-                                        'AGENT_SCHEDULING'],
-             'ttu_agent_scheduling'  : ['AGENT_SCHEDULING',
-                                        'AGENT_EXECUTING_PENDING'],
-             'ttu_agent_queuing_exec': ['AGENT_EXECUTING_PENDING',
-                                        'AGENT_EXECUTING'],
-             'ttu_agent_executing'   : ['AGENT_EXECUTING',
-                                        'AGENT_STAGING_OUTPUT_PENDING'],
-             'tto_agent_queuing'     : ['AGENT_STAGING_OUTPUT_PENDING',
-                                        'AGENT_STAGING_OUTPUT'],
-             'tto_umgr_scheduling'   : ['AGENT_STAGING_OUTPUT',
-                                        'UMGR_STAGING_OUTPUT_PENDING'],
-             'tto_umgr_queuing'      : ['UMGR_STAGING_OUTPUT_PENDING',
-                                        'UMGR_STAGING_OUTPUT'],
-             'tto_umgr_transferring' : ['UMGR_STAGING_OUTPUT',
-                                        ['DONE', 'CANCELED', 'FAILED']]}
+    # Model of unit durations.
+    udm = {'U_UMGR_SCHEDULING'   : ['NEW',
+                                    'UMGR_SCHEDULING_PENDING'],
+           'U_UMGR_BINDING'      : ['UMGR_SCHEDULING_PENDING',
+                                    'UMGR_SCHEDULING'],
+           #    'I_UMGR_SCHEDULING'   : ['UMGR_SCHEDULING',
+           #                             'UMGR_STAGING_INPUT_PENDING'],
+           #    'I_UMGR_QUEING'       : ['UMGR_STAGING_INPUT_PENDING',
+           #                             'UMGR_STAGING_INPUT'],
+           #    'I_AGENT_SCHEDULING'  : ['UMGR_STAGING_INPUT',
+           #                             'AGENT_STAGING_INPUT_PENDING'],
+           #    'I_AGENT_QUEUING'     : ['AGENT_STAGING_INPUT_PENDING',
+           #                             'AGENT_STAGING_INPUT'],
+           #    'I_AGENT_TRANSFERRING': ['AGENT_STAGING_INPUT',
+           #                             'AGENT_SCHEDULING_PENDING'],
+           'U_AGENT_QUEUING'     : ['AGENT_SCHEDULING_PENDING',
+                                    'AGENT_SCHEDULING'],
+           'U_AGENT_SCHEDULING'  : ['AGENT_SCHEDULING',
+                                    'AGENT_EXECUTING_PENDING'],
+           'U_AGENT_QUEUING_EXEC': ['AGENT_EXECUTING_PENDING',
+                                    'AGENT_EXECUTING'],
+           'U_AGENT_EXECUTING'   : ['AGENT_EXECUTING',
+                                    'AGENT_STAGING_OUTPUT_PENDING']}
+    #    'O_AGENT_QUEUING'     : ['AGENT_STAGING_OUTPUT_PENDING',
+    #                             'AGENT_STAGING_OUTPUT'],
+    #    'O_UMGR_SCHEDULING'   : ['AGENT_STAGING_OUTPUT',
+    #                             'UMGR_STAGING_OUTPUT_PENDING'],
+    #    'O_UMGR_QUEUING'      : ['UMGR_STAGING_OUTPUT_PENDING',
+    #                             'UMGR_STAGING_OUTPUT'],
+    #    'O_UMGR_TRANSFERRING' : ['UMGR_STAGING_OUTPUT',
+    #                             ['DONE', 'CANCELED', 'FAILED']]}
 
-    stored_sessions = load_stored_sessions(sessions_csv, sessions_df)
-    sessions = load_new_sessions(datadir, ttpdm, ttudm, stored_sessions)
+    # stored_sessions = load_df(sessions_csv, ss)
+    sessions = load_new_sessions(datadir, pdm, udm)
+    pilots = load_new_pilots(pdm, sessions)
+    units = load_new_units(udm, sessions)
 
-    print sessions
-
-    save_sessions = sessions.drop('session', axis=1)
-    save_sessions.to_csv(sessions_csv)
+    # Add values across DFs.
+    sessions = add_session_unique_hosts(sessions, pilots)
