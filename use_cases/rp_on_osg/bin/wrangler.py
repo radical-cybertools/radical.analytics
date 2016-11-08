@@ -79,7 +79,7 @@ def store_df(new_df, stored=pd.DataFrame(), ename=None):
 
         elif ename in ['pilot', 'unit']:
             if not stored.empty:
-                df = old_df.append(new_df)
+                df = stored.append(new_df)
             else:
                 df = new_df
             df.reset_index(inplace=True, drop=True)
@@ -260,6 +260,33 @@ def add_session_unique_hosts(sessions, pilots):
     return sessions
 
 
+def add_unit_hosts(units, pilots, sessions):
+    print '\n\nAdding host and pilot IDs to units:'
+    counter = 0
+    for sid in sessions.index:
+        sra = sessions.ix[sid]['session']
+        pu_rels = sra.describe('relations', ['pilot', 'unit'])
+        uids = units[units['sid'] == sid]['uid']
+        for uid in uids:
+            uix = units[(units['sid'] == sid) & (units['uid'] == uid)].index[0]
+            if pd.isnull(units.ix[uix]['hid']):
+                punit = [key[0] for key in pu_rels.items() if uid in key[1]][0]
+                hid = pilots[(pilots['sid'] == sid) & (pilots['pid'] == punit)]['hid'].tolist()[0]
+                units.ix[uix, 'pid'] = punit
+                units.ix[uix, 'hid'] = hid
+                counter += 1
+            else:
+                sys.stdout.write('\n%s:%s host ID already stored in %s' %
+                                 (sid, uid, csvs['unit']))
+
+    if counter:
+        store_df(units, ename='unit')
+        sys.stdout.write('\n%s: %s host and pilot IDs stored in %s.' %
+                         (sid, counter, csvs['unit']))
+
+    return units
+
+
 def load_new_pilots(pdm, sessions):
     print '\n\nLoading pilots:'
     stored_pids = []
@@ -371,7 +398,7 @@ def load_new_units(udm, sessions):
 
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    datadir = '../test/'
+    datadir = '../data/'
 
     # Global constants
     # File names where to save the DF of each entity of each session.
@@ -430,3 +457,4 @@ if __name__ == '__main__':
 
     # Add values across DFs.
     sessions = add_session_unique_hosts(sessions, pilots)
+    units = add_unit_hosts(units, pilots, sessions)
