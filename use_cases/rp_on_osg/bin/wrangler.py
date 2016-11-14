@@ -151,13 +151,10 @@ def parse_osg_hostid(hostid):
     # FIXME: When everything else fails, ad hoc manipulations of
     #        domain string.
     if 'its.osg' in domain:
-        display(domain)
         domain = 'its.osg'
     elif 'nodo' in domain:
-        display(domain)
         domain = 'nodo'
     elif 'bu.edu' in domain:
-        display(domain)
         domain = 'bu.edu'
 
     return domain
@@ -195,7 +192,7 @@ def load_new_sessions(datadir, pdm, udm):
                 # sessions DF.
                 stored_sessions = load_df(ename='session')
                 if sid in stored_sessions.index.tolist():
-                    stored_sessions.ix[sid, 'session'] = sra
+                    stored_sessions.loc[sid, 'session'] = sra
                     print '%s --- %s already stored in %s' % \
                         (folders[0], sid, csvs['session'])
                     continue
@@ -239,7 +236,7 @@ def load_new_sessions(datadir, pdm, udm):
 
     # Add RA session objects to the df loaded from disk.
     for sid in sras.keys():
-        stored_sessions.ix[sid, 'session'] = sras[sid]
+        stored_sessions.loc[sid, 'session'] = sras[sid]
 
     return stored_sessions
 
@@ -247,16 +244,16 @@ def load_new_sessions(datadir, pdm, udm):
 def add_session_unique_hosts(sessions, pilots):
     print '\n\nAdding number of unique hosts to sessions:'
     for sid in sessions.index:
-        if pd.isnull(sessions.ix[sid]['nhost']):
-            sessions.ix[sid, 'nhost'] = len(
+        if pd.isnull(sessions.loc[sid]['nhost']):
+            sessions.loc[sid, 'nhost'] = len(
                 pilots[pilots['sid'] == sid]['hid'].unique())
             store_df(sessions, ename='session')
             sys.stdout.write('\n%s: %s hosts, stored in %s.' %
-                             (sid, sessions.ix[sid]['nhost'], csvs['pilot']))
+                             (sid, sessions.loc[sid]['nhost'], csvs['pilot']))
 
         else:
             sys.stdout.write('\n%s: %s hosts already stored in %s' %
-                             (sid, sessions.ix[sid]['nhost'], csvs['pilot']))
+                             (sid, sessions.loc[sid]['nhost'], csvs['pilot']))
     return sessions
 
 
@@ -264,16 +261,16 @@ def add_unit_hosts(units, pilots, sessions):
     print '\n\nAdding host and pilot IDs to units:'
     counter = 0
     for sid in sessions.index:
-        sra = sessions.ix[sid]['session']
+        sra = sessions.loc[sid]['session']
         pu_rels = sra.describe('relations', ['pilot', 'unit'])
         uids = units[units['sid'] == sid]['uid']
         for uid in uids:
             uix = units[(units['sid'] == sid) & (units['uid'] == uid)].index[0]
-            if pd.isnull(units.ix[uix]['hid']):
+            if pd.isnull(units.loc[uix]['hid']):
                 punit = [key[0] for key in pu_rels.items() if uid in key[1]][0]
                 hid = pilots[(pilots['sid'] == sid) & (pilots['pid'] == punit)]['hid'].tolist()[0]
-                units.ix[uix, 'pid'] = punit
-                units.ix[uix, 'hid'] = hid
+                units.loc[uix, 'pid'] = punit
+                units.loc[uix, 'hid'] = hid
                 counter += 1
             else:
                 sys.stdout.write('\n%s:%s host ID already stored in %s' %
@@ -294,7 +291,7 @@ def load_new_pilots(pdm, sessions):
     # Calculate the duration for each state of each pilot of each run and
     # Populate the DataFrame  structure.
     for sid in sessions.index:
-        sys.stdout.write('\n%s --- %s' % (sessions.ix[sid, 'experiment'], sid))
+        sys.stdout.write('\n%s --- %s' % (sessions.loc[sid, 'experiment'], sid))
         ps = initialize_entity(ename='pilot')
         stored_pilots = load_df(ename='pilot')
         if not stored_pilots['sid'].empty:
@@ -302,7 +299,7 @@ def load_new_pilots(pdm, sessions):
                 stored_pilots['sid'] == sid]['pid'].values.tolist()
 
         # Derive properties of each session's pilot.
-        s = sessions.ix[sid, 'session'].filter(etype='pilot', inplace=False)
+        s = sessions.loc[sid, 'session'].filter(etype='pilot', inplace=False)
         for pid in sorted(s.list('uid')):
             # Skip session if its pilots have been already stored.
             if pid in stored_pids:
@@ -313,7 +310,7 @@ def load_new_pilots(pdm, sessions):
             sys.stdout.write('\n' + pid + ': ')
             ps['pid'].append(pid)
             ps['sid'].append(sid)
-            ps['experiment'].append(sessions.ix[sid, 'experiment'])
+            ps['experiment'].append(sessions.loc[sid, 'experiment'])
 
             # Derive host ID for each pilot.
             sf = s.filter(uid=pid, inplace=False)
@@ -351,7 +348,7 @@ def load_new_units(udm, sessions):
     # Calculate the duration for each state of each pilot of each run and
     # Populate the DataFrame  structure.
     for sid in sessions.index:
-        sys.stdout.write('\n%s --- %s' % (sessions.ix[sid, 'experiment'], sid))
+        sys.stdout.write('\n%s --- %s' % (sessions.loc[sid, 'experiment'], sid))
 
         us = initialize_entity(ename='unit')
         stored_units = load_df(ename='unit')
@@ -360,7 +357,7 @@ def load_new_units(udm, sessions):
                 stored_units['sid'] == sid]['uid'].values.tolist()
 
         # Derive properties of each session's pilot.
-        s = sessions.ix[sid, 'session'].filter(etype='unit', inplace=False)
+        s = sessions.loc[sid, 'session'].filter(etype='unit', inplace=False)
         for uid in sorted(s.list('uid')):
 
             # Skip session if its pilots have been already stored.
@@ -373,7 +370,7 @@ def load_new_units(udm, sessions):
             us['uid'].append(uid)
             us['sid'].append(sid)
             us['hid'].append(None)
-            us['experiment'].append(sessions.ix[sid, 'experiment'])
+            us['experiment'].append(sessions.loc[sid, 'experiment'])
 
             # Derive durations of each session's pilot.
             sf = s.filter(uid=uid, inplace=False)
