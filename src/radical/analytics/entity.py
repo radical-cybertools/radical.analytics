@@ -157,10 +157,14 @@ class Entity(object):
         # FIXME: assert state model adherence here
         # FIXME: where to get state model from?
         # FIXME: sort events by time
-        import pprint
 
         # for pilots, we may not have any states.  If thst is the case, we dig
         # them out of the state hostory
+        #
+        # FIXME: the fallback to state history will not make sense for current
+        #        RP profiles anymore, and should be removed before release.  It
+        #        does not change the data though.
+        #
         statehist = self._details.get('json', {}).get('statehistory', [])
         for e in statehist:
             if e['state'] not in self._states:
