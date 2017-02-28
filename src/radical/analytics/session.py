@@ -36,8 +36,12 @@ class Session(object):
 
         if stype == 'radical.pilot':
             import radical.pilot as rp
-            self._profile     = rp.utils.get_session_profile(sid=sid,     src=self._src)
+            self._profile, accuracy, hostmap \
+                              = rp.utils.get_session_profile    (sid=sid, src=self._src)
             self._description = rp.utils.get_session_description(sid=sid, src=self._src)
+
+            self._description['accuracy'] = accuracy
+            self._description['hostmap']  = hostmap
 
         else:
             raise ValueError('unsupported session type [%s]' % stype)
@@ -46,7 +50,7 @@ class Session(object):
         self._t_stop      = None
         self._ttc         = None
 
-        self._reporter    = None
+        self._log         = None
 
         # internal state is represented by a dict of entities:
         # dict keys are entity uids (which are assumed to be unique per
@@ -102,10 +106,10 @@ class Session(object):
     @property
     def _rep(self):
 
-        if not self._reporter:
-            self._reporter = ru.LogReporter()
+        if not self._log:
+            self._log = ru.get_logger('radical.analytics')
 
-        return self._reporter
+        return self._log.report
 
 
     # --------------------------------------------------------------------------
@@ -152,10 +156,13 @@ class Session(object):
         # entity type in one of the events (and assume it is consistent over
         # all events for that uid)
         for uid,events in entity_events.iteritems():
-            etype = events[0]['entity_type']
+            etype   = events[0]['entity_type']
+            details = self._description['tree'].get(uid, dict())
+            details['hostid'] = self._description['hostmap'].get(uid)
             self._entities[uid] = Entity(_uid=uid,
                                          _etype=etype,
-                                         _profile=events)
+                                         _profile=events, 
+                                         _details=details)
 
 
     # --------------------------------------------------------------------------
