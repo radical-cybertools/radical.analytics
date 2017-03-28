@@ -1,4 +1,5 @@
 
+import os
 import sys
 
 
@@ -6,7 +7,7 @@ import sys
 #
 class Entity(object):
 
-    def __init__(self, _uid, _etype, _profile):
+    def __init__(self, _uid, _etype, _profile, _details):
         """
         This is a private constructor for an RA Entity: it gets a series of
         events and sorts it into its properties.  We have 4 properties:
@@ -25,6 +26,13 @@ class Entity(object):
 
         self._uid         = _uid
         self._etype       = _etype
+        self._details     = _details
+        self._description = self._details.get('description', dict())
+        self._cfg         = self._details.get('cfg',         dict())
+
+        # FIXME: this should be sorted out on RP level
+        self._cfg['hostid'] = self._details['hostid']
+
         self._states      = dict()
         self._events      = dict()
         self._consistency = { 'log'         : list(), 
@@ -70,6 +78,14 @@ class Entity(object):
         return self._states
 
     @property
+    def description(self):
+        return self._description
+
+    @property
+    def cfg(self):
+        return self._cfg
+
+    @property
     def events(self):
         return self._events
 
@@ -106,10 +122,17 @@ class Entity(object):
             self._t_start = sys.float_info.max
             self._t_stop  = sys.float_info.min
 
+      # if self.uid == os.environ.get('FILTER'):
+      #     print '\n\n%s' % self.uid
+
         # we expect each event to have `time` and `event_type`, and expect
         # 'state' events to signify a state transition, and thus to always 
         # have the property 'state' set, too
-        for event in profile:
+        for event in sorted(profile, key=lambda (x): (x['time'])):
+
+          # if self.uid == os.environ.get('FILTER'):
+          #     if 'Listen' not in event['msg']:
+          #         print event
 
             t = event['time']
 
@@ -119,6 +142,9 @@ class Entity(object):
             etype = event['event_type']
             if etype == 'state':
                 state = event['state']
+              # if self.uid == os.environ.get('FILTER'):
+              #     print '%s  %-25s  %8.2f' % (self.uid, state, event['time'])
+              #     print event
                 self._states[state] = event
 
             # we also treat state transitions as generic event.
