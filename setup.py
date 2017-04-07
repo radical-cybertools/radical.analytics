@@ -14,14 +14,14 @@ import sys
 import shutil
 import subprocess as sp
 
+name     = 'radical.analytics'
+mod_root = 'src/radical/analytics/'
+
 try:
     from setuptools import setup, Command, find_packages
 except ImportError as e:
-    print("radical.analytics needs setuptools to install")
+    print("%s needs setuptools to install" % name)
     sys.exit(1)
-
-name     = 'radical.analytics'
-mod_root = 'src/radical/analytics/'
 
 # ------------------------------------------------------------------------------
 #
@@ -140,7 +140,7 @@ class our_test(Command):
         testdir = "%s/tests/" % os.path.dirname(os.path.realpath(__file__))
         retval  = sp.call([sys.executable,
                           '%s/run_tests.py'               % testdir,
-                          '%s/configs/basetests.cfg'      % testdir])
+                          '%s/configs/default.cfg'        % testdir])
         raise SystemExit(retval)
 
 
@@ -268,7 +268,7 @@ setup_args = {
     },
     'install_requires'   : ['radical.utils'],
     'tests_require'      : [],
-    'test_suite'         : 'radical.analytics.tests',
+    'test_suite'         : '%s.tests' % name,
     'zip_safe'           : False,
 #   'build_sphinx'       : {
 #       'source-dir'     : 'docs/',
@@ -277,18 +277,18 @@ setup_args = {
 #   },
 #   'upload_sphinx'      : {
 #       'upload-dir'     : 'docs/build/html',
-#   }
+#   },
     # This copies the contents of the examples/ dir under
-    # sys.prefix/share/radical.analytics.
+    # sys.prefix/share/$name
     # It needs the MANIFEST.in entries to work.
-    'data_files'         : makeDataFiles('share/radical.analytics/examples/', 'examples'),
+    'data_files'         : makeDataFiles('share/%s/examples/' % name, 'examples'),
 }
 
 # ------------------------------------------------------------------------------
 
 setup (**setup_args)
 
-os.system('rm -rf src/radical.analytics.egg-info')
+os.system('rm -rf src/%s.egg-info' % name)
 
 # ------------------------------------------------------------------------------
 
