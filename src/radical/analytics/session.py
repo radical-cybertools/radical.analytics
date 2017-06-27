@@ -36,7 +36,7 @@ class Session(object):
 
         if stype == 'radical.pilot':
             import radical.pilot as rp
-            self._profile, accuracy, hostmap \
+            profile, accuracy, hostmap \
                               = rp.utils.get_session_profile    (sid=sid, src=self._src)
             self._description = rp.utils.get_session_description(sid=sid, src=self._src)
 
@@ -46,18 +46,17 @@ class Session(object):
         else:
             raise ValueError('unsupported session type [%s]' % stype)
 
-        self._t_start     = None
-        self._t_stop      = None
-        self._ttc         = None
-
-        self._log         = None
+        self._t_start = None
+        self._t_stop  = None
+        self._ttc     = None
+        self._log     = None
 
         # internal state is represented by a dict of entities:
         # dict keys are entity uids (which are assumed to be unique per
         # session), dict values are ra.Entity instances.
         self._entities = dict()
         if _init:
-            self._initialize_entities()
+            self._initialize_entities(profile)
 
         # we do some bookkeeping in self._properties where we keep a list of
         # property values around which we encountered in self._entities.
@@ -67,6 +66,23 @@ class Session(object):
 
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
+        
+        # get a unit uid
+        if 0 == len(self._entities):
+            print 'no entities'
+        else:
+            for eid,entity in self._entities.iteritems():
+                if 'unit' in eid:
+                    break
+            e0 = self._entities[eid]
+          # print 'session       : %20d MB' % (ru.get_size(self,             strict=True)/(1024**2))
+          # print 'entities      : %20d MB' % (ru.get_size(self._entities,   strict=True)/(1024**2))
+          # print 'properties    : %20d MB' % (ru.get_size(self._properties, strict=True)/(1024**2))
+          # print '#entities     : %20d'    % len(self._entities)
+          # import pprint
+          # pprint.pprint(e0._states)
+          # import resource 
+          # print 'max RSS       : %20d MB' % (resource.getrusage(1)[2]/(1024))
 
 
     # --------------------------------------------------------------------------
@@ -133,9 +149,9 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def _initialize_entities(self):
+    def _initialize_entities(self, profile):
         """
-        populate self._entities from self._profile and
+        populate self._entities from profile and
         self._description.
 
         NOTE: We derive entity types via some heuristics for now: we assume the
@@ -145,8 +161,8 @@ class Session(object):
         # create entities from the profile events:
         entity_events = dict()
 
-        for event in self._profile:
-            uid = event['uid']
+        for event in profile:
+            uid = event[ru.UID]
 
             if uid not in entity_events:
                 entity_events[uid] = list()
@@ -156,7 +172,7 @@ class Session(object):
         # entity type in one of the events (and assume it is consistent over
         # all events for that uid)
         for uid,events in entity_events.iteritems():
-            etype   = events[0]['entity_type']
+            etype   = events[0][ru.TYPE]
             details = self._description['tree'].get(uid, dict())
             details['hostid'] = self._description['hostmap'].get(uid)
             self._entities[uid] = Entity(_uid=uid,
@@ -266,8 +282,8 @@ class Session(object):
 
             if state:
                 match = False
-                for s,sdict in entity.states.iteritems():
-                    if time and not ru.in_range(sdict['time'], time):
+                for s,stuple in entity.states.iteritems():
+                    if time and not ru.in_range(stuple[ru.TIME], time):
                         continue
                     if s in state:
                         match = True
@@ -277,8 +293,8 @@ class Session(object):
 
             if event:
                 match = False
-                for e,edict in entity.events.iteritems():
-                    if time and not ru.in_range(edict['time'], time):
+                for e,etuple in entity.events.iteritems():
+                    if time and not ru.in_range(etuple[ru.TIME], time):
                         continue
                     if e in event:
                         match = True
@@ -687,11 +703,6 @@ class Session(object):
             self._rep.info('%s state model\n' % et)
             sm = self.describe('state_model', etype=et)
             sv = self.describe('state_values', etype=et)[et]['state_values']
-
-          # print
-          # print et
-          # print sv
-          # print
 
             for e in self.get(etype=et):
 

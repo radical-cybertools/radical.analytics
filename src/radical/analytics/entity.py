@@ -2,6 +2,8 @@
 import os
 import sys
 
+import radical.utils as ru
+
 
 # ------------------------------------------------------------------------------
 #
@@ -45,6 +47,12 @@ class Entity(object):
         self._ttc         = None
 
         self._initialize(_profile)
+
+      # print '%s events     : %20d kB' % (self._uid, ru.get_size(e0._events)/ (1024))
+      # print '%s states     : %20d kB' % (self._uid, ru.get_size(e0._states)/ (1024))
+      # print '%s consistency: %20d kB' % (self._uid, ru.get_size(e0._consistency)/ (1024))
+      # print '%s #events    : %20d   ' % (self._uid, ru.get_size(len(e0._events)))
+      # print
 
 
     # --------------------------------------------------------------------------
@@ -122,29 +130,19 @@ class Entity(object):
             self._t_start = sys.float_info.max
             self._t_stop  = sys.float_info.min
 
-      # if self.uid == os.environ.get('FILTER'):
-      #     print '\n\n%s' % self.uid
-
         # we expect each event to have `time` and `event_type`, and expect
         # 'state' events to signify a state transition, and thus to always 
         # have the property 'state' set, too
-        for event in sorted(profile, key=lambda (x): (x['time'])):
+        for event in sorted(profile, key=lambda (x): (x[ru.TIME])):
 
-          # if self.uid == os.environ.get('FILTER'):
-          #     if 'Listen' not in event['msg']:
-          #         print event
-
-            t = event['time']
+            t = event[ru.TIME]
 
             self._t_start = min(self._t_start, t)
             self._t_stop  = max(self._t_stop,  t)
 
-            etype = event['event_type']
+            etype = event[ru.TYPE]
             if etype == 'state':
-                state = event['state']
-              # if self.uid == os.environ.get('FILTER'):
-              #     print '%s  %-25s  %8.2f' % (self.uid, state, event['time'])
-              #     print event
+                state = event[ru.STATE]
                 self._states[state] = event
 
             # we also treat state transitions as generic event.
@@ -157,7 +155,6 @@ class Entity(object):
             self._ttc = self._t_stop - self._t_start
 
         # FIXME: assert state model adherence here
-        # FIXME: where to get state model from?
         # FIXME: sort events by time
 
 
@@ -245,11 +242,11 @@ class Entity(object):
 
         for e in event:
             for x in self._events.get(e, []):
-                ret.append(x['time'])
+                ret.append(x[ru.TIME])
 
         for s in state:
             if s in self._states:
-                ret.append(self._states[s]['time'])
+                ret.append(self._states[s][ru.TIME])
 
         return sorted(ret)
 
@@ -316,23 +313,23 @@ class Entity(object):
         for s in s_init:
             s_info = self._states.get(s)
             if s_info:
-                t_start = min(t_start, s_info['time'])
+                t_start = min(t_start, s_info[ru.TIME])
 
         for s in s_final:
             s_info = self._states.get(s)
             if s_info:
-                t_stop = max(t_stop, s_info['time'])
+                t_stop = max(t_stop, s_info[ru.TIME])
 
 
         for e in e_init:
             e_infos = self._events.get(e, [])
             for e_info in e_infos:
-                t_start = min(t_start, e_info['time'])
+                t_start = min(t_start, e_info[ru.TIME])
 
         for e in e_final:
             e_infos = self._events.get(e, [])
             for e_info in e_infos:
-                t_stop = max(t_stop, e_info['time'])
+                t_stop = max(t_stop, e_info[ru.TIME])
 
 
         if t_start == sys.float_info.max:
