@@ -172,7 +172,7 @@ class Session(object):
         # entity type in one of the events (and assume it is consistent over
         # all events for that uid)
         for uid,events in entity_events.iteritems():
-            etype   = events[0][ru.TYPE]
+            etype   = events[0][ru.ENTITY]
             details = self._description['tree'].get(uid, dict())
             details['hostid'] = self._description['hostmap'].get(uid)
             self._entities[uid] = Entity(_uid=uid,

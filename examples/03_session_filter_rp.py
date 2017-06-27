@@ -84,3 +84,4 @@ if __name__ == '__main__':
     pprint.pprint(session.list(['etype', 'state', 'uid']))
 
     sys.exit(0)
+
