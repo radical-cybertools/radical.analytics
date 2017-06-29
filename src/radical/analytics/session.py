@@ -261,11 +261,11 @@ class Session(object):
         # iterate through all self._entities and collect UIDs of all entities
         # which match the given set of filters (after removing all events which
         # are not in the given time ranges)
-        if not etype: etype = []
-        if not uid  : uid   = []
-        if not state: state = []
-        if not event: event = []
-        if not time : time  = []
+        if not etype: etype = list()
+        if not uid  : uid   = list()
+        if not state: state = list()
+        if not event: event = list()
+        if not time : time  = list()
 
         if etype and not isinstance(etype, list): etype = [etype]
         if uid   and not isinstance(uid  , list): uid   = [uid  ]
@@ -466,15 +466,27 @@ class Session(object):
 
           entity.ranges(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'],
                                 'FINAL_STATE_1',   'FINAL_STATE_2']],
-                        event=['initial_event_1',  'final_event'],
+                        event=[[[1.123,'initial_event_1','umgr.0000'],
+                                [2.123,'initial_event_2','umgr.0000']],
+                               [[3.123,'final_event_1',  'umgr.0000'],
+                                [4.123,'final_event_2',  'umgr.0000']]]
                         time =[[2.0, 2.5], [3.0, 3.5]])
 
         More specifically, the `state` and `event` parameter are expected to be
-        a tuple, where the first element defines the initial condition, and the
-        second element defines the final condition. Each element can be a string
-        or a list of strings.  The `time` parameter is expected to be a single
-        tuple, or a list of tuples, each defining a pair of start and end time
-        which are used to constrain the resulting ranges.
+        a tuple, where the first element defines a set of initial conditions,
+        and the second element defines a set of final conditions. The `time`
+        parameter is expected to be a single tuple, or a list of tuples, each
+        defining a pair of start and end time which are used to constrain the
+        resulting ranges.  States are expected as strings, events as full event
+        tuples 
+        
+            [ru.TIME,  ru.NAME, ru.UID,  ru.STATE, 
+             ru.EVENT, ru.MSG,  ru.TYPE, ru.ENTITY]
+
+        where empty fields are not applied in the filtering - all other fields
+        must match exactly.  The events can also be specified as dictionaries,
+        which then don't need to have all fields set.
+
 
         The parameters are interpreted as follows:
 
@@ -493,8 +505,13 @@ class Session(object):
         Example:
 
            session.ranges(state=[rp.NEW, rp.FINAL]))
+           session.ranges(event=[[None, 'exec_start', None, None, 
+                                  None,  None,        None, None],
+                                 [None, 'exec_start', None, None,
+                                  None,  None,        None, None]])
+           session.ranges(event=[{ru.NAME : 'exec_start'}, 
+                                 {ru.NAME : 'exec_ok'}]
 
-        where `rp.FINAL` is a list of final unit states.
         """
 
         ranges = list()
