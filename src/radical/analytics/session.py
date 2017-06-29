@@ -244,9 +244,10 @@ class Session(object):
                 self._properties['state'][state] += 1
 
             for event in e.events:
-                if event not in self._properties['event']:
-                    self._properties['event'][event] = 0
-                self._properties['event'][event] += 1
+                name = event[ru.NAME]
+                if name not in self._properties['event']:
+                    self._properties['event'][name] = 0
+                self._properties['event'][name] += 1
 
 
         if self._entities:
@@ -461,57 +462,13 @@ class Session(object):
     #
     def ranges(self, state=None, event=None, time=None):
         """
-        This method accepts a set of initial and final conditions, in the form
-        of range of state and or event specifiers:
+        This method accepts a set of initial and final conditions, and will get
+        time ranges in accordance to those conditions from all session entities.
+        The resulting set of ranges is then collapsed to the minimal equivalent
+        set of ranges covering the same set of times.
 
-          entity.ranges(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'],
-                                'FINAL_STATE_1',   'FINAL_STATE_2']],
-                        event=[[[1.123,'initial_event_1','umgr.0000'],
-                                [2.123,'initial_event_2','umgr.0000']],
-                               [[3.123,'final_event_1',  'umgr.0000'],
-                                [4.123,'final_event_2',  'umgr.0000']]]
-                        time =[[2.0, 2.5], [3.0, 3.5]])
-
-        More specifically, the `state` and `event` parameter are expected to be
-        a tuple, where the first element defines a set of initial conditions,
-        and the second element defines a set of final conditions. The `time`
-        parameter is expected to be a single tuple, or a list of tuples, each
-        defining a pair of start and end time which are used to constrain the
-        resulting ranges.  States are expected as strings, events as full event
-        tuples 
-        
-            [ru.TIME,  ru.NAME, ru.UID,  ru.STATE, 
-             ru.EVENT, ru.MSG,  ru.TYPE, ru.ENTITY]
-
-        where empty fields are not applied in the filtering - all other fields
-        must match exactly.  The events can also be specified as dictionaries,
-        which then don't need to have all fields set.
-
-
-        The parameters are interpreted as follows:
-
-          - for any entity known to the session
-            - determine the maximum time range during which the entity has been
-              between initial and final conditions
-
-          - collapse the resulting set of ranges into the smallest possible set
-            of ranges which cover the same, but not more nor less, of the
-            domain (floats).
-
-          - limit the resulting ranges by the `time` constraints, if such are
-            given.
-
-
-        Example:
-
-           session.ranges(state=[rp.NEW, rp.FINAL]))
-           session.ranges(event=[[None, 'exec_start', None, None, 
-                                  None,  None,        None, None],
-                                 [None, 'exec_start', None, None,
-                                  None,  None,        None, None]])
-           session.ranges(event=[{ru.NAME : 'exec_start'}, 
-                                 {ru.NAME : 'exec_ok'}]
-
+        Please refer to the `Entity.ranges()` documentation on detail on the
+        constrain parameters.
         """
 
         ranges = list()

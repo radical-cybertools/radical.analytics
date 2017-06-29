@@ -36,7 +36,7 @@ class Entity(object):
         self._cfg['hostid'] = self._details['hostid']
 
         self._states      = dict()
-        self._events      = dict()
+        self._events      = list()
         self._consistency = { 'log'         : list(), 
                               'state_model' : None, 
                               'event_model' : None, 
@@ -107,8 +107,7 @@ class Entity(object):
     def __str__(self):
 
         return "ra.Entity [%s]: %s\n    states: %s\n    events: %s" \
-                % (self.etype, self.uid,
-                   self._states.keys(), self._events.keys())
+                % (self.etype, self.uid, self._states.keys())
 
 
     # --------------------------------------------------------------------------
@@ -147,9 +146,7 @@ class Entity(object):
 
             # we also treat state transitions as generic event.
             # Because, why not?
-            if etype not in self._events:
-                self._events[etype] = list()
-            self._events[etype].append(event)
+            self._events.append(event)
 
         if profile:
             self._ttc = self._t_stop - self._t_start
@@ -183,13 +180,6 @@ class Entity(object):
     def list_states(self):
 
         return self._states.keys()
-
-
-    # --------------------------------------------------------------------------
-    #
-    def list_events(self):
-
-        return self._events.keys()
 
 
     # --------------------------------------------------------------------------
@@ -241,8 +231,9 @@ class Entity(object):
         ret = []
 
         for e in event:
-            for x in self._events.get(e, []):
-                ret.append(x[ru.TIME])
+            for x in self._events:
+                if self._match_event(x,e):
+                    ret.append(x[ru.TIME])
 
         for s in state:
             if s in self._states:
@@ -253,46 +244,77 @@ class Entity(object):
 
     # --------------------------------------------------------------------------
     #
-    def ranges(self, state=None, event=None, time=None):
+    def _match_event(self, pattern, to_check):
+        for key in [ru.TIME,  ru.NAME, ru.UID,  ru.STATE, 
+                    ru.EVENT, ru.MSG,  ru.TYPE, ru.ENTITY]:
+            if pattern[key] is not None:
+                if pattern[key] == to_check[key]:
+                    return False
+        return True
+
+
+    # --------------------------------------------------------------------------
+    #
+    def ranges(self, state=None, event=None, time=None, expand=False):
         """
         This method accepts a set of initial and final conditions, in the form
         of range of state and or event specifiers:
 
           entity.ranges(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'],
-                                'FINAL_STATE_1',   'FINAL_STATE_2']],
-                        event=['initial_event',  'final_event'],
+                                'FINAL_STATE_1',   'FINAL_STATE_2'  ]],
+                        event=[[ initial_event_1,   initial_event_2 ]
+                               [ final_event_1,     final_event_2   ]],
                         time =[[2.0, 2.5], [3.0, 3.5]])
 
         More specifically, the `state` and `event` parameter are expected to be
         a tuple, where the first element defines the initial condition, and the
-        second element defines the final condition. Each element can be a string
-        or a list of strings.  The `time` parameter is expected to be a single
-        tuple, or a list of tuples, each defining a pair of start and end time
-        which are used to constrain the resulting ranges.
+        second element defines the final condition.  The `time` parameter is
+        expected to be a single tuple, or a list of tuples, each defining a pair
+        of start and end time which are used to constrain the resulting ranges.
+        States are expected as strings, events as full event tuples 
+        
+            [ru.TIME,  ru.NAME, ru.UID,  ru.STATE, 
+             ru.EVENT, ru.MSG,  ru.TYPE, ru.ENTITY]
+
+        where empty fields are not applied in the filtering - all other fields
+        must match exactly.  The events can also be specified as dictionaries,
+        which then don't need to have all fields set.
 
         The parameters are interpreted as follows: the method will
 
           - determine the *earliest* timestamp when any of the given initial
-            conditions have been met (`t_start`);
-          - determine the *latest* timestamp when any of the given final
-            conditions have been met (`t_stop`);
+            conditions have been met, which can be either an event or a state;
+          - determine the *next* timestamp when any of the given final
+            conditions have been met (when `expand` is set to `False` [default])
+            OR
+          - determine the *last* timestamp when any of the given final
+            conditions have been met (when `expand` is set to `False` [default])
 
-          - limit the resulting range by the `time` constraints, if such are
-            given.
+        From that final point in time the search for the next initial condition
+        applies again, which may result in another time range to be found.  The
+        method returns the set of found ranges, as a list of `[start, end]` time
+        tuples.
 
-          - return the resulting list of time tuples signifying the set of
-            ranges where all constraints apply.
+        The resulting ranges are constrained by the `time` constraints, if such
+        are given.
+
+        Note that with `expand=True`, at most one range will be found.
 
         Example:
 
            unit.ranges(state=[rp.NEW, rp.FINAL]))
-
-        where `rp.FINAL` is a list of final unit states.
+           unit.ranges(event=[[None, 'exec_start', None, None, 
+                               None,  None,        None, None],
+                              [None, 'exec_start', None, None,
+                               None,  None,        None, None]])
+           unit.ranges(event=[{ru.NAME : 'exec_start'}, 
+                              {ru.NAME : 'exec_ok'}])
         """
 
-        t_start = sys.float_info.max
-        t_stop  = sys.float_info.min
-
+        # NOTE: this method relies on all state changes (as events in
+        #       `self.states`) to also be recorded as events (as events in in
+        #       `self.events` with `ru.NAME == 'state'`).
+        
         if not state and not event:
             raise ValueError('duration needs state and/or event arguments')
 
@@ -309,70 +331,92 @@ class Entity(object):
         if not isinstance(e_init,  list): e_init  = [e_init ]
         if not isinstance(e_final, list): e_final = [e_final]
 
+        conds_init  = list()
+        conds_final = list()
 
         for s in s_init:
-            s_info = self._states.get(s)
-            if s_info:
-                t_start = min(t_start, s_info[ru.TIME])
-
+            conds_init. append(tuple([None, None, None, s, 
+                                      None, None, None, None]))
         for s in s_final:
-            s_info = self._states.get(s)
-            if s_info:
-                t_stop = max(t_stop, s_info[ru.TIME])
-
+            conds_final.append(tuple([None, None, None, s, 
+                                      None, None, None, None]))
 
         for e in e_init:
-            e_infos = self._events.get(e, [])
-            for e_info in e_infos:
-                t_start = min(t_start, e_info[ru.TIME])
+            if isinstance(e,dict):
+                et = [None, None, None, None, 
+                      None, None, None, None]
+                for k,v in e.iteritems():
+                    et[k] = v
+                conds_init.append(tuple(et))
+            else:
+                conds_init.append(e)
 
         for e in e_final:
-            e_infos = self._events.get(e, [])
-            for e_info in e_infos:
-                t_stop = max(t_stop, e_info[ru.TIME])
+            if isinstance(e,dict):
+                et = [None, None, None, None, 
+                      None, None, None, None]
+                for k,v in e.iteritems():
+                    et[k] = v
+                conds_final.append(tuple(et))
+            else:
+                conds_final.append(e)
 
 
-        if t_start == sys.float_info.max:
-            raise ValueError('initial condition did not apply')
+        t_start    = sys.float_info.max
+        t_stop     = sys.float_info.min
+        ranges     = list()
+        this_range = [None, None]
+        in_range   = False
 
-        if t_stop == sys.float_info.min:
-            raise ValueError('final condition did not apply')
+        # FIXME: this assumes that `self.events` are time sorted
+        for e in self._events:
+            if None == this_range[0]:
+                # check for an initial event.
+                for c in conds_init:
+                    if self._match_event(e, c):
+                        this_range[0] = e[ru.TIME]
+                        break
+            else:
+                # check for a final event.  If found and '!expand`, then store
+                # the now completed event away, and start a new one; if
+                # `expand`, then keep searching for a later final event
+                for c in conds_final:
+                    if self._match_event(e, c):
+                        this_range[1] = e[ru.TIME]
+                        if not expand:
+                            ranges.append(this_range)
+                            this_range = [None, None]
+                            break
 
-        if t_stop < t_start:
-            raise ValueError('duration uncovered time inconsistency')
+        # we went through all events.  `this_range` may or may not be a usable
+        # range here.  If it is, append it to ranges.
+        if  this_range[0] is not None and \
+            this_range[1] is not None     :
+            ranges.append(this_range)
 
-        # apply time filter, if such one is given
-        ret = list()
+        # apply time filter, if specified
+        # For all ranges, check if they fall completely or partially within any
+        # of the given time filters.  If not, drop that range, if yes, include
+        # the overlapping part.
+        #
         if time and len(time):
 
-            # we actually inverse the logic here: we assume that all given time
-            # filters are ranges to consider valid, but constrain them by the
-            # one range we have determined by the state and event filter above.
-
+            ret = list()
             if not isinstance(time[0], list):
                 time = [time]
 
-            for trange in time:
-
-                trange_start = trange[0]
-                trange_stop  = trange[1]
-
-                assert(trange_start <= trange_stop)
-
-                if trange_start < t_start:
-                    trange_start = t_start
-
-                if trange_stop > t_stop:
-                    trange_stop = t_stop
-
-                if trange_start < trange_stop:
-                    ret.append([trange_start, trange_stop])
+            # for each range in ret, we make  sure that it does not violate any
+            # time filter
+            for errange in ranges:
+                for trange in time:
+                    new_start = max(trange[0], erange[0])
+                    new_stop  = min(trange[1], erange[1])
+                    if new_stop > new_start:
+                        ret.append([new_start, new_stop])
+            return ret
 
         else:
-            # no time filters defined
-            ret.append([t_start, t_stop])
-
-        return ret
+            return ranges
 
 
 # ------------------------------------------------------------------------------
