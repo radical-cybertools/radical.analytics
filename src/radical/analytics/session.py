@@ -67,22 +67,12 @@ class Session(object):
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
         
-        # get a unit uid
-        if 0 == len(self._entities):
-            print 'no entities'
-        else:
-            for eid,entity in self._entities.iteritems():
-                if 'unit' in eid:
-                    break
-            e0 = self._entities[eid]
+          # import resource 
+          # print 'max RSS       : %20d MB' % (resource.getrusage(1)[2]/(1024))
           # print 'session       : %20d MB' % (ru.get_size(self,             strict=True)/(1024**2))
           # print 'entities      : %20d MB' % (ru.get_size(self._entities,   strict=True)/(1024**2))
           # print 'properties    : %20d MB' % (ru.get_size(self._properties, strict=True)/(1024**2))
           # print '#entities     : %20d'    % len(self._entities)
-          # import pprint
-          # pprint.pprint(e0._states)
-          # import resource 
-          # print 'max RSS       : %20d MB' % (resource.getrusage(1)[2]/(1024))
 
 
     # --------------------------------------------------------------------------
@@ -460,7 +450,7 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def ranges(self, state=None, event=None, time=None):
+    def ranges(self, state=None, event=None, time=None, collapse=True):
         """
         This method accepts a set of initial and final conditions, and will get
         time ranges in accordance to those conditions from all session entities.
@@ -474,7 +464,7 @@ class Session(object):
         ranges = list()
         for uid,entity in self._entities.iteritems():
             try:
-                ranges += entity.ranges(state, event, time)
+                ranges += entity.ranges(state, event, time, collapse=False)
             except ValueError:
                 # ignore entities for which the conditions did not apply
                 pass
@@ -482,7 +472,13 @@ class Session(object):
         if not ranges:
             raise ValueError('no duration defined for given constraints')
 
-        return ru.collapse_ranges(ranges)
+        if collapse:
+            ret = ru.collapse_ranges(ranges)
+        else:
+            ret = ranges
+
+        # sort ranges by start time and return
+        return sorted(ret, key=lambda r: r[1])
 
 
     # --------------------------------------------------------------------------
@@ -509,11 +505,11 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def duration(self, state=None, event=None, time=None):
+    def duration(self, state=None, event=None, time=None, ranges=None):
         """
         This method accepts the same set of parameters as the `ranges()` method,
         and will use the `ranges()` method to obtain a set of ranges.  It will
-        return the sum of the durations for all resulting ranges.
+        return the sum of the durations for all resulting & collapsed ranges.
 
         Example:
 
@@ -522,12 +518,19 @@ class Session(object):
         where `rp.FINAL` is a list of final unit states.
         """
 
-        ret    = 0.0
-        ranges = self.ranges(state, event, time)
-        for r in ranges:
-            ret += r[1] - r[0]
+        if not ranges:
+            ranges = self.ranges(state, event, time)
 
-        return ret
+        else:
+            assert(not state)
+            assert(not event)
+            assert(not time)
+            
+            # make sure the ranges are collapsed (although they likely are
+            # already...)
+            ranges = ru.collapse_ranges(ranges)
+
+        return sum(r[1] - r[0] for r in ranges) 
 
 
     # --------------------------------------------------------------------------

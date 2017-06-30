@@ -184,23 +184,30 @@ class Entity(object):
 
     # --------------------------------------------------------------------------
     #
-    def duration(self, state=None, event=None, time=None):
+    def duration(self, state=None, event=None, time=None, ranges=None):
         """
         This method accepts a set of initial and final conditions, interprets
         them as documented in the `ranges()` method (which has the same
         signature), and then returns the difference between the resulting
         timestamps.
         """
-        ranges = self.ranges(state, event, time)
+
+        if not ranges:
+            ranges = self.ranges(state, event, time)
+
+        else:
+            assert(not state)
+            assert(not event)
+            assert(not time)
+            
+            # make sure the ranges are collapsed (although they likely are
+            # already...)
+            ranges = ru.collapse_ranges(ranges)
 
         if not ranges:
             raise ValueError('no duration defined for given constraints')
 
-        ret = 0.0
-        for r in ranges:
-            ret += r[1] - r[0]
-
-        return ret
+        return sum(r[1] - r[0] for r in ranges) 
 
 
     # --------------------------------------------------------------------------
@@ -255,7 +262,8 @@ class Entity(object):
 
     # --------------------------------------------------------------------------
     #
-    def ranges(self, state=None, event=None, time=None, expand=False):
+    def ranges(self, state=None, event=None, time=None, 
+                     expand=False, collapse=True):
         """
         This method accepts a set of initial and final conditions, in the form
         of range of state and or event specifiers:
@@ -335,11 +343,11 @@ class Entity(object):
         conds_final = list()
 
         for s in s_init:
-            conds_init. append(tuple([None, None, None, s, 
-                                      None, None, None, None]))
+            conds_init. append(tuple([None, None, None, s, 'state', 
+                                      None, None, None]))
         for s in s_final:
-            conds_final.append(tuple([None, None, None, s, 
-                                      None, None, None, None]))
+            conds_final.append(tuple([None, None, None, s, 'state',
+                                      None, None, None]))
 
         for e in e_init:
             if isinstance(e,dict):
@@ -399,8 +407,10 @@ class Entity(object):
         # of the given time filters.  If not, drop that range, if yes, include
         # the overlapping part.
         #
-        if time and len(time):
+        if not time or not len(time):
+            ret = ranges
 
+        else:
             ret = list()
             if not isinstance(time[0], list):
                 time = [time]
@@ -415,8 +425,10 @@ class Entity(object):
                         ret.append([new_start, new_stop])
             return ret
 
+        if collapse:
+            return ru.collapse_ranges(ret)
         else:
-            return ranges
+            return ret
 
 
 # ------------------------------------------------------------------------------
