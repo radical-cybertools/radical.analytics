@@ -106,7 +106,7 @@ class Entity(object):
     #
     def __str__(self):
 
-        return "ra.Entity [%s]: %s\n    states: %s\n    events: %s" \
+        return "ra.Entity [%s]: %s\n    states: %s" \
                 % (self.etype, self.uid, self._states.keys())
 
 
@@ -129,9 +129,8 @@ class Entity(object):
             self._t_start = sys.float_info.max
             self._t_stop  = sys.float_info.min
 
-        # we expect each event to have `time` and `event_type`, and expect
-        # 'state' events to signify a state transition, and thus to always 
-        # have the property 'state' set, too
+        # we expect each event tuple to have `time` and `event`, and expect
+        # 'advance' events to signify a state transition.
         for event in sorted(profile, key=lambda (x): (x[ru.TIME])):
 
             t = event[ru.TIME]
@@ -139,8 +138,7 @@ class Entity(object):
             self._t_start = min(self._t_start, t)
             self._t_stop  = max(self._t_stop,  t)
 
-            etype = event[ru.TYPE]
-            if etype == 'state':
+            if event[ru.EVENT] == 'advance':
                 state = event[ru.STATE]
                 self._states[state] = event
 
@@ -239,7 +237,7 @@ class Entity(object):
 
         for e in event:
             for x in self._events:
-                if self._match_event(x,e):
+                if self._match_event(e,x):
                     ret.append(x[ru.TIME])
 
         for s in state:
@@ -251,11 +249,10 @@ class Entity(object):
 
     # --------------------------------------------------------------------------
     #
-    def _match_event(self, pattern, to_check):
-        for key in [ru.TIME,  ru.NAME, ru.UID,  ru.STATE, 
-                    ru.EVENT, ru.MSG,  ru.TYPE, ru.ENTITY]:
-            if pattern[key] is not None:
-                if pattern[key] == to_check[key]:
+    def _match_event(self, needle, hay):
+        for key in range(ru.PROF_KEY_MAX):
+            if needle[key] is not None:
+                if needle[key] != hay[key]:
                     return False
         return True
 
@@ -282,7 +279,7 @@ class Entity(object):
         States are expected as strings, events as full event tuples 
         
             [ru.TIME,  ru.NAME, ru.UID,  ru.STATE, 
-             ru.EVENT, ru.MSG,  ru.TYPE, ru.ENTITY]
+             ru.EVENT, ru.MSG,  ru.ENTITY]
 
         where empty fields are not applied in the filtering - all other fields
         must match exactly.  The events can also be specified as dictionaries,
@@ -307,6 +304,9 @@ class Entity(object):
         are given.
 
         Note that with `expand=True`, at most one range will be found.
+
+        Setting 'collapse' to 'True' (default) will prompt the method to
+        collapse the resulting set of ranges.
 
         Example:
 
@@ -369,7 +369,6 @@ class Entity(object):
             else:
                 conds_final.append(e)
 
-
         t_start    = sys.float_info.max
         t_stop     = sys.float_info.min
         ranges     = list()
@@ -381,7 +380,7 @@ class Entity(object):
             if None == this_range[0]:
                 # check for an initial event.
                 for c in conds_init:
-                    if self._match_event(e, c):
+                    if self._match_event(c, e):
                         this_range[0] = e[ru.TIME]
                         break
             else:
@@ -389,7 +388,7 @@ class Entity(object):
                 # the now completed event away, and start a new one; if
                 # `expand`, then keep searching for a later final event
                 for c in conds_final:
-                    if self._match_event(e, c):
+                    if self._match_event(c, e):
                         this_range[1] = e[ru.TIME]
                         if not expand:
                             ranges.append(this_range)

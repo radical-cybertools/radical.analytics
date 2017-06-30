@@ -34,7 +34,7 @@ if __name__ == '__main__':
     if len(json_files) > 1: raise ValueError('%s has more than one json file!' % src)
 
     json_file = json_files[0]
-    sid       = os.path.basename(json_file)[:-5]
+    sid = os.path.basename(json_file)[:-5]
 
     print 'sid: %s' % sid
 
@@ -69,16 +69,50 @@ if __name__ == '__main__':
     units     = session.filter(etype='unit', inplace=False)
     print '#units   : %d' % len(units.get())
 
-    ranges = units.ranges(event=[{ru.NAME : 'state',
+    ranges = units.ranges(event=[{ru.EVENT: 'advance',
                                   ru.STATE: rp.AGENT_EXECUTING},
-                                 {ru.NAME : 'exec_start'}], 
+                                 {ru.EVENT: 'exec_start'}], 
                           collapse=False)
     print 'ranges   :'
     for r in ranges:
-        print '  [%5.2f, %5.2f] = %5.2f' % (r[0], r[1], r[1] - r[0])
+        print '  [%7.2f, %7.2f] = %7.2f' % (r[0], r[1], r[1] - r[0])
 
     duration = units.duration(ranges=ranges)
     print 'duration : %.2f' % duration
+
+
+    # now perform a sanity check: for each unit we check if the duration as
+    # obtained above is in fact smaller than the duration for the
+    # `AGENT_EXECUTING` state, as one would expect.
+    ppheader("sanity check: exec time > prep time")
+    oopses = list()
+    for unit in units.get():
+
+        prep_duration = unit.duration(event=[{ru.EVENT: 'advance',
+                                              ru.STATE: rp.AGENT_EXECUTING},
+                                             {ru.EVENT: 'exec_start'}])
+        exec_duration = unit.duration(event=[{ru.EVENT: 'advance',
+                                              ru.STATE: rp.AGENT_EXECUTING},
+                                             {ru.EVENT: 'advance',
+                                              ru.STATE: rp.AGENT_STAGING_OUTPUT_PENDING}])
+        diff = exec_duration - prep_duration
+        print '%7.2f - %7.2f = %7.2f' % (exec_duration, prep_duration, diff)
+
+        # we could in principle check against session accuracy in this place,
+        # but we do happen to know that both events are recorded in the same
+        # component, and time should thus always be linear.
+        if diff < 0:
+            oopses.append([unit.uid, diff])
+
+    oopses = sorted(oopses, key=lambda(o): -o[1])
+    print '\nfound %d units with inconsistent data' % len(oopses)
+    for oops in oopses:
+        print '%s: %7.2f' % (oops[0], oops[1])
+
+
+                                             
+
+
 
 
 # ------------------------------------------------------------------------------

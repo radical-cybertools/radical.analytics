@@ -234,7 +234,7 @@ class Session(object):
                 self._properties['state'][state] += 1
 
             for event in e.events:
-                name = event[ru.NAME]
+                name = event[ru.EVENT]
                 if name not in self._properties['event']:
                     self._properties['event'][name] = 0
                 self._properties['event'][name] += 1
@@ -459,6 +459,9 @@ class Session(object):
 
         Please refer to the `Entity.ranges()` documentation on detail on the
         constrain parameters.
+
+        Setting 'collapse' to 'True' (default) will prompt the method to
+        collapse the resulting set of ranges.
         """
 
         ranges = list()
