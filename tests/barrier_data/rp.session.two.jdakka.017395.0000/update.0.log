@@ -1,0 +1,80 @@
+2017-08-17 19:35:16,517: update.0            : MainProcess                     : MainThread     : INFO    : python.interpreter   version: 2.7.12 (default, Nov 19 2016, 06:48:10) [GCC 5.4.0 20160609]
+2017-08-17 19:35:16,517: update.0            : MainProcess                     : MainThread     : INFO    :                      pid: 31592
+2017-08-17 19:35:16,517: update.0            : MainProcess                     : MainThread     : INFO    :                      tid: MainThread
+2017-08-17 19:35:16,517: update.0            : MainProcess                     : MainThread     : INFO    : radical.pilot        version: 0.46-v0.46.RC2@devel
+2017-08-17 19:35:16,534: update.0            : MainProcess                     : MainThread     : DEBUG   : alive check in term
+2017-08-17 19:35:16,534: update.0            : MainProcess                     : MainThread     : DEBUG   : start process
+2017-08-17 19:35:17,151: update.0            : MainProcess                     : MainThread     : INFO    : recv message: alive
+2017-08-17 19:35:17,152: update.0            : MainProcess                     : MainThread     : INFO    : initialize update.0
+2017-08-17 19:35:17,155: update.0            : MainProcess                     : MainThread     : INFO    : cfg: {'agents': {},
+ u'bridges': {u'control_pubsub': {'addr_in': 'tcp://138.201.86.166:39019',
+                                  'addr_out': 'tcp://138.201.86.166:40466',
+                                  u'bulk_size': 0,
+                                  u'log_level': u'debug',
+                                  u'stall_hwm': 1},
+              u'log_pubsub': {'addr_in': 'tcp://138.201.86.166:43719',
+                              'addr_out': 'tcp://138.201.86.166:45213',
+                              u'bulk_size': 0,
+                              u'log_level': u'debug',
+                              u'stall_hwm': 1},
+              u'state_pubsub': {'addr_in': 'tcp://138.201.86.166:42969',
+                                'addr_out': 'tcp://138.201.86.166:36903',
+                                u'bulk_size': 0,
+                                u'log_level': u'debug',
+                                u'stall_hwm': 1}},
+ 'cname': u'UpdateWorker',
+ u'components': {},
+ u'count': 1,
+ 'dburl': 'mongodb://jdakka:jdakka@ds029605.mlab.com:29605/radical-testing',
+ 'debug': 'DEBUG',
+ u'default_dburl': u'mongodb://rp:rp@ds015335.mlab.com:15335/rp',
+ 'logdir': '/home/jdakka/UCL/devel_null_workload/weak_scaling/ht-bac-pilot-128/output_csv_ht-bac-null-128cores-run1/rp.session.two.jdakka.017395.0000',
+ 'number': 0,
+ 'owner': 'rp.session.two.jdakka.017395.0000',
+ 'session_id': 'rp.session.two.jdakka.017395.0000'}
+2017-08-17 19:35:17,156: update.0            : MainProcess                     : MainThread     : DEBUG   : alive check in term
+2017-08-17 19:35:17,156: update.0            : MainProcess                     : MainThread     : DEBUG   : START: update.0 register publisher log_pubsub
+2017-08-17 19:35:17,156: update.0            : MainProcess                     : MainThread     : DEBUG   : using addr tcp://138.201.86.166:43719 for pubsub log_pubsub
+2017-08-17 19:35:17,159: update.0            : MainProcess                     : MainThread     : DEBUG   : registered publisher : log_pubsub : log.pubsub.pub.0000
+2017-08-17 19:35:17,160: update.0            : MainProcess                     : MainThread     : DEBUG   : alive check in term
+2017-08-17 19:35:17,160: update.0            : MainProcess                     : MainThread     : DEBUG   : START: update.0 register publisher state_pubsub
+2017-08-17 19:35:17,160: update.0            : MainProcess                     : MainThread     : DEBUG   : using addr tcp://138.201.86.166:42969 for pubsub state_pubsub
+2017-08-17 19:35:17,163: update.0            : MainProcess                     : MainThread     : DEBUG   : registered publisher : state_pubsub : state.pubsub.pub.0000
+2017-08-17 19:35:17,163: update.0            : MainProcess                     : MainThread     : DEBUG   : alive check in term
+2017-08-17 19:35:17,163: update.0            : MainProcess                     : MainThread     : DEBUG   : START: update.0 register publisher control_pubsub
+2017-08-17 19:35:17,163: update.0            : MainProcess                     : MainThread     : DEBUG   : using addr tcp://138.201.86.166:39019 for pubsub control_pubsub
+2017-08-17 19:35:17,166: update.0            : MainProcess                     : MainThread     : DEBUG   : registered publisher : control_pubsub : control.pubsub.pub.0000
+2017-08-17 19:35:17,168: update.0            : MainProcess                     : MainThread     : DEBUG   : parent name: update.0.watch
+2017-08-17 19:35:17,169: update.0            : MainProcess                     : MainThread     : DEBUG   : start thread
+2017-08-17 19:35:17,169: update.0            : MainProcess                     : update.0.watch : DEBUG   : child name: update.0.watch.thread
+2017-08-17 19:35:17,169: update.0            : MainProcess                     : update.0.watch : INFO    : child (me) initializing
+2017-08-17 19:35:17,170: update.0            : MainProcess                     : update.0.watch : DEBUG   : ru_initialize_common (NOOP)
+2017-08-17 19:35:17,170: update.0            : MainProcess                     : update.0.watch : DEBUG   : ru_initialize_child (NOOP)
+2017-08-17 19:35:17,170: update.0            : MainProcess                     : update.0.watch : INFO    : send alive
+2017-08-17 19:35:17,170: update.0            : MainProcess                     : update.0.watch : INFO    : put message: [update.0.watch.thread] alive
+2017-08-17 19:35:17,171: update.0            : MainProcess                     : MainThread     : INFO    : get msg: alive
+2017-08-17 19:35:17,171: update.0            : MainProcess                     : MainThread     : DEBUG   : ru_initialize_common (NOOP)
+2017-08-17 19:35:17,171: update.0            : MainProcess                     : MainThread     : DEBUG   : ru_initialize_parent (NOOP)
+2017-08-17 19:35:17,171: update.0            : MainProcess                     : MainThread     : DEBUG   : child thread update.0.watch started
+2017-08-17 19:35:17,172: update.0            : MainProcess                     : MainThread     : INFO    : child is alive
+2017-08-17 19:35:17,172: update.0            : MainProcess                     : MainThread     : DEBUG   : process class started child
+2017-08-17 19:53:25,010: update.0            : MainProcess                     : MainThread     : INFO    : stop update.0 (31592 : 31631 : MainThread) [radical.pilot.worker.update.Update.stop]
+2017-08-17 19:53:25,010: update.0            : MainProcess                     : MainThread     : INFO    : parent stops child
+2017-08-17 19:53:25,011: update.0            : MainProcess                     : MainThread     : DEBUG   : ru_finalize_common()
+2017-08-17 19:53:25,011: update.0            : MainProcess                     : MainThread     : DEBUG   : TERM : update.0 unregister publisher log_pubsub
+2017-08-17 19:53:25,012: update.0            : MainProcess                     : MainThread     : DEBUG   : unregistered publisher log_pubsub
+2017-08-17 19:53:25,012: update.0            : MainProcess                     : MainThread     : DEBUG   : TERM : update.0 unregister publisher state_pubsub
+2017-08-17 19:53:25,013: update.0            : MainProcess                     : MainThread     : DEBUG   : unregistered publisher state_pubsub
+2017-08-17 19:53:25,013: update.0            : MainProcess                     : MainThread     : DEBUG   : TERM : update.0 unregister publisher control_pubsub
+2017-08-17 19:53:25,015: update.0            : MainProcess                     : MainThread     : DEBUG   : unregistered publisher control_pubsub
+2017-08-17 19:53:25,015: update.0            : MainProcess                     : MainThread     : DEBUG   : update.0 close prof
+2017-08-17 19:53:25,015: update.0            : MainProcess                     : MainThread     : INFO    : parent stops child
+2017-08-17 19:53:25,015: update.0            : MainProcess                     : MainThread     : DEBUG   : ru_finalize_parent (NOOP)
+2017-08-17 19:53:25,015: update.0            : MainProcess                     : MainThread     : DEBUG   : ru_finalize_common (NOOP)
+2017-08-17 19:53:25,078: update.0            : MainProcess                     : update.0.watch : INFO    : watcher closes
+2017-08-17 19:53:25,078: update.0            : MainProcess                     : update.0.watch : INFO    : put message: [update.0.watch.thread] work finished
+2017-08-17 19:53:25,079: update.0            : MainProcess                     : update.0.watch : DEBUG   : ru_finalize_child (NOOP)
+2017-08-17 19:53:25,079: update.0            : MainProcess                     : update.0.watch : DEBUG   : ru_finalize_common (NOOP)
+2017-08-17 19:53:25,079: update.0            : MainProcess                     : update.0.watch : INFO    : put message: [update.0.watch.thread] terminating
+2017-08-17 19:53:25,180: update.0            : MainProcess                     : MainThread     : WARNING : failed to stop child - terminate
+2017-08-17 19:53:25,704: update.0            : MainProcess                     : MainThread     : INFO    : stop update.0 (31592 : 31631 : MainThread) [radical.pilot.worker.update.Update.stop]
