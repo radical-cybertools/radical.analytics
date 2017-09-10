@@ -377,12 +377,16 @@ class Session(object):
     def describe(self, mode=None, etype=None):
 
         if mode not in [None, 'state_model', 'state_values',
-                              'event_model', 'relations']:
+                              'event_model', 'relations', 
+                              'statistics']:
             raise ValueError('describe parameter "mode" invalid')
 
         if not etype and not mode:
             # no entity filter applied: return the full description
             return self._description
+
+        if mode == 'statistics':
+            return self._properties
 
         if not etype:
             etype = self.list('etype')
@@ -467,8 +471,10 @@ class Session(object):
         ranges = list()
         for uid,entity in self._entities.iteritems():
             try:
-                ranges += entity.ranges(state, event, time, collapse=False)
+                tmp = entity.ranges(state, event, time, collapse=False)
+                ranges += tmp
             except ValueError:
+                print 'no ranges for %s' % uid
                 # ignore entities for which the conditions did not apply
                 pass
 

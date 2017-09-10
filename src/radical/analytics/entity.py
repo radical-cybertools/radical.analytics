@@ -138,7 +138,7 @@ class Entity(object):
             self._t_start = min(self._t_start, t)
             self._t_stop  = max(self._t_stop,  t)
 
-            if event[ru.EVENT] == 'advance':
+            if event[ru.EVENT] == 'state':
                 state = event[ru.STATE]
                 self._states[state] = event
 
@@ -311,11 +311,7 @@ class Entity(object):
         Example:
 
            unit.ranges(state=[rp.NEW, rp.FINAL]))
-           unit.ranges(event=[[None, 'exec_start', None, None, 
-                               None,  None,        None, None],
-                              [None, 'exec_start', None, None,
-                               None,  None,        None, None]])
-           unit.ranges(event=[{ru.NAME : 'exec_start'}, 
+           unit.ranges(event=[{ru.NAME : 'exec_start'},
                               {ru.NAME : 'exec_ok'}])
         """
 
@@ -343,16 +339,20 @@ class Entity(object):
         conds_final = list()
 
         for s in s_init:
-            conds_init. append(tuple([None, None, None, s, 'state', 
-                                      None, None, None]))
+            et = ru.PROF_KEY_MAX * [None]
+            et[ru.STATE] = s
+            et[ru.EVENT] = 'state'
+            conds_init.append(tuple(et))
+
         for s in s_final:
-            conds_final.append(tuple([None, None, None, s, 'state',
-                                      None, None, None]))
+            et = ru.PROF_KEY_MAX * [None]
+            et[ru.STATE] = s
+            et[ru.EVENT] = 'state'
+            conds_final.append(tuple(et))
 
         for e in e_init:
             if isinstance(e,dict):
-                et = [None, None, None, None, 
-                      None, None, None, None]
+                et = ru.PROF_KEY_MAX * [None]
                 for k,v in e.iteritems():
                     et[k] = v
                 conds_init.append(tuple(et))
@@ -361,8 +361,7 @@ class Entity(object):
 
         for e in e_final:
             if isinstance(e,dict):
-                et = [None, None, None, None, 
-                      None, None, None, None]
+                et = ru.PROF_KEY_MAX * [None]
                 for k,v in e.iteritems():
                     et[k] = v
                 conds_final.append(tuple(et))

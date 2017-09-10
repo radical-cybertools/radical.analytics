@@ -53,6 +53,7 @@ if __name__ == '__main__':
     # relative ordering.
     ppheader("event models")
     pprint.pprint(session.describe('event_model'))
+    pprint.pprint(session.describe('statistics'))
 
     # Let's say that we want to see how long RP took to prepare the execution of
     # units.  That time is from when the unit reached the `AGENT_EXECUTING`
@@ -66,12 +67,12 @@ if __name__ == '__main__':
     # We first get the respective time ranges for all units, just to have a look
     # at them, and then compute the overall duration
     ppheader("Time spent by the units in exec-preparation") 
-    units     = session.filter(etype='unit', inplace=False)
+    units = session.filter(etype='unit', inplace=False)
     print '#units   : %d' % len(units.get())
 
-    ranges = units.ranges(event=[{ru.EVENT: 'advance',
+    ranges = units.ranges(event=[{ru.EVENT: 'state',
                                   ru.STATE: rp.AGENT_EXECUTING},
-                                 {ru.EVENT: 'exec_start'}], 
+                                 {ru.EVENT: 'exec_start'}],
                           collapse=False)
     print 'ranges   :'
     for r in ranges:
@@ -88,31 +89,27 @@ if __name__ == '__main__':
     oopses = list()
     for unit in units.get():
 
-        prep_duration = unit.duration(event=[{ru.EVENT: 'advance',
+        prep_duration = unit.duration(event=[{ru.EVENT: 'state',
                                               ru.STATE: rp.AGENT_EXECUTING},
                                              {ru.EVENT: 'exec_start'}])
-        exec_duration = unit.duration(event=[{ru.EVENT: 'advance',
+        exec_duration = unit.duration(event=[{ru.EVENT: 'state',
                                               ru.STATE: rp.AGENT_EXECUTING},
-                                             {ru.EVENT: 'advance',
+                                             {ru.EVENT: 'state',
                                               ru.STATE: rp.AGENT_STAGING_OUTPUT_PENDING}])
         diff = exec_duration - prep_duration
-        print '%7.2f - %7.2f = %7.2f' % (exec_duration, prep_duration, diff)
+        print '%7.2f > %7.2f : %s' % (exec_duration, prep_duration, diff > 0)
 
         # we could in principle check against session accuracy in this place,
         # but we do happen to know that both events are recorded in the same
         # component, and time should thus always be linear.
-        if diff < 0:
+        if diff <= 0:
             oopses.append([unit.uid, diff])
 
     oopses = sorted(oopses, key=lambda(o): -o[1])
     print '\nfound %d units with inconsistent data' % len(oopses)
     for oops in oopses:
         print '%s: %7.2f' % (oops[0], oops[1])
-
-
-                                             
-
-
+    print
 
 
 # ------------------------------------------------------------------------------
