@@ -40,6 +40,28 @@ class Session(object):
                               = rp.utils.get_session_profile    (sid=sid, src=self._src)
             self._description = rp.utils.get_session_description(sid=sid, src=self._src)
 
+            for ename,edict in self._description['entities'].iteritems():
+
+                tmp  = stype.replace('.', '/')
+                fsrc = '%s/%s/%s_states.json' \
+                     % (os.environ['HOME'], tmp, ename)
+                try:
+                    edict['state_model'] = ru.read_json(fsrc)
+                    self._log.warn('load %s state model for %s (%s)',
+                                   ename, stype, fsrs)
+                except Exception as e:
+                    pass
+
+                tmp  = stype.replace('.', '/')
+                fsrc = '%s/%s/%s_events.json' \
+                     % (os.environ['HOME'], tmp, ename)
+                try:
+                    edict['event_model'] = ru.read_json(fsrc)
+                    self._log.warn('load %s event model for %s (%s)',
+                                   ename, stype, fsrs)
+                except Exception as e:
+                    pass
+
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
 
