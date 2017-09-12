@@ -267,7 +267,7 @@ setup_args = {
         'test'           : our_test,
     },
     'install_requires'   : ['radical.utils'],
-    'tests_require'      : [],
+    'tests_require'      : ['pytest'],
     'test_suite'         : '%s.tests' % name,
     'zip_safe'           : False,
 #   'build_sphinx'       : {
