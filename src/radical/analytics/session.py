@@ -641,6 +641,107 @@ class Session(object):
 
         return ret
 
+    #-------------------------------------------------------------------------------------
+    #
+    def utilization(self, owner=None, consumer=None, resource=None, 
+        events=None):
+    
+     """
+        This method accepts as parameters :
+        owner        : The entity name of the owner of the resources
+        consumer     : The ename of the entity that consumes the resources owned by owner
+        resource     : The type of resources whose utilization is requested, ex. :Cores,
+                       Memory, GPUS etc
+        events       : A list of consumer's events that will be used as starting and ending points
+                       for the utilization. The selected events should be meaningfull for
+                       resource consumption. This method does not do any check on that sense
+
+        Based on these parameters the resources of the owners are collected, as well as,
+        the times when the consumer(s) used those resources. 
+
+        Returned is a dictionary of the form:
+
+          { "owner_0"       : {"resources":resource_size,
+                                "utilization" :[ [time_0, resource_utilization_0] ,
+                                [time_1, resource_utilization_1] ,
+                                ...
+                                [time_n, resource_utilization_n] ]},
+            "owner_1"       : {"resources":resource_size,
+                                "utilization" :[ [time_0, resource_utilization_0] ,
+                                [time_1, resource_utilization_1] ,
+                                ...
+                                [time_n, resource_utilization_n] ]},
+            ...            
+            "owner_n"       : {"resources":resource_size,
+                                "utilization" :[ [time_0, resource_utilization_0] ,
+                                [time_1, resource_utilization_1] ,
+                                ...
+                                [time_n, resource_utilization_n] ]}
+
+
+        where `time_n` is represented as `float`, `resource_utilization_n` as `int`, and
+        resource_size is the total resources the owner has.
+
+        Example:
+
+           session.utilization(owner='pilot',consumer='unit',resource='cores',
+           events=[{ru.EVENT: 'exec_start'},{ru.EVENT:'exec_stop'}])
+        """
+
+        # Filter the session to get a session of the owners. If that is empty return an
+        # empty dict
+        owners=self.filter(etype=owner,inplace=False)
+        if not owners:
+            return {}
+        
+        # Filter the session to get a session of the consumers. If that is empty return an
+        # empty dict
+        consumers = self.filter(etype=consumer,inplace=False)
+        if not consumers:
+            return {}
+    
+        # Go through the owner entities and create a dictionary where each entry is the
+        # owner id and the amount of resources each resource owner has
+        owner_resources = dict()
+        for uid,owner_entity in owners._entities.iteritems():
+            owner_resources[uid]=owner_entity.description.get(resource)
+    
+       
+        #Go through the consumer entities and create two dictionaries. The first keeps track
+        # of how many resources each consumer consumes, and the second has the ranges based
+        # on the events.
+        consumer_resources = dict()
+        consumer_ranges=dict()
+        for uid,consumer_entity in consumers._entities.iteritems():
+            consumer_resources[uid] = consumer_entity.description.get(resource)
+            consumer_ranges[uid] = consumer_entity.ranges(event=events)[0]
+        
+        #Sort consumer_ranges based on their values.
+        consumer_ranges = sorted(consumer_ranges.iteritems(), key=lambda (k,v): (v[0],k))
+        
+        # Create a timeseries that contains all moments in consumer ranges and sort. This
+        # way we have a list that has time any change has happened.
+        times=list()
+        for uid,r in consumer_ranges:
+            times.append(r[0])
+            times.append(r[1])
+        times.sort()
+        print owner_resources
+        ret = dict()
+        for owner_uid, resources_size in owner_resources.iteritems():
+            util=list()
+            # we have the time sequence, now compute utilization at those points
+            for t in times:
+                cnt = 0
+                for uid,r in consumer_ranges:
+                    if t >= r[0] and t <= r[1]:
+                        cnt += consumer_resources[uid]
+
+                util.append([t, cnt])
+            ret[owner_uid]={'resources':resources_size,'utilization':util}
+
+
+        return ret
 
     # --------------------------------------------------------------------------
     #
