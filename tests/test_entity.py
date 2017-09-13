@@ -12,7 +12,19 @@ directory = "{}/example-data".format(
 
 @pytest.fixture
 def pilot_entity():
-    with open("{}/pilot-entity-example.json".format(directory), 'r') as f:
+    with open(
+            "{}/pilot-entity-example.json".format(directory),
+            'r') as f:
+        entity = json.load(f)
+        entity['events'] = [tuple(l) for l in entity['events']]
+        return entity
+
+
+@pytest.fixture
+def range_entity():
+    with open(
+            "{}/range-testing-entity-example.json".format(directory),
+            'r') as f:
         entity = json.load(f)
         entity['events'] = [tuple(l) for l in entity['events']]
         return entity
@@ -150,3 +162,113 @@ class TestEntity(object):
             'events': sort_events(pilot_entity['events'])
         }
         assert (e.as_dict() == expected)
+
+    def test_one_valid_event_ranges(self, range_entity):
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # Only one range of one start/end
+        ranges = e.ranges(state=[
+            ('PMGR_ACTIVE_PENDING'),
+            ('FAILED')
+        ])
+        assert (ranges == [
+            [21.668299913406372, 50.227399826049805]
+        ])
+
+    def test_two_consecutive_valid_event_ranges(self, range_entity):
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # Two consecutive ranges
+        ranges = e.ranges(state=[
+            ('PMGR_ACTIVE', 'PMGR_LAUNCHING'),
+            ('NEW', 'PMGR_ACTIVE_PENDING')
+        ])
+        assert (ranges == [
+            [0.0, 4.433599948883057],
+            [4.449499845504761, 21.668299913406372]
+        ])
+
+    def test_two_overlaping_valid_event_ranges(self, range_entity):
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # Two overlaping ranges
+        ranges = e.ranges(state=[
+            ('PMGR_ACTIVE', 'NEW'),
+            ('PMGR_LAUNCHING', 'PMGR_ACTIVE_PENDING')
+        ])
+        assert (ranges == [
+            [0.0, 4.433599948883057]
+        ])
+
+    def test_empty_profile(self, pilot_entity):
+        e = Entity(_uid=pilot_entity['uid'],
+                   _etype=pilot_entity['etype'],
+                   _profile=list(),
+                   _details=pilot_entity['details']
+                   )
+        assert (e.t_start == 0)
+        assert (e.t_stop == 0)
+        assert (e.ttc == 0)
+        assert (e.t_range == [0, 0])
+        assert (e.states == dict())
+        assert (e.events == list())
+        assert (e.list_states() == list())
+        # TODO: Add more assetions as needed
+
+    def test_empty_details(self, pilot_entity):
+        e = Entity(_uid=pilot_entity['uid'],
+                   _etype=pilot_entity['etype'],
+                   _profile=pilot_entity['events'],
+                   _details=dict()
+                   )
+
+        assert (e.cfg == dict())
+        assert (e.description == dict())
+        # TODO: Add more assetions as needed / fix assertions
+
+##########################################
+# Test Invalid Scenarios
+##########################################
+    def test_none_uid(self, pilot_entity):
+        with pytest.raises(Exception):
+            Entity(_uid=None,
+                   _etype=pilot_entity['etype'],
+                   _profile=pilot_entity['events'],
+                   _details=pilot_entity['details']
+                   )
+
+    def test_none_etype(self, pilot_entity):
+        with pytest.raises(Exception):
+            Entity(_uid=pilot_entity['uid'],
+                   _etype=None,
+                   _profile=pilot_entity['events'],
+                   _details=pilot_entity['details']
+                   )
+
+    def test_none_profile(self, pilot_entity):
+        with pytest.raises(Exception):
+            Entity(_uid=None,
+                   _etype=pilot_entity['etype'],
+                   _profile=None,
+                   _details=pilot_entity['details']
+                   )
+
+    def test_none_details(self, pilot_entity):
+        with pytest.raises(Exception):
+            Entity(_uid=pilot_entity['uid'],
+                   _etype=pilot_entity['etype'],
+                   _profile=pilot_entity['events'],
+                   _details=None
+                   )

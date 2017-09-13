@@ -2,7 +2,7 @@
   "uid": "pilot.0000",
   "etype": "pilot",
   "events": [
-[-1505232285.4005,"state","agent_0","MainThread","pilot.0000","PMGR_ACTIVE","","pilot"],
+[0.0,"state","agent_0","MainThread","pilot.0000","PMGR_ACTIVE","","pilot"],
 [4.433599948883057,"state","pmgr.0000","MainThread","pilot.0000","NEW","","pilot"],
 [4.446199893951416,"state","pmgr.0000","MainThread","pilot.0000","PMGR_LAUNCHING_PENDING","","pilot"],
 [4.446699857711792,"put","pmgr.0000","MainThread","pilot.0000","PMGR_LAUNCHING_PENDING","pmgr.launching.queue.input.0000","pilot"],
