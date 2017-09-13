@@ -705,7 +705,6 @@ class Session(object):
         for owner_id,owner_entity in owners._entities.iteritems():
             owner_resources=owner_entity.description.get(resource)
 
-
             consumers = self.filter(etype=consumer,uid=relations[owner_id],inplace=False)
             if not consumers:
                 return {}
@@ -718,7 +717,7 @@ class Session(object):
             for cons_id,consumer_entity in consumers._entities.iteritems():
                 consumer_resources[cons_id] = consumer_entity.description.get(resource)
                 consumer_ranges[cons_id] = consumer_entity.ranges(event=events)[0]
-            print len(consumer_resources)
+
             #Sort consumer_ranges based on their values.
             consumer_ranges = sorted(consumer_ranges.iteritems(), key=lambda (k,v): (v[0],k))
 
