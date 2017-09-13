@@ -13,7 +13,7 @@ from .entity import Entity
 #
 class Session(object):
 
-    def __init__(self, sid, stype, src=None, _entities=None, _init=True):
+    def __init__(self, stype, sid=None, src=None, _entities=None, _init=True):
         """
         Create a radical.analytics session for analysis.
 
@@ -37,8 +37,17 @@ class Session(object):
         if stype == 'radical.pilot':
             import radical.pilot as rp
             self._profile, accuracy, hostmap \
-                              = rp.utils.get_session_profile    (sid=sid, src=self._src)
+                              = rp.utils.get_session_profile(sid=sid, src=self._src)
             self._description = rp.utils.get_session_description(sid=sid, src=self._src)
+
+            self._description['accuracy'] = accuracy
+            self._description['hostmap']  = hostmap
+
+        elif stype == 'radical.entk':
+            import radical.entk as re
+
+            self._profile, accuracy, hostmap = re.utils.get_profile(src=self._src)
+            self._description = re.utils.get_description(src=self._src)
 
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
