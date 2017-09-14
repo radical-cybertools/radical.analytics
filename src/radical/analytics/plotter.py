@@ -21,10 +21,10 @@ class Plotter(object):
         self._style = style
         self._plot_grid = plot_grid
         
-    def utilization(self,util_data=None,normalized=None,resource=None):
+    def utilization(self,util_data=None,normalized=None,resource=None,fig_size=None):
         
         if not self._plot_grid:
-            self._fig,self._axis = plt.subplots(nrows=1,ncols=1)
+            self._fig,self._axis = plt.subplots(nrows=1,ncols=1,figsize=fig_size)
             for key, util in util_data.iteritems():
                 x_axis = [point[0] for point in util['utilization']]
                 if normalized:
@@ -45,7 +45,7 @@ class Plotter(object):
                 self._axis.legend()
 
         else:
-            self._fig,self._axis = plt.subplots(nrows=self._plot_grid[0],ncols=self._plot_grid[1])
+            self._fig,self._axis = plt.subplots(nrows=self._plot_grid[0],ncols=self._plot_grid[1],figsize=fig_size)
             for (key, util),i in zip(util_data.iteritems(),range(self._plot_grid[0]*self._plot_grid[1])):
                 x_axis = [point[0] for point in util['utilization']]
                 if normalized:
@@ -65,9 +65,9 @@ class Plotter(object):
                 self._axis[i].set_title('%s Resource Utilization'%resource)
                 self._axis[i].legend()
 
-    def concurrency(self,data=None):
+    def concurrency(self,data=None,fig_size=None):
         
-        self._fig,self._axis = plt.subplots(nrows=1,ncols=1)
+        self._fig,self._axis = plt.subplots(nrows=1,ncols=1,figsize=fig_size)
         x_axis = [point[0] for point in data]
         y_axis = [point[1] for point in data]
         self._axis.plot(x_axis,y_axis)        
