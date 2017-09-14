@@ -293,7 +293,7 @@ class Entity(object):
             conditions have been met (when `expand` is set to `False` [default])
             OR
           - determine the *last* timestamp when any of the given final
-            conditions have been met (when `expand` is set to `False` [default])
+            conditions have been met (when `expand` is set to `True`)
 
         From that final point in time the search for the next initial condition
         applies again, which may result in another time range to be found.  The
@@ -415,7 +415,7 @@ class Entity(object):
 
             # for each range in ret, we make  sure that it does not violate any
             # time filter
-            for errange in ranges:
+            for erange in ranges:
                 for trange in time:
                     new_start = max(trange[0], erange[0])
                     new_stop  = min(trange[1], erange[1])
