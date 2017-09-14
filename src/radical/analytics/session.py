@@ -666,22 +666,25 @@ class Session(object):
 
         Returned is a dictionary of the form:
 
-        { "owner_0"       : {"resources":resource_size,
-                              "utilization" :[ [time_0, resource_utilization_0] ,
-                              [time_1, resource_utilization_1] ,
-                              ...
-                              [time_n, resource_utilization_n] ]},
-          "owner_1"       : {"resources":resource_size,
-                              "utilization" :[ [time_0, resource_utilization_0] ,
-                              [time_1, resource_utilization_1] ,
-                              ...
-                              [time_n, resource_utilization_n] ]},
+        { "owner_0"       : {"range":owner_range,
+                             "resources":resource_size,
+                             "utilization" :[ [time_0, resource_utilization_0] ,
+                                              [time_1, resource_utilization_1] ,
+                                               ...
+                                              [time_n, resource_utilization_n] ]},
+          "owner_1"       : {"range":owner_range,
+                             "resources":resource_size,
+                             "utilization" :[ [time_0, resource_utilization_0] ,
+                                              [time_1, resource_utilization_1] ,
+                                               ...
+                                              [time_n, resource_utilization_n] ]},
           ...            
-          "owner_n"       : {"resources":resource_size,
-                              "utilization" :[ [time_0, resource_utilization_0] ,
-                              [time_1, resource_utilization_1] ,
-                              ...
-                              [time_n, resource_utilization_n] ]}
+          "owner_n"       : {"range":owner_range,
+                             "resources":resource_size,
+                             "utilization" :[ [time_0, resource_utilization_0] ,
+                                              [time_1, resource_utilization_1] ,
+                                               ...
+                                              [time_n, resource_utilization_n] ]}
 
 
         where `time_n` is represented as `float`, `resource_utilization_n` as `int`, and
@@ -746,7 +749,7 @@ class Session(object):
                         cnt += consumer_resources[cons_id]
 
                 util.append([t, cnt])
-            ret[owner_id] = {'resources':owner_resources,'utilization':util}
+            ret[owner_id] = {'range':owner_range,'resources':owner_resources,'utilization':util}
 
 
         return ret
