@@ -643,7 +643,7 @@ class Session(object):
 
     #-------------------------------------------------------------------------------------
     #
-    def utilization(self, owner=None, consumer=None, resource=None, 
+    def utilization(self, owner, consumer, resource, 
         owner_events=None,consumer_events=None):
     
         """
