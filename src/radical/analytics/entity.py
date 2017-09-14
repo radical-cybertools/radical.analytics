@@ -415,7 +415,7 @@ class Entity(object):
 
             # for each range in ret, we make  sure that it does not violate any
             # time filter
-            for errange in ranges:
+            for erange in ranges:
                 for trange in time:
                     new_start = max(trange[0], erange[0])
                     new_stop  = min(trange[1], erange[1])
