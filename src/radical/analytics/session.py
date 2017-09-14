@@ -644,17 +644,22 @@ class Session(object):
     #-------------------------------------------------------------------------------------
     #
     def utilization(self, owner=None, consumer=None, resource=None, 
-        events=None):
+        owner_events=None,consumer_events=None):
     
         """
         This method accepts as parameters :
-        owner        : The entity name of the owner of the resources
-        consumer     : The ename of the entity that consumes the resources owned by owner
-        resource     : The type of resources whose utilization is requested, ex. :Cores,
-                       Memory, GPUS etc
-        events       : A list of consumer's events that will be used as starting and ending points
-                       for the utilization. The selected events should be meaningfull for
-                       resource consumption. This method does not do any check on that sense
+        owner           : The entity name of the owner of the resources
+        consumer        : The ename of the entity that consumes the resources owned by owner
+        resource        : The type of resources whose utilization is requested, ex. :Cores,
+                          Memory, GPUS etc
+        owner_events    : A list of owner's/owners' events that will be used as starting and 
+                          ending points for the utilization. The selected events should be 
+                          meaningful for resource consumption. This method does not do any 
+                          check on that sense
+        consumer_events : A list of owner's/owners' events that will be used as starting and 
+                          ending points for the utilization. The selected events should be 
+                          meaningful for resource consumption. This method does not do any 
+                          check on that sense
 
         Based on these parameters the resources of the owners are collected, as well as,
         the times when the consumer(s) used those resources. 
@@ -687,7 +692,6 @@ class Session(object):
         session.utilization(owner='pilot',consumer='unit',resource='cores',
         events=[{ru.EVENT: 'exec_start'},{ru.EVENT:'exec_stop'}])
         """
-    
         ret = dict()
         
         # Filter the session to get a session of the owners. If that is empty return an
@@ -696,39 +700,44 @@ class Session(object):
         relations = self .describe('relations', [owner, consumer])
         if not relations:
             return {}
-        owners=self.filter(etype=owner,inplace=False)
+
+        owners = self.filter(etype=owner,inplace=False)
         if not owners:
             return {}
 
         # Filter the session to get a session of the consumers. If that is empty return an
         # empty dict
         for owner_id,owner_entity in owners._entities.iteritems():
-            owner_resources=owner_entity.description.get(resource)
+            owner_resources = owner_entity.description.get(resource)
+            onwer_range = owner_entity.ranges(event=owner_events)
 
             consumers = self.filter(etype=consumer,uid=relations[owner_id],inplace=False)
             if not consumers:
                 return {}
 
-            #Go through the consumer entities and create two dictionaries. The first keeps track
+            # Go through the consumer entities and create two dictionaries. The first keeps track
             # of how many resources each consumer consumes, and the second has the ranges based
             # on the events.
             consumer_resources = dict()
-            consumer_ranges=dict()
+            consumer_ranges = dict()
             for cons_id,consumer_entity in consumers._entities.iteritems():
                 consumer_resources[cons_id] = consumer_entity.description.get(resource)
-                consumer_ranges[cons_id] = consumer_entity.ranges(event=events)[0]
+                consumer_ranges[cons_id] = consumer_entity.ranges(event=consumer_events)[0]
 
-            #Sort consumer_ranges based on their values.
+            # Sort consumer_ranges based on their values. This command returns a dictionary,
+            # which is sorted based on the first value of each entry. In the end the key,
+            # are out of order but the values are.
             consumer_ranges = sorted(consumer_ranges.iteritems(), key=lambda (k,v): (v[0],k))
 
             # Create a timeseries that contains all moments in consumer ranges and sort. This
             # way we have a list that has time any change has happened.
-            times=list()
+            times = list()
             for cons_id,r in consumer_ranges:
                 times.append(r[0])
                 times.append(r[1])
             times.sort()
-            util=list()
+            
+            util = list()
             # we have the time sequence, now compute utilization at those points
             for t in times:
                 cnt = 0
@@ -737,7 +746,7 @@ class Session(object):
                         cnt += consumer_resources[cons_id]
 
                 util.append([t, cnt])
-            ret[owner_id]={'resources':owner_resources,'utilization':util}
+            ret[owner_id] = {'resources':owner_resources,'utilization':util}
 
 
         return ret
