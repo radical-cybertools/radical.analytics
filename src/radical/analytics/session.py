@@ -716,39 +716,39 @@ class Session(object):
 
             consumers = self.filter(etype=consumer,uid=relations[owner_id],inplace=False)
             if not consumers:
-                return {}
+                util = [0]
+            else:
+                # Go through the consumer entities and create two dictionaries. The first keeps track
+                # of how many resources each consumer consumes, and the second has the ranges based
+                # on the events.
+                consumer_resources = dict()
+                consumer_ranges = dict()
+                for cons_id,consumer_entity in consumers._entities.iteritems():
+                    consumer_resources[cons_id] = consumer_entity.description.get(resource)
+                    consumer_ranges[cons_id] = consumer_entity.ranges(event=consumer_events)[0]
 
-            # Go through the consumer entities and create two dictionaries. The first keeps track
-            # of how many resources each consumer consumes, and the second has the ranges based
-            # on the events.
-            consumer_resources = dict()
-            consumer_ranges = dict()
-            for cons_id,consumer_entity in consumers._entities.iteritems():
-                consumer_resources[cons_id] = consumer_entity.description.get(resource)
-                consumer_ranges[cons_id] = consumer_entity.ranges(event=consumer_events)[0]
+                # Sort consumer_ranges based on their values. This command returns a dictionary,
+                # which is sorted based on the first value of each entry. In the end the key,
+                # are out of order but the values are.
+                consumer_ranges = sorted(consumer_ranges.iteritems(), key=lambda (k,v): (v[0],k))
 
-            # Sort consumer_ranges based on their values. This command returns a dictionary,
-            # which is sorted based on the first value of each entry. In the end the key,
-            # are out of order but the values are.
-            consumer_ranges = sorted(consumer_ranges.iteritems(), key=lambda (k,v): (v[0],k))
-
-            # Create a timeseries that contains all moments in consumer ranges and sort. This
-            # way we have a list that has time any change has happened.
-            times = list()
-            for cons_id,r in consumer_ranges:
-                times.append(r[0])
-                times.append(r[1])
-            times.sort()
-            
-            util = list()
-            # we have the time sequence, now compute utilization at those points
-            for t in times:
-                cnt = 0
+                # Create a timeseries that contains all moments in consumer ranges and sort. This
+                # way we have a list that has time any change has happened.
+                times = list()
                 for cons_id,r in consumer_ranges:
-                    if t >= r[0] and t <= r[1]:
-                        cnt += consumer_resources[cons_id]
+                    times.append(r[0])
+                    times.append(r[1])
+                times.sort()
+                
+                util = list()
+                # we have the time sequence, now compute utilization at those points
+                for t in times:
+                    cnt = 0
+                    for cons_id,r in consumer_ranges:
+                        if t >= r[0] and t <= r[1]:
+                            cnt += consumer_resources[cons_id]
 
-                util.append([t, cnt])
+                    util.append([t, cnt])
             ret[owner_id] = {'range':owner_range,'resources':owner_resources,'utilization':util}
 
 
