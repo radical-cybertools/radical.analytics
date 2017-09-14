@@ -712,7 +712,7 @@ class Session(object):
         # empty dict
         for owner_id,owner_entity in owners._entities.iteritems():
             owner_resources = owner_entity.description.get(resource)
-            onwer_range = owner_entity.ranges(event=owner_events)
+            owner_range = owner_entity.ranges(event=owner_events)
 
             consumers = self.filter(etype=consumer,uid=relations[owner_id],inplace=False)
             if not consumers:
@@ -725,8 +725,8 @@ class Session(object):
                 consumer_ranges = dict()
                 for cons_id,consumer_entity in consumers._entities.iteritems():
                     consumer_resources[cons_id] = consumer_entity.description.get(resource)
-                    ranges = consumer_entity.(event=consumer_events)
-                    # Uodate consumer_ranges if there is at least one range
+                    ranges = consumer_entity.ranges(event=consumer_events)
+                    # Update consumer_ranges if there is at least one range
                     consumer_ranges.update({cons_id:ranges}) if len(ranges) != 0 else None
 
                 # Sort consumer_ranges based on their values. This command returns a dictionary,
@@ -737,18 +737,20 @@ class Session(object):
                 # Create a timeseries that contains all moments in consumer ranges and sort. This
                 # way we have a list that has time any change has happened.
                 times = list()
-                for cons_id,[r[0],r[1]] in consumer_ranges:
-                    times.append(r[0])
-                    times.append(r[1])
+                for cons_id,ranges in consumer_ranges:
+                    for r in ranges:
+                        times.append(r[0])
+                        times.append(r[1])
                 times.sort()
                 
                 util = list()
                 # we have the time sequence, now compute utilization at those points
                 for t in times:
                     cnt = 0
-                    for cons_id,r in consumer_ranges:
-                        if t >= r[0] and t <= r[1]:
-                            cnt += consumer_resources[cons_id]
+                    for cons_id,ranges in consumer_ranges:
+                        for r in ranges:
+                            if t >= r[0] and t <= r[1]:
+                                cnt += consumer_resources[cons_id]
 
                     util.append([t, cnt])
             ret[owner_id] = {'range':owner_range,'resources':owner_resources,'utilization':util}
