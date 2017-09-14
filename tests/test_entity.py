@@ -278,6 +278,32 @@ class TestEntity(object):
             [4.446699857711792, 29.150099992752075]
         ])
 
+    def test_ranges_time_filter_no_match(self, range_entity):
+        """Test a valid ranges with time filter, exact matches"""
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # for state
+        ranges = e.ranges(state=[
+            ['PMGR_ACTIVE_PENDING'],
+            ['FAILED']
+        ], time=[
+            [60.0, 70.0]
+        ])
+        assert (ranges == [])
+
+        # for events
+        ranges = e.ranges(event=[
+            [{ru.EVENT: 'put'}],
+            [{ru.EVENT: 'sync_rel'}]
+        ], time=[
+            [30.0, 40.0]
+        ])
+        assert (ranges == [])
+
     def test_ranges_time_filter_intersection_match(self, range_entity):
         """Test a valid ranges with time filter, one intersection match each"""
         e = Entity(_uid=range_entity['uid'],
@@ -285,7 +311,13 @@ class TestEntity(object):
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
-        # Inner
+
+        # As you read the tests, here is what each symbol represents:
+        #   [      ] --> matched range before time filtering
+        #   {      } --> time filtering value
+        #   (      ) --> matched range *after* time filtering
+
+        # Inner intersection: [   {(  )}   ]
         ranges = e.ranges(state=[
             ['PMGR_ACTIVE_PENDING'],
             ['FAILED']
@@ -306,7 +338,7 @@ class TestEntity(object):
             [5.0, 25.0]
         ])
 
-        # Outter
+        # Outter intersection: {   ([    ])   }
         ranges = e.ranges(state=[
             ['PMGR_ACTIVE_PENDING'],
             ['FAILED']
@@ -327,7 +359,7 @@ class TestEntity(object):
             [4.446699857711792, 29.150099992752075]
         ])
 
-        # Right Match
+        # Right-side intersection match: {   ([   )}   ]
         ranges = e.ranges(state=[
             ['PMGR_ACTIVE_PENDING'],
             ['FAILED']
@@ -348,7 +380,7 @@ class TestEntity(object):
             [5.0, 29.150099992752075]
         ])
 
-        # Left match
+        # Left-side intersection match: [   {(   ])   }
         ranges = e.ranges(state=[
             ['PMGR_ACTIVE_PENDING'],
             ['FAILED']
@@ -378,12 +410,20 @@ class TestEntity(object):
                    _details=range_entity['details']
                    )
 
-        # Only one range of one start/end
+        # As you read the tests, here is what each symbol represents:
+        #   [      ] --> matched range before time filtering
+        #   {      } --> time filter #1
+        #   |      | --> time filter #2
+        #   (      ) --> matched range #1 *after* time filtering
+        #   <      > --> matched range #2 *after* time filtering
+
+        # Only one of the filters match: {([   ])}   |   |
         ranges = e.ranges(state=[
             ['PMGR_ACTIVE_PENDING'],
             ['FAILED']
         ], time=[
-            [0, 20.0], [21.668299913406372, 50.227399826049805]
+            [21.668299913406372, 50.227399826049805],
+            [60.0, 80.0]
         ])
         assert (ranges == [
             [21.668299913406372, 50.227399826049805]
@@ -393,7 +433,31 @@ class TestEntity(object):
             [{ru.EVENT: 'put'}],
             [{ru.EVENT: 'sync_rel'}]
         ], time=[
-            [0.0, 4.0], [4.446699857711792, 29.150099992752075]
+            [4.446699857711792, 29.150099992752075],
+            [30.0, 40.0]
+        ])
+        assert (ranges == [
+            [4.446699857711792, 29.150099992752075]
+        ])
+
+        # Only one of the filters match: {   }   |<[   ]>|
+        ranges = e.ranges(state=[
+            ['PMGR_ACTIVE_PENDING'],
+            ['FAILED']
+        ], time=[
+            [60.0, 80.0],
+            [21.668299913406372, 50.227399826049805]
+        ])
+        assert (ranges == [
+            [21.668299913406372, 50.227399826049805]
+        ])
+
+        ranges = e.ranges(event=[
+            [{ru.EVENT: 'put'}],
+            [{ru.EVENT: 'sync_rel'}]
+        ], time=[
+            [30.0, 40.0],
+            [4.446699857711792, 29.150099992752075]
         ])
         assert (ranges == [
             [4.446699857711792, 29.150099992752075]
@@ -409,55 +473,63 @@ class TestEntity(object):
                    _details=range_entity['details']
                    )
 
-        # Inner/Outer
+        # As you read the tests, here is what each symbol represents:
+        #   [      ] --> matched range before time filtering
+        #   {      } --> time filter #1
+        #   |      | --> time filter #2
+        #   (      ) --> matched range #1 *after* time filtering
+        #   <      > --> matched range #2 *after* time filtering
+
+        # Non-overlaping filters, one matches:    {([   )}   ]   |   |
         ranges = e.ranges(state=[
             ['PMGR_ACTIVE_PENDING'],
             ['FAILED']
         ], time=[
-            [10, 25.0], [20.0, 70.0]
+            [21.668299913406372, 25.0], [60.0, 70.0]
+        ])
+        assert (ranges == [
+            [21.668299913406372, 25.0]
+        ])
+
+        ranges = e.ranges(event=[
+            [{ru.EVENT: 'put'}],
+            [{ru.EVENT: 'sync_rel'}]
+        ], time=[
+            [4.446699857711792, 15.0], [30.0, 50.0]
+        ])
+        assert (ranges == [
+            [4.446699857711792, 15.0]
+        ])
+
+        # Non-overlaping filters, both match: {   ([   )}   |<   ]>   |
+        ranges = e.ranges(state=[
+            ['PMGR_ACTIVE_PENDING'],
+            ['FAILED']
+        ], time=[
+            [10, 25.0], [30.0, 70.0]
         ])
         assert (ranges == [
             [21.668299913406372, 25.0],
-            [21.668299913406372, 50.227399826049805]
+            [30.0, 50.227399826049805]
         ])
 
         ranges = e.ranges(event=[
             [{ru.EVENT: 'put'}],
             [{ru.EVENT: 'sync_rel'}]
         ], time=[
-            [0.0, 4.0], [0.0, 30.00]
+            [0.0, 15.0], [20.0, 30.0]
         ])
         assert (ranges == [
-            [4.446699857711792, 29.150099992752075]
+            [4.446699857711792, 15.0],
+            [20.0, 29.150099992752075]
         ])
 
-        # Inner
+        # semi-overlaping filters, one matches: [   {(   ])   |   }   |
         ranges = e.ranges(state=[
             ['PMGR_ACTIVE_PENDING'],
             ['FAILED']
         ], time=[
-            [25.0, 30.0], [10.0, 60.0]
-        ])
-        assert (ranges == [
-            [25.0, 30.0]
-        ])
-
-        ranges = e.ranges(event=[
-            [{ru.EVENT: 'put'}],
-            [{ru.EVENT: 'sync_rel'}]
-        ], time=[
-            [5.0, 25.0], [0.0, 30.00]
-        ])
-        assert (ranges == [
-            [5.0, 25.0]
-        ])
-
-        # Right
-        ranges = e.ranges(state=[
-            ['PMGR_ACTIVE_PENDING'],
-            ['FAILED']
-        ], time=[
-            [25.0, 60.0], [10.0, 60.0]
+            [25.0, 70.0], [60.0, 80.0]
         ])
         assert (ranges == [
             [25.0, 50.227399826049805]
@@ -467,20 +539,44 @@ class TestEntity(object):
             [{ru.EVENT: 'put'}],
             [{ru.EVENT: 'sync_rel'}]
         ], time=[
-            [5.0, 30.0], [0.0, 30.00]
+            [15.0, 40.0], [30.0, 50.0]
         ])
         assert (ranges == [
-            [5.0, 29.150099992752075]
+            [15.0, 29.150099992752075]
         ])
 
-        # Left
+        # semi-overlaping filters, both match: {   ([   |<   )}   ]>   |
         ranges = e.ranges(state=[
             ['PMGR_ACTIVE_PENDING'],
             ['FAILED']
         ], time=[
-            [10, 30.0], [10.0, 60.0]
+            [10, 30.0], [25.0, 70.0]
         ])
         assert (ranges == [
+            [21.668299913406372, 30.0],
+            [25.0, 50.227399826049805]
+        ])
+
+        ranges = e.ranges(event=[
+            [{ru.EVENT: 'put'}],
+            [{ru.EVENT: 'sync_rel'}]
+        ], time=[
+            [0.0, 20.0], [15.0, 30.0]
+        ])
+        assert (ranges == [
+            [4.446699857711792, 20.0],
+            [15.0, 29.150099992752075]
+        ])
+
+        # complete-overlap filters, both match: |   <[   {(   )}   ]>   |
+        ranges = e.ranges(state=[
+            ['PMGR_ACTIVE_PENDING'],
+            ['FAILED']
+        ], time=[
+            [25.0, 35.0], [10.0, 70.0]
+        ])
+        assert (ranges == [
+            [25.0, 35.0],
             [21.668299913406372, 50.227399826049805]
         ])
 
@@ -488,10 +584,11 @@ class TestEntity(object):
             [{ru.EVENT: 'put'}],
             [{ru.EVENT: 'sync_rel'}]
         ], time=[
-            [0.0, 25.0], [0.0, 30.00]
+            [10.0, 20.0], [0.0, 30.0]
         ])
         assert (ranges == [
-            [4.446699857711792, 25.0]
+            [10.0, 20.0],
+            [4.446699857711792, 29.150099992752075]
         ])
 
     def test_ranges_two_overlaping_state(self, range_entity):
