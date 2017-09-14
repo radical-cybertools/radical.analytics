@@ -51,7 +51,7 @@ def sort_events(events=None):
 
 class TestEntity(object):
 
-    def test_valid_t_start(self, pilot_entity):
+    def test_t_start(self, pilot_entity):
         e = Entity(_uid=pilot_entity['uid'],
                    _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
@@ -60,7 +60,7 @@ class TestEntity(object):
         events = sort_events(pilot_entity['events'])
         assert events[0][ru.TIME] == e.t_start
 
-    def test_valid_t_stop(self, pilot_entity):
+    def test_t_stop(self, pilot_entity):
         e = Entity(_uid=pilot_entity['uid'],
                    _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
@@ -69,7 +69,7 @@ class TestEntity(object):
         events = sort_events(pilot_entity['events'])
         assert events[-1][ru.TIME] == e.t_stop
 
-    def test_valid_ttc(self, pilot_entity):
+    def test_ttc(self, pilot_entity):
         e = Entity(_uid=pilot_entity['uid'],
                    _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
@@ -78,7 +78,7 @@ class TestEntity(object):
         events = sort_events(pilot_entity['events'])
         assert float(events[-1][ru.TIME] - events[0][ru.TIME]) == e.ttc
 
-    def test_valid_t_range(self, pilot_entity):
+    def test_t_range(self, pilot_entity):
         e = Entity(_uid=pilot_entity['uid'],
                    _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
@@ -87,7 +87,7 @@ class TestEntity(object):
         events = sort_events(pilot_entity['events'])
         assert [events[0][ru.TIME], events[-1][ru.TIME]] == e.t_range
 
-    def test_valid_uid(self, pilot_entity):
+    def test_uid(self, pilot_entity):
         e = Entity(_uid=pilot_entity['uid'],
                    _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
@@ -95,7 +95,7 @@ class TestEntity(object):
                    )
         assert (e.uid == pilot_entity['uid'])
 
-    def test_valid_etype(self, pilot_entity):
+    def test_etype(self, pilot_entity):
         e = Entity(_uid=pilot_entity['uid'],
                    _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
@@ -103,7 +103,7 @@ class TestEntity(object):
                    )
         assert (e.etype == pilot_entity['etype'])
 
-    def test_valid_states(self, pilot_entity):
+    def test_states(self, pilot_entity):
         e = Entity(_uid=pilot_entity['uid'],
                    _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
@@ -113,7 +113,7 @@ class TestEntity(object):
         states = get_states(pilot_entity['events'])
         assert (e.states == states)
 
-    def test_valid_events(self, pilot_entity):
+    def test_events(self, pilot_entity):
         e = Entity(_uid=pilot_entity['uid'],
                    _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
@@ -123,7 +123,7 @@ class TestEntity(object):
         events = sort_events(pilot_entity['events'])
         assert (e.events == events)
 
-    def test_valid_description(self, pilot_entity):
+    def test_description(self, pilot_entity):
         e = Entity(_uid=pilot_entity['uid'],
                    _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
@@ -132,7 +132,7 @@ class TestEntity(object):
         assert (type(e.description) is dict)
         assert (e.description == pilot_entity['details']['description'])
 
-    def test_valid_cfg(self, pilot_entity):
+    def test_cfg(self, pilot_entity):
         e = Entity(_uid=pilot_entity['uid'],
                    _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
@@ -141,7 +141,7 @@ class TestEntity(object):
         assert (type(e.cfg) is dict)
         assert (e.cfg == pilot_entity['details']['cfg'])
 
-    def test_valid_consistency(self, pilot_entity):
+    def test_consistency(self, pilot_entity):
         e = Entity(_uid=pilot_entity['uid'],
                    _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
@@ -149,7 +149,7 @@ class TestEntity(object):
                    )
         assert (type(e.consistency) is dict)
 
-    def test_valid_as_dict(self, pilot_entity):
+    def test_as_dict(self, pilot_entity):
         e = Entity(_uid=pilot_entity['uid'],
                    _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
@@ -163,7 +163,11 @@ class TestEntity(object):
         }
         assert (e.as_dict() == expected)
 
-    def test_one_valid_event_ranges(self, range_entity):
+##########################################
+# Test Ranges: expand=False, collapse=True
+##########################################
+
+    def test_ranges_one_state(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
                    _etype=range_entity['etype'],
                    _profile=range_entity['events'],
@@ -179,7 +183,7 @@ class TestEntity(object):
             [21.668299913406372, 50.227399826049805]
         ])
 
-    def test_two_consecutive_valid_event_ranges(self, range_entity):
+    def test_ranges_two_consecutive_state(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
                    _etype=range_entity['etype'],
                    _profile=range_entity['events'],
@@ -196,7 +200,79 @@ class TestEntity(object):
             [4.449499845504761, 21.668299913406372]
         ])
 
-    def test_two_overlaping_valid_event_ranges(self, range_entity):
+    def test_ranges_time_filter_exact_matche_state(self, range_entity):
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # Only one range of one start/end
+        ranges = e.ranges(state=[
+            ('PMGR_ACTIVE_PENDING'),
+            ('FAILED')
+        ], time=[
+            (21.668299913406372, 50.227399826049805)
+        ])
+        assert (ranges == [
+            [21.668299913406372, 50.227399826049805]
+        ])
+
+    def test_ranges_time_filter_inner_matched_state(self, range_entity):
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # Only one range of one start/end
+        ranges = e.ranges(state=[
+            ('PMGR_ACTIVE_PENDING'),
+            ('FAILED')
+        ], time=[
+            (25.0, 30.0)
+        ])
+        assert (ranges == [
+            [25.0, 30.0]
+        ])
+
+    def test_ranges_time_filter_right_matched_state(self, range_entity):
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # Only one range of one start/end
+        ranges = e.ranges(state=[
+            ('PMGR_ACTIVE_PENDING'),
+            ('FAILED')
+        ], time=[
+            (25.0, 100.00)
+        ])
+        assert (ranges == [
+            [25.0, 50.227399826049805]
+        ])
+
+    def test_ranges_time_filter_left_matched_state(self, range_entity):
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # Only one range of one start/end
+        ranges = e.ranges(state=[
+            ('PMGR_ACTIVE_PENDING'),
+            ('FAILED')
+        ], time=[
+            (0, 30.0)
+        ])
+        assert (ranges == [
+            [21.668299913406372, 30.0]
+        ])
+
+    def test_ranges_two_overlaping_state(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
                    _etype=range_entity['etype'],
                    _profile=range_entity['events'],
@@ -210,6 +286,56 @@ class TestEntity(object):
         ])
         assert (ranges == [
             [0.0, 4.433599948883057]
+        ])
+
+    def test_ranges_one_event(self, range_entity):
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # Only one range of one start/end
+        ranges = e.ranges(event=[
+            ({ru.EVENT: 'put'}),
+            ({ru.EVENT: 'cmd'})
+        ])
+        assert (ranges == [
+            [4.446699857711792, 50.507999897003174]
+        ])
+
+    def test_ranges_two_consecutive_event(self, range_entity):
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # Two consecutive ranges
+        ranges = e.ranges(event=[
+            ({ru.EVENT: 'put'}, {ru.EVENT: 'hostname'}),
+            ({ru.EVENT: 'sync_rel'}, {ru.EVENT: 'cmd'})
+        ])
+        assert (ranges == [
+            [4.446699857711792, 29.150099992752075],
+            [29.760799884796143, 50.507999897003174]
+        ])
+
+    def test_ranges_two_overlaping_event(self, range_entity):
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # Two overlaping ranges
+        ranges = e.ranges(event=[
+            ({ru.EVENT: 'put'}, {ru.EVENT: 'hostname'}),
+            ({ru.EVENT: 'sync_rel'}, {ru.EVENT: 'cmd'})
+        ])
+        assert (ranges == [
+            [4.446699857711792, 29.150099992752075],
+            [29.760799884796143, 50.507999897003174]
         ])
 
     def test_empty_profile(self, pilot_entity):
@@ -272,3 +398,59 @@ class TestEntity(object):
                    _profile=pilot_entity['events'],
                    _details=None
                    )
+
+    def test_invalid_ranges_no_end_matched_state(self, range_entity):
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # Only one range of one start/end
+        ranges = e.ranges(event=[
+            ({ru.EVENT: 'put'}),
+            ({ru.EVENT: 'aaa'})
+        ])
+        assert (ranges == [])
+
+    def test_invalid_ranges_no_end_matched_event(self, range_entity):
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # Only one range of one start/end
+        ranges = e.ranges(event=[
+            ('NEW'),
+            ('AAA')
+        ])
+        assert (ranges == [])
+
+    def test_invalid_ranges_no_start_matched_state(self, range_entity):
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # Only one range of one start/end
+        ranges = e.ranges(event=[
+            ({ru.EVENT: 'aaa'}),
+            ({ru.EVENT: 'put'})
+        ])
+        assert (ranges == [])
+
+    def test_invalid_ranges_no_start_matched_event(self, range_entity):
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # Only one range of one start/end
+        ranges = e.ranges(event=[
+            ('AAA'),
+            ('NEW')
+        ])
+        assert (ranges == [])
