@@ -12,7 +12,7 @@ directory = "{}/example-data".format(
 
 @pytest.fixture
 def pilot_entity():
-    """Fixture to get the example Pilot entity"""
+    """Fixture to get the example Pilot entity from example data"""
     with open(
             "{}/pilot-entity-example.json".format(directory),
             'r') as f:
@@ -23,7 +23,7 @@ def pilot_entity():
 
 @pytest.fixture
 def range_entity():
-    """Fixture to get the example range-testing entity"""
+    """Fixture to get the example range-testing entity from example data"""
     with open(
             "{}/range-testing-entity-example.json".format(directory),
             'r') as f:
@@ -61,7 +61,9 @@ class TestEntity(object):
                    _details=pilot_entity['details']
                    )
         events = sort_events(pilot_entity['events'])
-        assert events[0][ru.TIME] == e.t_start
+
+        # Should match the time in the first element after sorting
+        assert (e.t_start == events[0][ru.TIME])
 
     def test_t_stop(self, pilot_entity):
         """Test a valid t_stop"""
@@ -71,6 +73,8 @@ class TestEntity(object):
                    _details=pilot_entity['details']
                    )
         events = sort_events(pilot_entity['events'])
+
+        # Should match the time in the last element after sorting
         assert events[-1][ru.TIME] == e.t_stop
 
     def test_ttc(self, pilot_entity):
@@ -81,7 +85,10 @@ class TestEntity(object):
                    _details=pilot_entity['details']
                    )
         events = sort_events(pilot_entity['events'])
-        assert float(events[-1][ru.TIME] - events[0][ru.TIME]) == e.ttc
+
+        # Should match the difference in time between
+        # first and last elements after sorting
+        assert (e.ttc == float(events[-1][ru.TIME] - events[0][ru.TIME]))
 
     def test_t_range(self, pilot_entity):
         """Test a valid t_range"""
@@ -91,6 +98,8 @@ class TestEntity(object):
                    _details=pilot_entity['details']
                    )
         events = sort_events(pilot_entity['events'])
+
+        # Should match exactly what was passed in...
         assert [events[0][ru.TIME], events[-1][ru.TIME]] == e.t_range
 
     def test_uid(self, pilot_entity):
@@ -100,6 +109,8 @@ class TestEntity(object):
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
+
+        # Should match exactly what was passed in...
         assert (e.uid == pilot_entity['uid'])
 
     def test_etype(self, pilot_entity):
@@ -109,6 +120,8 @@ class TestEntity(object):
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
+
+        # Should match exactly what was passed in...
         assert (e.etype == pilot_entity['etype'])
 
     def test_states(self, pilot_entity):
@@ -120,6 +133,9 @@ class TestEntity(object):
                    )
         # Get all events in the example file and put them in a dictionary
         states = get_states(pilot_entity['events'])
+
+        # Should match a list of events of type 'state'
+        # extracted from the events passed in
         assert (e.states == states)
 
     def test_events(self, pilot_entity):
@@ -131,6 +147,9 @@ class TestEntity(object):
                    )
         # Get all events in order by timestamp
         events = sort_events(pilot_entity['events'])
+
+        # Should match a list of sorted events (by the time field)
+        # generated from the list of events passed in
         assert (e.events == events)
 
     def test_description(self, pilot_entity):
@@ -140,6 +159,8 @@ class TestEntity(object):
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
+
+        # Should match exactly what was passed in...
         assert (type(e.description) is dict)
         assert (e.description == pilot_entity['details']['description'])
 
@@ -150,6 +171,8 @@ class TestEntity(object):
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
+
+        # Should match exactly what was passed in...
         assert (type(e.cfg) is dict)
         assert (e.cfg == pilot_entity['details']['cfg'])
 
@@ -160,6 +183,8 @@ class TestEntity(object):
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
+
+        # TODO: Better matching, for now we match just a dict()
         assert (type(e.consistency) is dict)
 
     def test_as_dict(self, pilot_entity):
@@ -175,14 +200,21 @@ class TestEntity(object):
             'states': get_states(pilot_entity['events']),
             'events': sort_events(pilot_entity['events'])
         }
+
+        # Should match exactly what was passed in
+        # as the order seen above...
         assert (e.as_dict() == expected)
 
-##########################################
-# Test Ranges: expand=False, collapse=True
-##########################################
+
+##############################################################
+# Test Ranges Method: expand=False, collapse=True
+#
+# We match range values form the example data at:
+#   ./example-data/range-testing-entity-example.json
+##############################################################
 
     def test_ranges_one_state(self, range_entity):
-        """Test a valid ranges result with one state in/out"""
+        """Test a valid ranges result with one state start/finish"""
         e = Entity(_uid=range_entity['uid'],
                    _etype=range_entity['etype'],
                    _profile=range_entity['events'],
@@ -199,7 +231,7 @@ class TestEntity(object):
         ])
 
     def test_ranges_two_consecutive_state(self, range_entity):
-        """Test a valid ranges result with two states in/out"""
+        """Test a valid ranges result with two states start/finish"""
         e = Entity(_uid=range_entity['uid'],
                    _etype=range_entity['etype'],
                    _profile=range_entity['events'],
@@ -224,23 +256,23 @@ class TestEntity(object):
                    _details=range_entity['details']
                    )
 
-        # states
+        # for state
         ranges = e.ranges(state=[
-            ('PMGR_ACTIVE_PENDING'),
-            ('FAILED')
+            ['PMGR_ACTIVE_PENDING'],
+            ['FAILED']
         ], time=[
-            (21.668299913406372, 50.227399826049805)
+            [21.668299913406372, 50.227399826049805]
         ])
         assert (ranges == [
             [21.668299913406372, 50.227399826049805]
         ])
 
-        # events
-        ranges = e.ranges(events=[
-            ({ru.STATE: 'put'}),
-            ({ru.STATE: 'sync_rel'})
+        # for events
+        ranges = e.ranges(event=[
+            [{ru.EVENT: 'put'}],
+            [{ru.EVENT: 'sync_rel'}]
         ], time=[
-            (4.446699857711792, 29.150099992752075)
+            [4.446699857711792, 29.150099992752075]
         ])
         assert (ranges == [
             [4.446699857711792, 29.150099992752075]
@@ -255,20 +287,20 @@ class TestEntity(object):
                    )
         # Inner
         ranges = e.ranges(state=[
-            ('PMGR_ACTIVE_PENDING'),
-            ('FAILED')
+            ['PMGR_ACTIVE_PENDING'],
+            ['FAILED']
         ], time=[
-            (25.0, 30.0)
+            [25.0, 30.0]
         ])
         assert (ranges == [
             [25.0, 30.0]
         ])
 
-        ranges = e.ranges(events=[
-            ({ru.STATE: 'put'}),
-            ({ru.STATE: 'sync_rel'})
+        ranges = e.ranges(event=[
+            [{ru.EVENT: 'put'}],
+            [{ru.EVENT: 'sync_rel'}]
         ], time=[
-            (5.0, 25.0)
+            [5.0, 25.0]
         ])
         assert (ranges == [
             [5.0, 25.0]
@@ -276,20 +308,20 @@ class TestEntity(object):
 
         # Outter
         ranges = e.ranges(state=[
-            ('PMGR_ACTIVE_PENDING'),
-            ('FAILED')
+            ['PMGR_ACTIVE_PENDING'],
+            ['FAILED']
         ], time=[
-            (10.0, 60.0)
+            [10.0, 60.0]
         ])
         assert (ranges == [
             [21.668299913406372, 50.227399826049805]
         ])
 
-        ranges = e.ranges(events=[
-            ({ru.STATE: 'put'}),
-            ({ru.STATE: 'sync_rel'})
+        ranges = e.ranges(event=[
+            [{ru.EVENT: 'put'}],
+            [{ru.EVENT: 'sync_rel'}]
         ], time=[
-            (0.0, 50.0)
+            [0.0, 50.0]
         ])
         assert (ranges == [
             [4.446699857711792, 29.150099992752075]
@@ -297,20 +329,20 @@ class TestEntity(object):
 
         # Right Match
         ranges = e.ranges(state=[
-            ('PMGR_ACTIVE_PENDING'),
-            ('FAILED')
+            ['PMGR_ACTIVE_PENDING'],
+            ['FAILED']
         ], time=[
-            (25.0, 100.00)
+            [25.0, 100.00]
         ])
         assert (ranges == [
             [25.0, 50.227399826049805]
         ])
 
-        ranges = e.ranges(events=[
-            ({ru.STATE: 'put'}),
-            ({ru.STATE: 'sync_rel'})
+        ranges = e.ranges(event=[
+            [{ru.EVENT: 'put'}],
+            [{ru.EVENT: 'sync_rel'}]
         ], time=[
-            (5.0, 50.0)
+            [5.0, 50.0]
         ])
         assert (ranges == [
             [5.0, 29.150099992752075]
@@ -318,20 +350,20 @@ class TestEntity(object):
 
         # Left match
         ranges = e.ranges(state=[
-            ('PMGR_ACTIVE_PENDING'),
-            ('FAILED')
+            ['PMGR_ACTIVE_PENDING'],
+            ['FAILED']
         ], time=[
-            (0, 30.0)
+            [0, 30.0]
         ])
         assert (ranges == [
             [21.668299913406372, 30.0]
         ])
 
-        ranges = e.ranges(events=[
-            ({ru.STATE: 'put'}),
-            ({ru.STATE: 'sync_rel'})
+        ranges = e.ranges(event=[
+            [{ru.EVENT: 'put'}],
+            [{ru.EVENT: 'sync_rel'}]
         ], time=[
-            (0.0, 25.0)
+            [0.0, 25.0]
         ])
         assert (ranges == [
             [4.446699857711792, 25.0]
@@ -348,20 +380,20 @@ class TestEntity(object):
 
         # Only one range of one start/end
         ranges = e.ranges(state=[
-            ('PMGR_ACTIVE_PENDING'),
-            ('FAILED')
+            ['PMGR_ACTIVE_PENDING'],
+            ['FAILED']
         ], time=[
-            (0, 20.0), (21.668299913406372, 50.227399826049805)
+            [0, 20.0], [21.668299913406372, 50.227399826049805]
         ])
         assert (ranges == [
             [21.668299913406372, 50.227399826049805]
         ])
 
-        ranges = e.ranges(events=[
-            ({ru.STATE: 'put'}),
-            ({ru.STATE: 'sync_rel'})
+        ranges = e.ranges(event=[
+            [{ru.EVENT: 'put'}],
+            [{ru.EVENT: 'sync_rel'}]
         ], time=[
-            (0.0, 4.0), (4.446699857711792, 29.150099992752075)
+            [0.0, 4.0], [4.446699857711792, 29.150099992752075]
         ])
         assert (ranges == [
             [4.446699857711792, 29.150099992752075]
@@ -377,22 +409,23 @@ class TestEntity(object):
                    _details=range_entity['details']
                    )
 
-        # Outer
+        # Inner/Outer
         ranges = e.ranges(state=[
-            ('PMGR_ACTIVE_PENDING'),
-            ('FAILED')
+            ['PMGR_ACTIVE_PENDING'],
+            ['FAILED']
         ], time=[
-            (10, 25.0), (20.0, 70.0)
+            [10, 25.0], [20.0, 70.0]
         ])
         assert (ranges == [
+            [21.668299913406372, 25.0],
             [21.668299913406372, 50.227399826049805]
         ])
 
-        ranges = e.ranges(events=[
-            ({ru.STATE: 'put'}),
-            ({ru.STATE: 'sync_rel'})
+        ranges = e.ranges(event=[
+            [{ru.EVENT: 'put'}],
+            [{ru.EVENT: 'sync_rel'}]
         ], time=[
-            (0.0, 4.0), (0.0, 30.00)
+            [0.0, 4.0], [0.0, 30.00]
         ])
         assert (ranges == [
             [4.446699857711792, 29.150099992752075]
@@ -400,20 +433,20 @@ class TestEntity(object):
 
         # Inner
         ranges = e.ranges(state=[
-            ('PMGR_ACTIVE_PENDING'),
-            ('FAILED')
+            ['PMGR_ACTIVE_PENDING'],
+            ['FAILED']
         ], time=[
-            (25.0, 30.0), (10.0, 60.0)
+            [25.0, 30.0], [10.0, 60.0]
         ])
         assert (ranges == [
             [25.0, 30.0]
         ])
 
-        ranges = e.ranges(events=[
-            ({ru.STATE: 'put'}),
-            ({ru.STATE: 'sync_rel'})
+        ranges = e.ranges(event=[
+            [{ru.EVENT: 'put'}],
+            [{ru.EVENT: 'sync_rel'}]
         ], time=[
-            (5.0, 25.0), (0.0, 30.00)
+            [5.0, 25.0], [0.0, 30.00]
         ])
         assert (ranges == [
             [5.0, 25.0]
@@ -421,20 +454,20 @@ class TestEntity(object):
 
         # Right
         ranges = e.ranges(state=[
-            ('PMGR_ACTIVE_PENDING'),
-            ('FAILED')
+            ['PMGR_ACTIVE_PENDING'],
+            ['FAILED']
         ], time=[
-            (25.0, 60.0), (10.0, 60.0)
+            [25.0, 60.0], [10.0, 60.0]
         ])
         assert (ranges == [
             [25.0, 50.227399826049805]
         ])
 
-        ranges = e.ranges(events=[
-            ({ru.STATE: 'put'}),
-            ({ru.STATE: 'sync_rel'})
+        ranges = e.ranges(event=[
+            [{ru.EVENT: 'put'}],
+            [{ru.EVENT: 'sync_rel'}]
         ], time=[
-            (5.0, 30.0), (0.0, 30.00)
+            [5.0, 30.0], [0.0, 30.00]
         ])
         assert (ranges == [
             [5.0, 29.150099992752075]
@@ -442,20 +475,20 @@ class TestEntity(object):
 
         # Left
         ranges = e.ranges(state=[
-            ('PMGR_ACTIVE_PENDING'),
-            ('FAILED')
+            ['PMGR_ACTIVE_PENDING'],
+            ['FAILED']
         ], time=[
-            (10, 30.0), (10.0, 60.0)
+            [10, 30.0], [10.0, 60.0]
         ])
         assert (ranges == [
             [21.668299913406372, 50.227399826049805]
         ])
 
-        ranges = e.ranges(events=[
-            ({ru.STATE: 'put'}),
-            ({ru.STATE: 'sync_rel'})
+        ranges = e.ranges(event=[
+            [{ru.EVENT: 'put'}],
+            [{ru.EVENT: 'sync_rel'}]
         ], time=[
-            (0.0, 25.0), (0.0, 30.00)
+            [0.0, 25.0], [0.0, 30.00]
         ])
         assert (ranges == [
             [4.446699857711792, 25.0]
@@ -574,9 +607,10 @@ class TestEntity(object):
         assert (e.description == dict())
         # TODO: Add more assetions as needed / fix assertions
 
-##########################################
-# Test Invalid Scenarios
-##########################################
+
+##############################################################
+# Test invalid scenarios
+##############################################################
     def test_none_uid(self, pilot_entity):
         with pytest.raises(Exception):
             Entity(_uid=None,
