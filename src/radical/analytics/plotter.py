@@ -21,7 +21,7 @@ class Plotter(object):
         self._style = style
         self._plot_grid = plot_grid
         
-    def utilization_plot(self,util_data=None,normalized=None,resource=None):
+    def utilization(self,util_data=None,normalized=None,resource=None):
         
         if not self._plot_grid:
             self._fig,self._axis = plt.subplots(nrows=1,ncols=1)
@@ -64,3 +64,14 @@ class Plotter(object):
                 self._axis[i].set_xlabel('Time in seconds')
                 self._axis[i].set_title('%s Resource Utilization'%resource)
                 self._axis[i].legend()
+
+    def concurrency(self,data=None):
+        
+        self._fig,self._axis = plt.subplots(nrows=1,ncols=1)
+        x_axis = [point[0] for point in data]
+        y_axis = [point[1] for point in data]
+        self._axis.plot(x_axis,y_axis)        
+        self._axis.set_ylabel('Concurrent Entities')
+        self._axis.set_xlabel('Time in seconds')
+        self._axis.set_title('Concurrency')
+
