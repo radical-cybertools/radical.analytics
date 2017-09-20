@@ -641,9 +641,11 @@ class Session(object):
 
         return ret
 
+
+    #-------------------------------------------------------------------------------------
+    #
     def utilization(self, owner, consumer, resource, 
         owner_events=None,consumer_events=None):
-
         """
         This method accepts as parameters :
         owner           : The entity name of the owner of the resources
@@ -658,9 +660,12 @@ class Session(object):
                           ending points for the utilization. The selected events should be 
                           meaningful for resource consumption. This method does not do any 
                           check on that sense
+
         Based on these parameters the resources of the owners are collected, as well as,
         the times when the consumer(s) used those resources. 
         Returned is a dictionary of the form:
+
+
         { "owner_0"       : {"range":owner_range,
                              "resources":resource_size,
                              "utilization" :[ [time_0, resource_utilization_0] ,
@@ -680,18 +685,21 @@ class Session(object):
                                               [time_1, resource_utilization_1] ,
                                                ...
                                               [time_n, resource_utilization_n] ]}
+
         where `time_n` is represented as `float`, `resource_utilization_n` as `int`, and
         resource_size is the total resources the owner has.
+
         Example:
-        self.utilization(owner='pilot',consumer='unit',resource='cores',
+
+        session.utilization(owner='pilot',consumer='unit',resource='cores',
         events=[{ru.EVENT: 'exec_start'},{ru.EVENT:'exec_stop'}])
         """
         ret = dict()
-
-        # Filter the self to get a self of the owners. If that is empty return an
+        
+        # Filter the session to get a session of the owners. If that is empty return an
         # empty dict
-
-        relations = self.describe('relations', [owner, consumer])
+        
+        relations = self .describe('relations', [owner, consumer])
         if not relations:
             return {}
 
@@ -750,6 +758,7 @@ class Session(object):
 
 
         return ret
+
 
     # --------------------------------------------------------------------------
     #
