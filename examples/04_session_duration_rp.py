@@ -62,14 +62,19 @@ if __name__ == '__main__':
     # 'CANCELED', 'FAILED' of all the entities of RP.
     ppheader("Time spent by the pilots being active")
     pilots = session.filter(etype='pilot', inplace=False)
-    durations = pilots.duration([rp.ACTIVE, [rp.DONE, rp.CANCELED, rp.FAILED]])
+    durations = pilots.duration([rp.PMGR_ACTIVE, rp.FINAL])
     pprint.pprint(durations)
 
     # Now, we want to do the same for the all the entities of type 'unit':
     ppheader("Time spent by the units being active")
     units = session.filter(etype='unit', inplace=False)
-    duration_active = units.duration([rp.AGENT_EXECUTING, [rp.DONE, rp.CANCELED, rp.FAILED]])
+    duration_active = units.duration([rp.AGENT_EXECUTING, rp.FINAL])
     pprint.pprint(duration_active)
+
+    conc = units.concurrency(state=[rp.AGENT_EXECUTING,
+                                    rp.AGENT_STAGING_OUTPUT_PENDING],
+                                    sampling=2.0)
+    pprint.pprint(conc)
 
     # The careful reader will have noticed that the previous duration includes
     # the time spent by the units to execute and to stage data out. We can
@@ -84,7 +89,7 @@ if __name__ == '__main__':
     # 'unit' with 'AGENT_STAGING_OUTPUT_PENDING' and the final states:
     ppheader("Time spent by the units performing staging out")
     units = session.filter(etype='unit', state=rp.DONE, inplace=False)
-    duration_sout = units.duration([rp.AGENT_STAGING_OUTPUT_PENDING, [rp.DONE, rp.CANCELED, rp.FAILED]])
+    duration_sout = units.duration([rp.AGENT_STAGING_OUTPUT_PENDING, rp.FINAL])
     pprint.pprint(duration_sout)
 
     # we print the timestamps for the units for when they entered certain states
