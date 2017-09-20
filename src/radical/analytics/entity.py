@@ -368,11 +368,8 @@ class Entity(object):
             else:
                 conds_final.append(e)
 
-        t_start    = sys.float_info.max
-        t_stop     = sys.float_info.min
         ranges     = list()
         this_range = [None, None]
-        in_range   = False
 
         # FIXME: this assumes that `self.events` are time sorted
         for e in self._events:
@@ -421,7 +418,6 @@ class Entity(object):
                     new_stop  = min(trange[1], erange[1])
                     if new_stop > new_start:
                         ret.append([new_start, new_stop])
-            return ret
 
         if collapse:
             return ru.collapse_ranges(ret)

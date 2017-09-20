@@ -501,7 +501,7 @@ class Session(object):
                 pass
 
         if not ranges:
-            raise ValueError('no duration defined for given constraints')
+            return []
 
         if collapse:
             ret = ru.collapse_ranges(ranges)
