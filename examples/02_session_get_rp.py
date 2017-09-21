@@ -92,7 +92,7 @@ if __name__ == '__main__':
     # timestamp of when the unit has been created, i.e., the property 'time' of
     # the state NEW:
     ppheader("Property 'time' of the state rp.NEW of the entities with uid 'unit.000000'")
-    timestamp = unit[0].states[rp.NEW]['time']
+    timestamp = unit[0].states[rp.NEW][ru.TIME]
     pprint.pprint(timestamp)
 
     # ra.Session.get() can also been used to to get all the entities in our
@@ -105,15 +105,15 @@ if __name__ == '__main__':
     # We can then print the timestamp of the state 'NEW' for all the entities
     # having that state by using something like:
     ppheader("Timestamp of all the entities with state rp.NEW")
-    timestamps = [entity.states[rp.NEW]['time'] for entity in entities]
+    timestamps = [entity.states[rp.NEW][ru.TIME] for entity in entities]
     pprint.pprint(timestamps)
 
     # We can also create tailored data structures for our analyis. For
     # example, using tuples to name entities, state, and timestamp:
     ppheader("Named entities with state rp.NEW and its timestamp")
     named_timestamps = [(entity.uid,
-                         entity.states[rp.NEW]['state'],
-                         entity.states[rp.NEW]['time']) for entity in entities]
+                         entity.states[rp.NEW][ru.STATE],
+                         entity.states[rp.NEW][ru.TIME]) for entity in entities]
     pprint.pprint(named_timestamps)
 
     sys.exit(0)

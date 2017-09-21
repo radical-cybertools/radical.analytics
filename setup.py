@@ -266,8 +266,8 @@ setup_args = {
     'cmdclass'           : {
         'test'           : our_test,
     },
-    'install_requires'   : ['radical.utils'],
-    'tests_require'      : [],
+    'install_requires'   : ['radical.utils','matplotlib'],
+    'tests_require'      : ['pytest'],
     'test_suite'         : '%s.tests' % name,
     'zip_safe'           : False,
 #   'build_sphinx'       : {

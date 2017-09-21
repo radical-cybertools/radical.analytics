@@ -43,6 +43,7 @@ class Session(object):
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
 
+
         elif stype == 'radical.entk':
             import radical.entk as re
 
@@ -52,21 +53,21 @@ class Session(object):
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
 
+
         else:
             raise ValueError('unsupported session type [%s]' % stype)
 
-        self._t_start     = None
-        self._t_stop      = None
-        self._ttc         = None
-
-        self._log         = None
+        self._t_start = None
+        self._t_stop  = None
+        self._ttc     = None
+        self._log     = None
 
         # internal state is represented by a dict of entities:
         # dict keys are entity uids (which are assumed to be unique per
         # session), dict values are ra.Entity instances.
         self._entities = dict()
         if _init:
-            self._initialize_entities()
+            self._initialize_entities(profile)
 
         # we do some bookkeeping in self._properties where we keep a list of
         # property values around which we encountered in self._entities.
@@ -76,6 +77,13 @@ class Session(object):
 
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
+
+          # import resource
+          # print 'max RSS       : %20d MB' % (resource.getrusage(1)[2]/(1024))
+          # print 'session       : %20d MB' % (ru.get_size(self,             strict=True)/(1024**2))
+          # print 'entities      : %20d MB' % (ru.get_size(self._entities,   strict=True)/(1024**2))
+          # print 'properties    : %20d MB' % (ru.get_size(self._properties, strict=True)/(1024**2))
+          # print '#entities     : %20d'    % len(self._entities)
 
 
     # --------------------------------------------------------------------------
@@ -142,9 +150,9 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def _initialize_entities(self):
+    def _initialize_entities(self, profile):
         """
-        populate self._entities from self._profile and
+        populate self._entities from profile and
         self._description.
 
         NOTE: We derive entity types via some heuristics for now: we assume the
@@ -154,8 +162,8 @@ class Session(object):
         # create entities from the profile events:
         entity_events = dict()
 
-        for event in self._profile:
-            uid = event['uid']
+        for event in profile:
+            uid = event[ru.UID]
 
             if uid not in entity_events:
                 entity_events[uid] = list()
@@ -165,7 +173,7 @@ class Session(object):
         # entity type in one of the events (and assume it is consistent over
         # all events for that uid)
         for uid,events in entity_events.iteritems():
-            etype   = events[0]['entity_type']
+            etype   = events[0][ru.ENTITY]
             details = self._description['tree'].get(uid, dict())
             details['hostid'] = self._description['hostmap'].get(uid)
             self._entities[uid] = Entity(_uid=uid,
@@ -237,9 +245,10 @@ class Session(object):
                 self._properties['state'][state] += 1
 
             for event in e.events:
-                if event not in self._properties['event']:
-                    self._properties['event'][event] = 0
-                self._properties['event'][event] += 1
+                name = event[ru.EVENT]
+                if name not in self._properties['event']:
+                    self._properties['event'][name] = 0
+                self._properties['event'][name] += 1
 
 
         if self._entities:
@@ -254,11 +263,11 @@ class Session(object):
         # iterate through all self._entities and collect UIDs of all entities
         # which match the given set of filters (after removing all events which
         # are not in the given time ranges)
-        if not etype: etype = []
-        if not uid  : uid   = []
-        if not state: state = []
-        if not event: event = []
-        if not time : time  = []
+        if not etype: etype = list()
+        if not uid  : uid   = list()
+        if not state: state = list()
+        if not event: event = list()
+        if not time : time  = list()
 
         if etype and not isinstance(etype, list): etype = [etype]
         if uid   and not isinstance(uid  , list): uid   = [uid  ]
@@ -275,8 +284,8 @@ class Session(object):
 
             if state:
                 match = False
-                for s,sdict in entity.states.iteritems():
-                    if time and not ru.in_range(sdict['time'], time):
+                for s,stuple in entity.states.iteritems():
+                    if time and not ru.in_range(stuple[ru.TIME], time):
                         continue
                     if s in state:
                         match = True
@@ -286,8 +295,8 @@ class Session(object):
 
             if event:
                 match = False
-                for e,edict in entity.events.iteritems():
-                    if time and not ru.in_range(edict['time'], time):
+                for e,etuple in entity.events.iteritems():
+                    if time and not ru.in_range(etuple[ru.TIME], time):
                         continue
                     if e in event:
                         match = True
@@ -379,12 +388,16 @@ class Session(object):
     def describe(self, mode=None, etype=None):
 
         if mode not in [None, 'state_model', 'state_values',
-                              'event_model', 'relations']:
+                              'event_model', 'relations', 
+                              'statistics']:
             raise ValueError('describe parameter "mode" invalid')
 
         if not etype and not mode:
             # no entity filter applied: return the full description
             return self._description
+
+        if mode == 'statistics':
+            return self._properties
 
         if not etype:
             etype = self.list('etype')
@@ -452,56 +465,40 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def ranges(self, state=None, event=None, time=None):
+    def ranges(self, state=None, event=None, time=None, collapse=True):
         """
-        This method accepts a set of initial and final conditions, in the form
-        of range of state and or event specifiers:
+        This method accepts a set of initial and final conditions, and will get
+        time ranges in accordance to those conditions from all session entities.
+        The resulting set of ranges is then collapsed to the minimal equivalent
+        set of ranges covering the same set of times.
 
-          entity.ranges(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'],
-                                'FINAL_STATE_1',   'FINAL_STATE_2']],
-                        event=['initial_event_1',  'final_event'],
-                        time =[[2.0, 2.5], [3.0, 3.5]])
+        Please refer to the `Entity.ranges()` documentation on detail on the
+        constrain parameters.
 
-        More specifically, the `state` and `event` parameter are expected to be
-        a tuple, where the first element defines the initial condition, and the
-        second element defines the final condition. Each element can be a string
-        or a list of strings.  The `time` parameter is expected to be a single
-        tuple, or a list of tuples, each defining a pair of start and end time
-        which are used to constrain the resulting ranges.
-
-        The parameters are interpreted as follows:
-
-          - for any entity known to the session
-            - determine the maximum time range during which the entity has been
-              between initial and final conditions
-
-          - collapse the resulting set of ranges into the smallest possible set
-            of ranges which cover the same, but not more nor less, of the
-            domain (floats).
-
-          - limit the resulting ranges by the `time` constraints, if such are
-            given.
-
-
-        Example:
-
-           session.ranges(state=[rp.NEW, rp.FINAL]))
-
-        where `rp.FINAL` is a list of final unit states.
+        Setting 'collapse' to 'True' (default) will prompt the method to
+        collapse the resulting set of ranges.
         """
 
         ranges = list()
         for uid,entity in self._entities.iteritems():
             try:
-                ranges += entity.ranges(state, event, time)
+                tmp = entity.ranges(state, event, time, collapse=False)
+                ranges += tmp
             except ValueError:
+                print 'no ranges for %s' % uid
                 # ignore entities for which the conditions did not apply
                 pass
 
         if not ranges:
-            raise ValueError('no duration defined for given constraints')
+            return []
 
-        return ru.collapse_ranges(ranges)
+        if collapse:
+            ret = ru.collapse_ranges(ranges)
+        else:
+            ret = ranges
+
+        # sort ranges by start time and return
+        return sorted(ret, key=lambda r: r[1])
 
 
     # --------------------------------------------------------------------------
@@ -528,11 +525,11 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def duration(self, state=None, event=None, time=None):
+    def duration(self, state=None, event=None, time=None, ranges=None):
         """
         This method accepts the same set of parameters as the `ranges()` method,
         and will use the `ranges()` method to obtain a set of ranges.  It will
-        return the sum of the durations for all resulting ranges.
+        return the sum of the durations for all resulting & collapsed ranges.
 
         Example:
 
@@ -541,12 +538,19 @@ class Session(object):
         where `rp.FINAL` is a list of final unit states.
         """
 
-        ret    = 0.0
-        ranges = self.ranges(state, event, time)
-        for r in ranges:
-            ret += r[1] - r[0]
+        if not ranges:
+            ranges = self.ranges(state, event, time)
 
-        return ret
+        else:
+            assert(not state)
+            assert(not event)
+            assert(not time)
+            
+            # make sure the ranges are collapsed (although they likely are
+            # already...)
+            ranges = ru.collapse_ranges(ranges)
+
+        return sum(r[1] - r[0] for r in ranges) 
 
 
     # --------------------------------------------------------------------------
@@ -627,6 +631,124 @@ class Session(object):
         return ret
 
 
+    #-------------------------------------------------------------------------------------
+    #
+    def utilization(self, owner, consumer, resource, 
+        owner_events=None,consumer_events=None):
+        """
+        This method accepts as parameters :
+        owner           : The entity name of the owner of the resources
+        consumer        : The ename of the entity that consumes the resources owned by owner
+        resource        : The type of resources whose utilization is requested, ex. :Cores,
+                          Memory, GPUS etc
+        owner_events    : A list of owner's/owners' events that will be used as starting and 
+                          ending points for the utilization. The selected events should be 
+                          meaningful for resource consumption. This method does not do any 
+                          check on that sense
+        consumer_events : A list of owner's/owners' events that will be used as starting and 
+                          ending points for the utilization. The selected events should be 
+                          meaningful for resource consumption. This method does not do any 
+                          check on that sense
+
+        Based on these parameters the resources of the owners are collected, as well as,
+        the times when the consumer(s) used those resources. 
+        Returned is a dictionary of the form:
+
+
+        { "owner_0"       : {"range":owner_range,
+                             "resources":resource_size,
+                             "utilization" :[ [time_0, resource_utilization_0] ,
+                                              [time_1, resource_utilization_1] ,
+                                               ...
+                                              [time_n, resource_utilization_n] ]},
+          "owner_1"       : {"range":owner_range,
+                             "resources":resource_size,
+                             "utilization" :[ [time_0, resource_utilization_0] ,
+                                              [time_1, resource_utilization_1] ,
+                                               ...
+                                              [time_n, resource_utilization_n] ]},
+          ...            
+          "owner_n"       : {"range":owner_range,
+                             "resources":resource_size,
+                             "utilization" :[ [time_0, resource_utilization_0] ,
+                                              [time_1, resource_utilization_1] ,
+                                               ...
+                                              [time_n, resource_utilization_n] ]}
+
+        where `time_n` is represented as `float`, `resource_utilization_n` as `int`, and
+        resource_size is the total resources the owner has.
+
+        Example:
+
+        session.utilization(owner='pilot',consumer='unit',resource='cores',
+        events=[{ru.EVENT: 'exec_start'},{ru.EVENT:'exec_stop'}])
+        """
+        ret = dict()
+        
+        # Filter the session to get a session of the owners. If that is empty return an
+        # empty dict
+        
+        relations = self .describe('relations', [owner, consumer])
+        if not relations:
+            return {}
+
+        owners = self.filter(etype=owner,inplace=False)
+        if not owners:
+            return {}
+
+        # Filter the self to get a self of the consumers. If that is empty return an
+        # empty dict
+        for owner_entity in owners.get():
+            owner_id = owner_entity.uid
+            owner_resources = owner_entity.description.get(resource)
+            owner_range = owner_entity.ranges(event=owner_events)
+
+            consumers = self.filter(etype=consumer,uid=relations[owner_id],inplace=False)
+            if not consumers:
+                util = [0]
+            else:
+                # Go through the consumer entities and create two dictionaries. The first keeps track
+                # of how many resources each consumer consumes, and the second has the ranges based
+                # on the events.
+                consumer_resources = dict()
+                consumer_ranges = dict()
+                for consumer_entity in consumers.get():
+                    cons_id = consumer_entity.uid
+                    consumer_resources[cons_id] = consumer_entity.description.get(resource)
+                    ranges = consumer_entity.ranges(event=consumer_events)
+                    # Update consumer_ranges if there is at least one range
+                    consumer_ranges.update({cons_id:ranges}) if len(ranges) != 0 else None
+
+                # Sort consumer_ranges based on their values. This command returns a dictionary,
+                # which is sorted based on the first value of each entry. In the end the key,
+                # are out of order but the values are.
+                consumer_ranges = sorted(consumer_ranges.iteritems(), key=lambda (k,v): (v[0],k))
+
+                # Create a timeseries that contains all moments in consumer ranges and sort. This
+                # way we have a list that has time any change has happened.
+                times = list()
+                for cons_id,ranges in consumer_ranges:
+                    for r in ranges:
+                        times.append(r[0])
+                        times.append(r[1])
+                times.sort()
+
+                util = list()
+                # we have the time sequence, now compute utilization at those points
+                for t in times:
+                    cnt = 0
+                    for cons_id,ranges in consumer_ranges:
+                        for r in ranges:
+                            if t >= r[0] and t <= r[1]:
+                                cnt += consumer_resources[cons_id]
+
+                    util.append([t, cnt])
+            ret[owner_id] = {'range':owner_range,'resources':owner_resources,'utilization':util}
+
+
+        return ret
+
+
     # --------------------------------------------------------------------------
     #
     def consistency(self, mode=None):
@@ -696,11 +818,6 @@ class Session(object):
             self._rep.info('%s state model\n' % et)
             sm = self.describe('state_model', etype=et)
             sv = self.describe('state_values', etype=et)[et]['state_values']
-
-          # print
-          # print et
-          # print sv
-          # print
 
             for e in self.get(etype=et):
 
