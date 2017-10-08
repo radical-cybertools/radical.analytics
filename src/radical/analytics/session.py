@@ -3,6 +3,7 @@
 import os
 import sys
 import copy
+import tarfile
 
 import radical.utils as ru
 
@@ -13,26 +14,65 @@ from .entity import Entity
 #
 class Session(object):
 
-    def __init__(self, sid, stype, src=None, _entities=None, _init=True):
+    def __init__(self, src, stype, sid=None, _entities=None, _init=True):
         """
         Create a radical.analytics session for analysis.
 
         The session is created from a set of profiles, which usually have been
         produced from some other session object in the RCT stack, such as
-        radical.pilot.  The `ra.Session` constructor expects the respecive
-        session ID and session type.  It optionally accepts a `src` parameter
-        which can point to a location where the profiles are expected to be
-        found, or where they will be stored after fetching them.  The default
-        value for `src` is `$PWD/sid`.
+        radical.pilot. Profiles are accepted in two forms: in a directory, or in
+        a tarball (of such a directory).  In the latter case, the tarball are
+        extracted into `$TMP`, and then handled just as the directory case.
+
+        If no `sid` (session ID) is specified, that ID is derived from the
+        directory name.
         """
 
+        if not os.path.exists(src):
+            raise ValueError('src [%s] does not exist' % src)
+
+        if os.path.isdir(src):
+            pass
+
+        elif os.path.isfile(src):
+
+            # src is afile - we assume its a tarball and extract it
+            if  src.endswith('.tgz') or \
+                src.endswith('.tbz')    :
+                tgt = src[:-4]
+
+            elif src.endswith('.tar.gz') or \
+                 src.endswith('.tar.bz')    :
+                tgt = src[:-7]
+
+            else:
+                raise ValueError('src does not look like a tarball')
+
+            if not os.path.exists(tgt):
+
+                # need to extract
+                print 'extract tarball to %s' % tgt
+                try:
+                    tf = tarfile.open(name=src, mode='r:bz2')
+                    tf.extractall(path=os.path.dirname(tgt))
+
+                except Exception as e:
+                    raise RuntimeError('Cannot extract tarball: %s' % repr(e))
+
+            # switch to the extracted data dir
+            src = tgt
+
+
+        # if no sid is given, we assumeits the directory name
+        if not sid:
+            sid = os.path.basename(src)
+
         self._sid   = sid
+        self._src   = src
         self._stype = stype
 
-        if not src:
-            src = "%s/%s" % (os.getcwd(), sid)
-
-        self._src = src
+      # print 'sid: %s [%s]' % (sid, stype)
+      # print 'src: %s'      % src
 
         if stype == 'radical.pilot':
             import radical.pilot as rp
