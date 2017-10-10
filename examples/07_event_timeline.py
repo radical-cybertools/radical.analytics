@@ -84,8 +84,8 @@ if __name__ == '__main__':
     sorted_things = sorted(data.items(), key=lambda e: e[1][0])
     sorted_data   = list()
     index         = 0
-    for thing in sorted_things[150:170]:
-  # for thing in sorted_things:
+  # for thing in sorted_things[150:170]:
+    for thing in sorted_things:
         sorted_data.append([index] + thing[1])
         index += 1
 
@@ -97,6 +97,7 @@ if __name__ == '__main__':
         plt.plot(np_data[:,0], np_data[:,(1+e_idx)], label=event_list[e_idx])
 
     plt.legend()
+  # plt.savefig('event_timeline.png')
     plt.show()
 
 
