@@ -26,7 +26,7 @@ event_list = \
         # {ru.STATE: 'UMGR_STAGING_INPUT_PENDING'   , ru.EVENT: 'state'      },
         # {ru.STATE: 'UMGR_STAGING_INPUT'           , ru.EVENT: 'state'      },
         # {ru.STATE: 'AGENT_STAGING_INPUT_PENDING'  , ru.EVENT: 'state'      },
-      #   {ru.COMP : 'agent_0'                      , ru.EVENT: 'get'        },
+          {ru.COMP : 'agent_0'                      , ru.EVENT: 'get'        },
         # {ru.STATE: 'AGENT_STAGING_INPUT'          , ru.EVENT: 'state'      },
         # {ru.STATE: 'AGENT_SCHEDULING_PENDING'     , ru.EVENT: 'state'      },
         # {ru.STATE: 'AGENT_SCHEDULING'             , ru.EVENT: 'state'      },
@@ -35,12 +35,12 @@ event_list = \
           {ru.STATE: 'AGENT_EXECUTING'              , ru.EVENT: 'state'      },
           {ru.STATE: None                           , ru.EVENT: 'exec_start' },
         # {ru.STATE: None                           , ru.EVENT: 'exec_ok'    },
-      #   {ru.STATE: None                           , ru.EVENT: 'exec_stop'  },
+          {ru.STATE: None                           , ru.EVENT: 'exec_stop'  },
         # {ru.STATE: 'AGENT_STAGING_OUTPUT_PENDING' , ru.EVENT: 'state'      },
         # {ru.STATE: 'UMGR_STAGING_OUTPUT_PENDING'  , ru.EVENT: 'state'      },
         # {ru.STATE: 'UMGR_STAGING_OUTPUT'          , ru.EVENT: 'state'      },
         # {ru.STATE: 'AGENT_STAGING_OUTPUT'         , ru.EVENT: 'state'      },
-        # {ru.STATE: 'DONE'                         , ru.EVENT: 'state'      },
+          {ru.STATE: 'DONE'                         , ru.EVENT: 'state'      },
     ]
 event_entity = 'unit'
 
@@ -97,7 +97,7 @@ if __name__ == '__main__':
         plt.plot(np_data[:,0], np_data[:,(1+e_idx)], label=event_list[e_idx])
 
     plt.legend()
-  # plt.savefig('event_timeline.png')
+    plt.savefig('event_timeline.png')
     plt.show()
 
 
