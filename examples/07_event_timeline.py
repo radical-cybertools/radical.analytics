@@ -18,7 +18,8 @@ import numpy             as np
 # type `event_entity`..  Before plotting, we sort those entities by the
 # timestamp of the first event in the event list
 
-event_list = \
+event_entity = 'unit'
+event_list   = \
     [
         # {ru.STATE: 'NEW'                          , ru.EVENT: 'state'      },
         # {ru.STATE: 'UMGR_SCHEDULING_PENDING'      , ru.EVENT: 'state'      },
@@ -42,7 +43,6 @@ event_list = \
         # {ru.STATE: 'AGENT_STAGING_OUTPUT'         , ru.EVENT: 'state'      },
           {ru.STATE: 'DONE'                         , ru.EVENT: 'state'      },
     ]
-event_entity = 'unit'
 
 # ------------------------------------------------------------------------------
 #
@@ -93,11 +93,13 @@ if __name__ == '__main__':
     np_data = np.array(sorted_data)
   # print np_data
 
+    plt.figure(figsize=(20,14))
     for e_idx in range(len(event_list)):
         plt.plot(np_data[:,0], np_data[:,(1+e_idx)], label=event_list[e_idx])
 
-    plt.legend()
-    plt.savefig('event_timeline.png')
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),
+          ncol=2, fancybox=True, shadow=True)
+    plt.savefig('07_event_timeline.svg')
     plt.show()
 
 
