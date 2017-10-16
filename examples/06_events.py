@@ -107,6 +107,12 @@ if __name__ == '__main__':
     print 'average    : %7.2f' % (sum(durations) / len(durations))
     print
 
+    ppheader("concurrent units in between exec_start and exec_stop events")
+    concurrency = units.concurrency(event=[{ru.EVENT: 'exec_start'},
+                                           {ru.EVENT: 'exec_stop' }],
+                                    sampling=10)
+    pprint.pprint(concurrency)
+
 
 # ------------------------------------------------------------------------------
 
