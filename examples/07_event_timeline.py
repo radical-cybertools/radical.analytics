@@ -21,30 +21,32 @@ import numpy             as np
 event_entity = 'unit'
 event_list   = \
     [
-        # {ru.STATE: 'NEW'                          , ru.EVENT: 'state'      },
-        # {ru.STATE: 'UMGR_SCHEDULING_PENDING'      , ru.EVENT: 'state'      },
-        # {ru.STATE: 'UMGR_SCHEDULING'              , ru.EVENT: 'state'      },
-        # {ru.STATE: 'UMGR_STAGING_INPUT_PENDING'   , ru.EVENT: 'state'      },
-        # {ru.STATE: 'UMGR_STAGING_INPUT'           , ru.EVENT: 'state'      },
-        # {ru.STATE: 'AGENT_STAGING_INPUT_PENDING'  , ru.EVENT: 'state'      },
-          {ru.COMP : 'agent_0'                      , ru.EVENT: 'get'        },
-        # {ru.STATE: 'AGENT_STAGING_INPUT'          , ru.EVENT: 'state'      },
-        # {ru.STATE: 'AGENT_SCHEDULING_PENDING'     , ru.EVENT: 'state'      },
-        # {ru.STATE: 'AGENT_SCHEDULING'             , ru.EVENT: 'state'      },
-          {ru.STATE: None                           , ru.EVENT: 'schedule_ok'},
-        # {ru.STATE: 'AGENT_EXECUTING_PENDING'      , ru.EVENT: 'state'      },
-          {ru.STATE: 'AGENT_EXECUTING'              , ru.EVENT: 'state'      },
-          {ru.STATE: None                           , ru.EVENT: 'exec_start' },
-        # {ru.STATE: None                           , ru.EVENT: 'exec_ok'    },
-          {ru.STATE: None                           , ru.EVENT: 'exec_stop'  },
-        # {ru.STATE: 'AGENT_STAGING_OUTPUT_PENDING' , ru.EVENT: 'state'      },
-        # {ru.STATE: 'UMGR_STAGING_OUTPUT_PENDING'  , ru.EVENT: 'state'      },
-        # {ru.STATE: 'UMGR_STAGING_OUTPUT'          , ru.EVENT: 'state'      },
-        # {ru.STATE: 'AGENT_STAGING_OUTPUT'         , ru.EVENT: 'state'      },
-          {ru.STATE: 'DONE'                         , ru.EVENT: 'state'      },
+        # {ru.STATE: 'NEW'                          , ru.EVENT: 'state'           },
+        # {ru.STATE: 'UMGR_SCHEDULING_PENDING'      , ru.EVENT: 'state'           },
+        # {ru.STATE: 'UMGR_SCHEDULING'              , ru.EVENT: 'state'           },
+        # {ru.STATE: 'UMGR_STAGING_INPUT_PENDING'   , ru.EVENT: 'state'           },
+        # {ru.STATE: 'UMGR_STAGING_INPUT'           , ru.EVENT: 'state'           },
+        # {ru.STATE: 'AGENT_STAGING_INPUT_PENDING'  , ru.EVENT: 'state'           },
+          {ru.COMP : 'agent_0'                      , ru.EVENT: 'get'             },
+        # {ru.STATE: 'AGENT_STAGING_INPUT'          , ru.EVENT: 'state'           },
+        # {ru.STATE: 'AGENT_SCHEDULING_PENDING'     , ru.EVENT: 'state'           },
+        # {ru.STATE: 'AGENT_SCHEDULING'             , ru.EVENT: 'state'           },
+          {ru.STATE: None                           , ru.EVENT: 'schedule_ok'     },
+        # {ru.STATE: 'AGENT_EXECUTING_PENDING'      , ru.EVENT: 'state'           },
+          {ru.STATE: 'AGENT_EXECUTING'              , ru.EVENT: 'state'           },
+          {ru.STATE: None                           , ru.EVENT: 'exec_mkdir'      },
+          {ru.STATE: None                           , ru.EVENT: 'exec_mkdir_done' },
+          {ru.STATE: None                           , ru.EVENT: 'exec_start'      },
+        # {ru.STATE: None                           , ru.EVENT: 'exec_ok'         },
+          {ru.STATE: None                           , ru.EVENT: 'exec_stop'       },
+        # {ru.STATE: 'AGENT_STAGING_OUTPUT_PENDING' , ru.EVENT: 'state'           },
+        # {ru.STATE: 'UMGR_STAGING_OUTPUT_PENDING'  , ru.EVENT: 'state'           },
+        # {ru.STATE: 'UMGR_STAGING_OUTPUT'          , ru.EVENT: 'state'           },
+        # {ru.STATE: 'AGENT_STAGING_OUTPUT'         , ru.EVENT: 'state'           },
+          {ru.STATE: 'DONE'                         , ru.EVENT: 'state'           },
     ]
 
-# ------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------     ---
 #
 if __name__ == '__main__':
 

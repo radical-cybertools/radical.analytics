@@ -42,6 +42,8 @@ event_list   = \
           {ru.STATE: None                           , ru.EVENT: 'schedule_ok'     },
         # {ru.STATE: 'AGENT_EXECUTING_PENDING'      , ru.EVENT: 'state'           },
           {ru.STATE: 'AGENT_EXECUTING'              , ru.EVENT: 'state'           },
+          {ru.STATE: None                           , ru.EVENT: 'exec_mkdir'      },
+          {ru.STATE: None                           , ru.EVENT: 'exec_mkdir_done' },
           {ru.STATE: None                           , ru.EVENT: 'exec_start'      },
         # {ru.STATE: None                           , ru.EVENT: 'exec_ok'         },
           {ru.STATE: None                           , ru.EVENT: 'exec_stop'       },
