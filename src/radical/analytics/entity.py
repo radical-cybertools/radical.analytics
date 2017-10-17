@@ -157,6 +157,9 @@ class Entity(object):
     #
     def _ensure_tuplelist(self, events):
 
+        if not events:
+            return []
+
         ret = list()
         if not isinstance(events, list):
             events = [events]
