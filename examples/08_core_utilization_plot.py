@@ -40,15 +40,15 @@ event_list   = \
         # {ru.STATE: 'AGENT_SCHEDULING_PENDING'     , ru.EVENT: 'state'           },
         # {ru.STATE: 'AGENT_SCHEDULING'             , ru.EVENT: 'state'           },
           {ru.STATE: None                           , ru.EVENT: 'schedule_ok'     },
-        # {ru.STATE: 'AGENT_EXECUTING_PENDING'      , ru.EVENT: 'state'           },
-          {ru.STATE: 'AGENT_EXECUTING'              , ru.EVENT: 'state'           },
+      # # {ru.STATE: 'AGENT_EXECUTING_PENDING'      , ru.EVENT: 'state'           },
+      #   {ru.STATE: 'AGENT_EXECUTING'              , ru.EVENT: 'state'           },
           {ru.STATE: None                           , ru.EVENT: 'exec_mkdir'      },
           {ru.STATE: None                           , ru.EVENT: 'exec_mkdir_done' },
           {ru.STATE: None                           , ru.EVENT: 'exec_start'      },
-        # {ru.STATE: None                           , ru.EVENT: 'exec_ok'         },
-          {ru.STATE: None                           , ru.EVENT: 'exec_stop'       },
-        # {ru.STATE: None                           , ru.EVENT: 'unschedule_start'},
-          {ru.STATE: None                           , ru.EVENT: 'unschedule_stop' },
+      # # {ru.STATE: None                           , ru.EVENT: 'exec_ok'         },
+      #   {ru.STATE: None                           , ru.EVENT: 'exec_stop'       },
+      # # {ru.STATE: None                           , ru.EVENT: 'unschedule_start'},
+      #   {ru.STATE: None                           , ru.EVENT: 'unschedule_stop' },
         # {ru.STATE: 'AGENT_STAGING_OUTPUT_PENDING' , ru.EVENT: 'state'           },
         # {ru.STATE: 'UMGR_STAGING_OUTPUT_PENDING'  , ru.EVENT: 'state'           },
         # {ru.STATE: 'UMGR_STAGING_OUTPUT'          , ru.EVENT: 'state'           },
@@ -94,12 +94,16 @@ if __name__ == '__main__':
     sorted_things = sorted(data.items(), key=lambda e: e[1][0])
     sorted_data   = list()
     index         = 0
-    for uid,tstamps in sorted_things:
+    for uid,tstamps in sorted_things[15:25]:
+  # for uid,tstamps in sorted_things:
 
         # rebase
         t_zero = tstamps[0]
         for i in range(len(tstamps)):
-            tstamps[i] = tstamps[i] - t_zero
+            if tstamps[i]:
+                tstamps[i] = tstamps[i] - t_zero
+            else:
+                print 'pass', uid
 
         # create plottable data
         sorted_data.append([index] + tstamps)
@@ -112,13 +116,13 @@ if __name__ == '__main__':
 
     plt.figure(figsize=(20,14))
     for e_idx in range(len(event_list)):
-        plt.plot(np_data[:,0], np_data[:,(1+e_idx)], label=event_list[e_idx])
+        plt.scatter(np_data[:,0], np_data[:,(1+e_idx)], label=event_list[e_idx])
 
     if log:
         plt.yscale('log')
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),
           ncol=2, fancybox=True, shadow=True)
-    plt.savefig('08_core_utilization.svg')
+    plt.savefig('08_core_utilization.png')
     plt.show()
 
 
