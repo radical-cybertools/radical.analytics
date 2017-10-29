@@ -29,31 +29,38 @@ import numpy             as np
 event_entity = 'unit'
 event_list   = \
     [
-        # {ru.STATE: 'NEW'                          , ru.EVENT: 'state'           },
-        # {ru.STATE: 'UMGR_SCHEDULING_PENDING'      , ru.EVENT: 'state'           },
-        # {ru.STATE: 'UMGR_SCHEDULING'              , ru.EVENT: 'state'           },
-        # {ru.STATE: 'UMGR_STAGING_INPUT_PENDING'   , ru.EVENT: 'state'           },
-        # {ru.STATE: 'UMGR_STAGING_INPUT'           , ru.EVENT: 'state'           },
-        # {ru.STATE: 'AGENT_STAGING_INPUT_PENDING'  , ru.EVENT: 'state'           },
-        # {ru.COMP : 'agent_0'                      , ru.EVENT: 'get'             },
-        # {ru.STATE: 'AGENT_STAGING_INPUT'          , ru.EVENT: 'state'           },
-        # {ru.STATE: 'AGENT_SCHEDULING_PENDING'     , ru.EVENT: 'state'           },
-        # {ru.STATE: 'AGENT_SCHEDULING'             , ru.EVENT: 'state'           },
-          {ru.STATE: None                           , ru.EVENT: 'schedule_ok'     },
-      # # {ru.STATE: 'AGENT_EXECUTING_PENDING'      , ru.EVENT: 'state'           },
-      #   {ru.STATE: 'AGENT_EXECUTING'              , ru.EVENT: 'state'           },
-          {ru.STATE: None                           , ru.EVENT: 'exec_mkdir'      },
-          {ru.STATE: None                           , ru.EVENT: 'exec_mkdir_done' },
-          {ru.STATE: None                           , ru.EVENT: 'exec_start'      },
-      # # {ru.STATE: None                           , ru.EVENT: 'exec_ok'         },
-      #   {ru.STATE: None                           , ru.EVENT: 'exec_stop'       },
-      # # {ru.STATE: None                           , ru.EVENT: 'unschedule_start'},
-      #   {ru.STATE: None                           , ru.EVENT: 'unschedule_stop' },
-        # {ru.STATE: 'AGENT_STAGING_OUTPUT_PENDING' , ru.EVENT: 'state'           },
-        # {ru.STATE: 'UMGR_STAGING_OUTPUT_PENDING'  , ru.EVENT: 'state'           },
-        # {ru.STATE: 'UMGR_STAGING_OUTPUT'          , ru.EVENT: 'state'           },
-        # {ru.STATE: 'AGENT_STAGING_OUTPUT'         , ru.EVENT: 'state'           },
-        # {ru.STATE: 'DONE'                         , ru.EVENT: 'state'           },
+        # {ru.STATE: 'NEW'                          , ru.EVENT: 'state'               },
+        # {ru.STATE: 'UMGR_SCHEDULING_PENDING'      , ru.EVENT: 'state'               },
+        # {ru.STATE: 'UMGR_SCHEDULING'              , ru.EVENT: 'state'               },
+        # {ru.STATE: 'UMGR_STAGING_INPUT_PENDING'   , ru.EVENT: 'state'               },
+        # {ru.STATE: 'UMGR_STAGING_INPUT'           , ru.EVENT: 'state'               },
+        # {ru.STATE: 'AGENT_STAGING_INPUT_PENDING'  , ru.EVENT: 'state'               },
+        # {ru.COMP : 'agent_0'                      , ru.EVENT: 'get'                 },
+      #   {ru.STATE: 'AGENT_STAGING_INPUT'          , ru.EVENT: 'state'               },
+        # {ru.STATE: 'AGENT_SCHEDULING_PENDING'     , ru.EVENT: 'state'               },
+          {ru.STATE: 'AGENT_SCHEDULING'             , ru.EVENT: 'state'               },
+          {ru.STATE: None                           , ru.EVENT: 'schedule_ok'         },
+        # {ru.STATE: 'AGENT_EXECUTING_PENDING'      , ru.EVENT: 'state'               },
+          {ru.STATE: 'AGENT_EXECUTING'              , ru.EVENT: 'state'               },
+      #   {ru.STATE: None                           , ru.EVENT: 'exec_mkdir'          },
+      #   {ru.STATE: None                           , ru.EVENT: 'exec_mkdir_done'     },
+    #     {ru.STATE: None                           , ru.EVENT: 'exec_start'          },
+          {ru.STATE: None                           , ru.EVENT: 'exec_ok'             },
+    #     {ru.STATE: None                           , ru.EVENT: 'cu_start'            },
+      #   {ru.STATE: None                           , ru.EVENT: 'cu_cd_done'          },
+    #     {ru.STATE: None                           , ru.EVENT: 'cu_exec_start'       },
+      #   {ru.STATE: None                           , ru.EVENT: 'app_start'           },
+    #     {ru.STATE: None                           , ru.EVENT: 'app_stop'            },
+    #     {ru.STATE: None                           , ru.EVENT: 'cu_exec_stop'        },
+      #   {ru.STATE: None                           , ru.EVENT: 'exec_stop'           },
+        # {ru.STATE: None                           , ru.EVENT: 'unschedule_start'    },
+      #   {ru.STATE: None                           , ru.EVENT: 'unschedule_stop'     },
+        # {ru.STATE: 'AGENT_STAGING_OUTPUT_PENDING' , ru.EVENT: 'state'               },
+        # {ru.STATE: 'UMGR_STAGING_OUTPUT_PENDING'  , ru.EVENT: 'state'               },
+        # {ru.STATE: 'UMGR_STAGING_OUTPUT'          , ru.EVENT: 'state'               },
+        # {ru.STATE: 'AGENT_STAGING_OUTPUT'         , ru.EVENT: 'state'               },
+        # {ru.STATE: 'DONE'                         , ru.EVENT: 'state'               },
+
     ]
 
 log = False  # use log scale for y axis
@@ -94,8 +101,8 @@ if __name__ == '__main__':
     sorted_things = sorted(data.items(), key=lambda e: e[1][0])
     sorted_data   = list()
     index         = 0
-    for uid,tstamps in sorted_things[15:25]:
-  # for uid,tstamps in sorted_things:
+  # for uid,tstamps in sorted_things[15:25]:
+    for uid,tstamps in sorted_things:
 
         # rebase
         t_zero = tstamps[0]
@@ -116,7 +123,7 @@ if __name__ == '__main__':
 
     plt.figure(figsize=(20,14))
     for e_idx in range(len(event_list)):
-        plt.scatter(np_data[:,0], np_data[:,(1+e_idx)], label=event_list[e_idx])
+        plt.scatter(np_data[:,0], np_data[:,(1+e_idx)], s=3, label=event_list[e_idx])
 
     if log:
         plt.yscale('log')

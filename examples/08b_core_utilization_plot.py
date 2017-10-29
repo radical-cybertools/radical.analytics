@@ -28,11 +28,12 @@ event_list   = \
         # {ru.STATE: 'UMGR_STAGING_INPUT_PENDING'   , ru.EVENT: 'state'           },
         # {ru.STATE: 'UMGR_STAGING_INPUT'           , ru.EVENT: 'state'           },
         # {ru.STATE: 'AGENT_STAGING_INPUT_PENDING'  , ru.EVENT: 'state'           },
-        # {ru.COMP : 'agent_0'                      , ru.EVENT: 'get'             },
+          {ru.STATE: None                           , ru.EVENT: 'schedule_ok'     },
+          {ru.COMP : 'agent_0'                      , ru.EVENT: 'get'             },
         # {ru.STATE: 'AGENT_STAGING_INPUT'          , ru.EVENT: 'state'           },
         # {ru.STATE: 'AGENT_SCHEDULING_PENDING'     , ru.EVENT: 'state'           },
         # {ru.STATE: 'AGENT_SCHEDULING'             , ru.EVENT: 'state'           },
-          {ru.STATE: None                           , ru.EVENT: 'schedule_ok'     },
+      #   {ru.STATE: None                           , ru.EVENT: 'schedule_ok'     },
         # {ru.STATE: 'AGENT_EXECUTING_PENDING'      , ru.EVENT: 'state'           },
           {ru.STATE: 'AGENT_EXECUTING'              , ru.EVENT: 'state'           },
           {ru.STATE: None                           , ru.EVENT: 'exec_mkdir'      },
@@ -111,7 +112,7 @@ if __name__ == '__main__':
     plt.yscale('log')
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),
           ncol=2, fancybox=True, shadow=True)
-    plt.savefig('08b_core_utilization.svg')
+    plt.savefig('08b_core_utilization.png')
     plt.show()
 
 
