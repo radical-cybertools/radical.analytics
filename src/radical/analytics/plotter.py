@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 
 class Plotter(object):
 
@@ -20,6 +19,12 @@ class Plotter(object):
 
         self._style = style
         self._plot_grid = plot_grid
+
+        try:
+            import matplotlib.pyplot as plt
+        except:
+            raise RuntimeError('Plotter class needs matplotlib installed')
+
         
     def utilization(self,util_data=None,normalized=None,resource=None,fig_size=None):
 

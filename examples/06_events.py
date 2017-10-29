@@ -22,23 +22,11 @@ profile events.
 if __name__ == '__main__':
 
     if len(sys.argv) != 2:
-        print "\n\tusage: %s <dir>\n" % sys.argv[0]
+        print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
         sys.exit(1)
 
-    src = sys.argv[1]
-
-    # find json file in dir, and derive session id
-    json_files = glob.glob('%s/*.json' % src)
-
-    if len(json_files) < 1: raise ValueError('%s has no json file!' % src)
-    if len(json_files) > 1: raise ValueError('%s has more than one json file!' % src)
-
-    json_file = json_files[0]
-    sid = os.path.basename(json_file)[:-5]
-
-    print 'sid: %s' % sid
-
-    session = ra.Session(sid, 'radical.pilot', src=src)
+    src     = sys.argv[1]
+    session = ra.Session(src, 'radical.pilot')
 
     # A formatting helper before starting...
     def ppheader(message):
@@ -105,11 +93,25 @@ if __name__ == '__main__':
         if diff <= 0:
             oopses.append([unit.uid, diff])
 
-    oopses = sorted(oopses, key=lambda(o): -o[1])
-    print '\nfound %d units with inconsistent data' % len(oopses)
-    for oops in oopses:
-        print '%s: %7.2f' % (oops[0], oops[1])
+    # now perform a sanity check: for each unit we check if the duration as
+    # obtained above is in fact smaller than the duration for the
+    # `AGENT_EXECUTING` state, as one would expect.
+    ppheader("pure exec times (exec_start ... exec_stop)")
+    durations=list()
+    for unit in units.get():
+        exec_duration = unit.duration(event=[{ru.EVENT: 'exec_start'},
+                                             {ru.EVENT: 'exec_stop'}])
+        print '%s: %7.2f' % (unit.uid, exec_duration)
+        durations.append(exec_duration)
+
+    print 'average    : %7.2f' % (sum(durations) / len(durations))
     print
+
+    ppheader("concurrent units in between exec_start and exec_stop events")
+    concurrency = units.concurrency(event=[{ru.EVENT: 'exec_start'},
+                                           {ru.EVENT: 'exec_stop' }],
+                                    sampling=10)
+    pprint.pprint(concurrency)
 
 
 # ------------------------------------------------------------------------------

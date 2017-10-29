@@ -155,6 +155,29 @@ class Entity(object):
 
     # --------------------------------------------------------------------------
     #
+    def _ensure_tuplelist(self, events):
+
+        if not events:
+            return []
+
+        ret = list()
+        if not isinstance(events, list):
+            events = [events]
+
+        for e in events:
+            if isinstance(e,dict):
+                et = ru.PROF_KEY_MAX * [None]
+                for k,v in e.iteritems():
+                    et[k] = v
+                ret.append(tuple(et))
+            else:
+                ret.append(e)
+
+        return ret
+
+
+    # --------------------------------------------------------------------------
+    #
     def as_dict(self):
 
         return {
@@ -223,10 +246,7 @@ class Entity(object):
         The returned list will be sorted.
         """
 
-        if not event:
-            event = []
-        elif not isinstance(event, list):
-            event = [event]
+        event = self._ensure_tuplelist(event)
 
         if not state:
             state = []
