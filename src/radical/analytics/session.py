@@ -106,7 +106,7 @@ class Session(object):
         # session), dict values are ra.Entity instances.
         self._entities = dict()
         if _init:
-            self._initialize_entities(profile)
+            self._initialize_entities(self._profile)
 
         # we do some bookkeeping in self._properties where we keep a list of
         # property values around which we encountered in self._entities.
@@ -128,7 +128,7 @@ class Session(object):
         memo[id(self)] = ret
 
         for k, v in self.__dict__.items():
-            setattr(ret, k, deepcopy(v, memo))
+            setattr(ret, k, copy.deepcopy(v, memo))
 
         return ret
 
@@ -471,25 +471,25 @@ class Session(object):
             if len(etype) != 2:
                 raise ValueError('relations expect an etype *tuple*')
 
-           # we interpret the query as follows: for the two given etypes, walk
-           # through the relationship tree and for all entities of etype[0]
-           # return a list of all child entities of etype[1].  The result is
-           # returned as a dict.
+            # we interpret the query as follows: for the two given etypes, walk
+            # through the relationship tree and for all entities of etype[0]
+            # return a list of all child entities of etype[1].  The result is
+            # returned as a dict.
 
-           parent_uids = self._apply_filter(etype=etype[0])
-           child_uids  = self._apply_filter(etype=etype[1])
+            parent_uids = self._apply_filter(etype=etype[0])
+            child_uids  = self._apply_filter(etype=etype[1])
 
-           rel = self._description['tree']
-           for p in parent_uids:
+            rel = self._description['tree']
+            for p in parent_uids:
 
-               ret[p] = list()
-               if p not in rel:
-                   print 'inconsistent : no relations for %s' % p
-                   continue
+                ret[p] = list()
+                if p not in rel:
+                    print 'inconsistent : no relations for %s' % p
+                    continue
 
-               for c in rel[p]['children']:
-                   if c in child_uids:
-                       ret[p].append(c)
+                for c in rel[p]['children']:
+                    if c in child_uids:
+                        ret[p].append(c)
 
         return ret
 
