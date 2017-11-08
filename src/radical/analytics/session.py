@@ -179,6 +179,10 @@ class Session(object):
     def t_range(self):
         return [self._t_start, self._t_stop]
 
+    @property
+    def uid(self):
+        return self._sid
+
 
     # --------------------------------------------------------------------------
     #
