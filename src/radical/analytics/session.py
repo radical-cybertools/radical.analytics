@@ -62,8 +62,10 @@ class Session(object):
             src = tgt
 
 
-        # if no sid is given, we assumeits the directory name
+        # if no sid is given, we assume its the directory name
         if not sid:
+            if src.endswith('/'):
+                src = src[:-1]
             sid = os.path.basename(src)
 
         self._sid   = sid
