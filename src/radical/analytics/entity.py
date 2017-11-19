@@ -220,7 +220,7 @@ class Entity(object):
             assert(not state)
             assert(not event)
             assert(not time)
-            
+
             # make sure the ranges are collapsed (although they likely are
             # already...)
             ranges = ru.collapse_ranges(ranges)
@@ -297,7 +297,7 @@ class Entity(object):
         expected to be a single tuple, or a list of tuples, each defining a pair
         of start and end time which are used to constrain the resulting ranges.
         States are expected as strings, events as full event tuples 
-        
+
             [ru.TIME,  ru.NAME, ru.UID,  ru.STATE, 
              ru.EVENT, ru.MSG,  ru.ENTITY]
 
@@ -338,7 +338,7 @@ class Entity(object):
         # NOTE: this method relies on all state changes (as events in
         #       `self.states`) to also be recorded as events (as events in in
         #       `self.events` with `ru.NAME == 'state'`).
-        
+
         if not state and not event:
             raise ValueError('duration needs state and/or event arguments')
 
