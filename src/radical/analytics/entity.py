@@ -1,6 +1,7 @@
 
 import os
 import sys
+import pprint
 
 import radical.utils as ru
 
@@ -192,7 +193,6 @@ class Entity(object):
     #
     def dump(self):
 
-        import pprint
         pprint.pprint(self.as_dict())
 
 
@@ -215,6 +215,8 @@ class Entity(object):
 
         if not ranges:
             ranges = self.ranges(state, event, time)
+          # print 'get %5d ranges for %s' % (len(ranges), self.uid)
+          # pprint.pprint(self.events)
 
         else:
             assert(not state)
@@ -223,6 +225,7 @@ class Entity(object):
 
             # make sure the ranges are collapsed (although they likely are
             # already...)
+          # print 'use %5d ranges for %s' % (len(ranges), self.uid)
             ranges = ru.collapse_ranges(ranges)
 
         if not ranges:
