@@ -199,37 +199,40 @@ def load_df(etype=None, sid=None):
 
 # -----------------------------------------------------------------------------
 def store_df(new_df, stored=pd.DataFrame(), etype=None):
+
     # skip storing if no new data are passed.
     if new_df.empty:
-        print 'WARNING: attempting to store an empty DF.'
-    else:
-        # Set header for csv file
-        header = True
-        if os.path.isfile(csvs[etype]):
-            header = False
-        if etype == 'session':
-            new_sessions = new_df.drop('session', axis=1)
-            if stored.empty:
-                sessions = new_sessions
-            else:
-                sessions = stored.append(new_sessions)
-            sessions.to_csv(csvs[etype])
+        print 'WARNING: attempting to store an empty DF (skip).'
+        return
 
-        elif etype in ['pilot', 'unit']:
-            if stored.empty:
-                df = new_df
-            else:
-                df = stored.append(new_df, ignore_index=True)
-            df.reset_index(inplace=True, drop=True)
-            with open(csvs[etype], 'a') as f:
-                fcntl.flock(f, fcntl.LOCK_EX)
-                df.to_csv(f, header=header)
-                fcntl.flock(f, fcntl.LOCK_UN)
+    # Set header for csv file
+    header = True
+    if os.path.isfile(csvs[etype]):
+        header = False
 
+    if etype == 'session':
+        new_sessions = new_df.drop('session', axis=1)
+        if stored.empty:
+            sessions = new_sessions
         else:
-            error = 'Cannot store DF to %s' % etype
-            print error
-            sys.exit(1)
+            sessions = stored.append(new_sessions)
+        sessions.to_csv(csvs[etype])
+
+    elif etype in ['pilot', 'unit']:
+        if stored.empty:
+            df = new_df
+        else:
+            df = stored.append(new_df, ignore_index=True)
+        df.reset_index(inplace=True, drop=True)
+        with open(csvs[etype], 'a') as f:
+            fcntl.flock(f, fcntl.LOCK_EX)
+            df.to_csv(f, header=header)
+            fcntl.flock(f, fcntl.LOCK_UN)
+
+    else:
+        error = 'Cannot store DF to %s' % etype
+        print error
+        sys.exit(1)
 
 
 # -----------------------------------------------------------------------------
@@ -302,10 +305,12 @@ def parse_osg_hostid(hostid):
 
 # -----------------------------------------------------------------------------
 def load_pilots(sid, exp, sra_pilots, pdm, pu_rels, pts):
+
     sys.stdout.write('\n%s --- %s' % (exp, sid))
     ps = initialize_entity(etype='pilot')
 
     # Did we already store pilots of this session?
+    # TODO: AM: ?
     stored_pilots = load_df(etype='pilot', sid=sid)
     stored_pids = []
     if stored_pilots['sid'].any():
@@ -349,20 +354,21 @@ def load_pilots(sid, exp, sra_pilots, pdm, pu_rels, pts):
             try:
                 ps[state].append(pentity.timestamps(state=state)[0])
             except:
-                print ' WARNING: Failed to get timestamp for state %s' % \
-                    state
+                print ' WARNING: Failed to get timestamp for state %s' % state
                 ps[state].append(np.nan)
 
         # Pilot durations.
         for duration in pdm.keys():
+
+            # TODO: AM: why are not all inserted here?
+            #           Can there be more than one (why is it a list)?
             if duration not in ps.keys():
                 ps[duration] = []
             try:
                 ps[duration].append(pentity.duration(pdm[duration]))
                 sys.stdout.write(' %s' % duration)
             except:
-                print ' WARNING: Failed to calculate duration %s' % \
-                    duration
+                print ' WARNING: Failed to calculate duration %s' % duration
                 ps[duration].append(np.nan)
 
     # Store pilots DF to csv and reload into memory to return the complete
@@ -372,6 +378,7 @@ def load_pilots(sid, exp, sra_pilots, pdm, pu_rels, pts):
         # FIXME: This is a workaround to load the full DF before saving it. The
         # DF is then unloaded loading only the portion related to the pilots
         # just wrangled. This avoids using memory but needs cleanup.
+        # TODO: AM: ?
         store_df(pilots, etype='pilot')
         stored_pilots = load_df(etype='pilot', sid=sid)
         print '\nstored in %s.' % csvs['pilot']
@@ -431,6 +438,7 @@ def load_units(sid, exp, sra_units, udm, pilots, sra, pu_rels, uts):
                 us[duration] = []
             try:
                 # TODO: this is a temporary fix for inconsistent state model.
+                # TODO: AM: WHAT INCONSISTENT STATE MODEL?? ;)  Still needed?
                 if duration == 'U_AGENT_EXECUTING':
                     if 'AGENT_STAGING_OUTPUT_PENDING' in \
                             uentity.states.keys() and \
@@ -546,29 +554,22 @@ def load_session(sid, exp, sra_session, sra_pilots, sra_units,
 
 # -----------------------------------------------------------------------------
 def get_raw_sessions(ddir, etag, clopts):
+    '''
+    Get sessions ID, experiment number and RA object.
+    Assume: ddir/exp*/sessiondir/session.json.
+    '''
 
     print '\n\nGet raw sessions: '
     sids = {}
 
-    # Get sessions ID, experiment number and RA object. Assume:
-    # ddir/exp*/sessiondir/session.json.
     for path in glob.glob('%s/%s*' % (ddir, etag)):
-        for sdir in glob.glob('%s/*' % path):
 
-            # Ignore any file in the data dir. Every directory is assumed
-            # to be a RP session.
-            if os.path.isdir(sdir) is False:
-                print 'Ignore file %s; looking for session directories' % sdir
-                continue
+        # Every directory in the experiment dir is assumed to be a RP session.
+        for sdir in glob.glob('%s/*/' % path):
 
-            # Get session ID directory if json file exists.
-            # sid = glob.glob('%s/*.json' % sdir)[0].split('/')[-2]
-            if glob.glob('%s/*.json' % sdir):
-                sid = glob.glob('%s/*.json' % sdir)[0].split('/')[-1:][0][:-5]
-            else:
-                print "ERROR: %s is missing the json file" % sdir
-                print "Skip %s" % sdir
-                continue
+            # we assume the dir name is the session ID (after stripping '/'-es)
+            sdir = sdir.rstrip('/')
+            sid  = os.path.basename(sdir)
 
             # Skip session if not specified at command line.
             if clopts['sid'] and clopts['sid'] != sid:
@@ -576,23 +577,26 @@ def get_raw_sessions(ddir, etag, clopts):
                     clopts['sid'])
                 continue
 
-            # Get experiment directory.
-            exp = path.split('/')[-1:][0]
+            # Get session ID directory if json file exists.
+            # sid = glob.glob('%s/*.json' % sdir)[0].split('/')[-2]
+            if not os.path.isfile('%s/%s.json' % (sdir, sid)):
+                print "ERROR: no session json in %s" % sdir
+                print "Skip %s" % sdir
+                continue
 
-            # Skip session if not in the experiment direcotry specified at
+            # Get experiment directory.
+            exp = os.path.basename(path)
+
+            # Skip session if not in the experiment directory specified at
             # command line.
+            # FIXME: AM: I don't understand the index notation below
             if clopts['eid'] and clopts['eid'] != exp[len(etag):]:
                 print 'Ignore %s; looking for directories in %s' % (
                     exp[len(etag):], clopts['eid'])
                 continue
 
-            # Consistency check: SID of json file name is the same SID of
-            # directory name.
-            if sid == sdir.split('/')[-1:][0]:
-                sids[sdir] = sid
-            else:
-                error = 'ERROR: session folder and json file name differ'
-                print '%s: %s != %s' % (error, sdir, sid)
+            # all tests passed - we want this session
+            sids[sdir] = sid
 
     print 'Done.'
     return sids
@@ -600,6 +604,10 @@ def get_raw_sessions(ddir, etag, clopts):
 
 # -----------------------------------------------------------------------------
 def get_new_sessions(sids):
+    '''
+    For all sid's given, check if any needs wrangling, and return a dict with
+    those session IDs.
+    '''
 
     print '\n\nMarking sessions for wrangling: '
     towrangle = {}
@@ -614,13 +622,14 @@ def get_new_sessions(sids):
         return sids
 
     # Add a session to wrangler when the sesison is not in the sessions DF or
-    # when not all the session's units or pilots are not in the units or pilots
+    # when any of the session's units or pilots are not in the units or pilots
     # DFs.
     for sdir, sid in sids.iteritems():
         nurequest = sessions[sessions.sid == sid].nunit.tolist()
         nprequest = sessions[sessions.sid == sid].npilot.tolist()
 
         # Duplicates in sessions need to be addressed manually by the user.
+        # TODO: AM: ?
         if (len(nurequest) > 1) or (len(nprequest) > 1):
             print 'ERROR: Duplicate entries for sid %s in sessions df' % sid
             sys.exit(1)
@@ -628,7 +637,7 @@ def get_new_sessions(sids):
         if (sid not in sessions.sid.tolist()) or \
                 (units[units.sid == sid].shape[0] < nurequest[0]) or \
                 (pilots[pilots.sid == sid].shape[0] < nprequest[0]):
-            print 'Mark session %sfor wrangling' % sid
+            print 'Mark session %s for wrangling' % sid
             towrangle[sdir] = sid
 
     print 'Done.'
@@ -637,11 +646,24 @@ def get_new_sessions(sids):
 
 # -----------------------------------------------------------------------------
 def wrangle_session(sdir, sid):
+
     # Get the experiment tag for the current sdir.
     exp = sdir.split('/')[-2:][0]
 
     # RA objects cannot be serialize: every RA session object need
     # to be constructed at every run.
+    #
+    # FIXME: AM: Actually, RA sessions can be pickled all right:
+    #
+    #        import radical.analytics as ra
+    #        import pickle
+    #        s1 = ra.Session(src=sdir, stype='radical.pilot')
+    #        p  = pickle.dumps(s1)
+    #        s2 = pickle.loads(p)
+    #        assert(len(s1.get()) == len(s2.get()))
+    #
+    #        If we found cases where this does not work, we can make it work.
+    #
     sra_session = ra.Session(sdir, 'radical.pilot')
 
     # Pilot-unit relationship dictionary
@@ -784,3 +806,6 @@ if __name__ == '__main__':
 
     else:
         print 'No new sessions to wrangle found.'
+
+# ------------------------------------------------------------------------------
+
