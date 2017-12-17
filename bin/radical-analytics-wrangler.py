@@ -42,6 +42,9 @@ import psutil
 import numpy as np
 import pandas as pd
 import multiprocessing as mp
+
+import radical.utils     as ru
+import radical.pilot     as rp
 import radical.analytics as ra
 
 from sqlalchemy import create_engine
@@ -365,7 +368,7 @@ def load_pilots(sid, exp, sra_pilots, pdm, pu_rels, pts):
             if duration not in ps.keys():
                 ps[duration] = []
             try:
-                ps[duration].append(pentity.duration(pdm[duration]))
+                ps[duration].append(pentity.duration(event=pdm[duration]))
                 sys.stdout.write(' %s' % duration)
             except:
                 print ' WARNING: Failed to calculate duration %s' % duration
@@ -445,7 +448,7 @@ def load_units(sid, exp, sra_units, udm, pilots, sra, pu_rels, uts):
                        'FAILED' in uentity.states.keys():
                             us[duration].append(np.nan)
                             continue
-                us[duration].append(uentity.duration(udm[duration]))
+                us[duration].append(uentity.duration(event=udm[duration]))
                 sys.stdout.write(' %s' % duration)
             except:
                 print '\nWARNING: Failed to calculate duration %s' % \
@@ -535,12 +538,12 @@ def load_session(sid, exp, sra_session, sra_pilots, sra_units,
     # Pilots total durations.  NOTE: s initialization guarantees
     # the existence of duration keys.
     for duration in pdm.keys():
-        s[duration].append(sra_pilots.duration(pdm[duration]))
+        s[duration].append(sra_pilots.duration(event=pdm[duration]))
 
     # Units total durations. NOTE: s initialization guarantees the
     # existence of duration keys.
     for duration in udm.keys():
-        s[duration].append(sra_units.duration(udm[duration]))
+        s[duration].append(sra_units.duration(event=udm[duration]))
 
     # Store session.
     session = pd.DataFrame(s, index=[sid])
@@ -694,97 +697,138 @@ if __name__ == '__main__':
 
     # Where to find data (ddir) and how data are stored into experiments
     # (etag).
-    calldir = os.getcwd()
-    ddir = '%s/%s' % (calldir, clopts['ddir'])  # e.g., '../data/'
-    etag = clopts['etag']                       # e.g., 'exp'
+    ddir = clopts['ddir']  # e.g., '../data/'
+    etag = clopts['etag']  # e.g., 'exp'
 
     # File names where to save the DF of each entity of each session.
-    csvs = {'session': '%s/%s/sessions.csv' % (calldir, clopts['odir']),
-            'pilot'  : '%s/%s/pilots.csv' % (calldir, clopts['odir']),
-            'unit'   : '%s/%s/units.csv' % (calldir, clopts['odir'])}
+    csvs = {'session': '%s/sessions.csv' % clopts['odir'],
+            'pilot'  : '%s/pilots.csv'   % clopts['odir'],
+            'unit'   : '%s/units.csv'    % clopts['odir']}
 
     # FIXME: Define timestamps of the events of the pilot's states.
-    sts = {'NEW'     : None,
-           'DONE'    : None,
-           'CANCELED': None,
-           'FAILED'  : None}
+    sts = {rp.NEW     : None,
+           rp.DONE    : None,
+           rp.CANCELED: None,
+           rp.FAILED  : None}
 
     # FIXME: Define session durations.
     sdm = {'TTC': None}
 
     # Define timestamps of the events of the pilot's states.
-    pts = {'NEW'                   : None,
-           'PMGR_LAUNCHING_PENDING': None,
-           'PMGR_LAUNCHING'        : None,
-           'PMGR_ACTIVE_PENDING'   : None,
-           'PMGR_ACTIVE'           : None,
-           'DONE'                  : None,
-           'CANCELED'              : None,
-           'FAILED'                : None}
+    pts = {rp.NEW                   : None,
+           rp.PMGR_LAUNCHING_PENDING: None,
+           rp.PMGR_LAUNCHING        : None,
+           rp.PMGR_ACTIVE_PENDING   : None,
+           rp.PMGR_ACTIVE           : None,
+           rp.DONE                  : None,
+           rp.CANCELED              : None,
+           rp.FAILED                : None}
 
     # Define pilot durations.
-    pdm = {'P_PMGR_SCHEDULING': ['NEW',
-                                 'PMGR_LAUNCHING_PENDING'],
-           'P_PMGR_QUEUING'   : ['PMGR_LAUNCHING_PENDING',
-                                 'PMGR_LAUNCHING'],
-           'P_LRMS_SUBMITTING': ['PMGR_LAUNCHING',
-                                 'PMGR_ACTIVE_PENDING'],
-           'P_LRMS_QUEUING'   : ['PMGR_ACTIVE_PENDING',
-                                 'PMGR_ACTIVE'],
-           'P_LRMS_RUNNING'   : ['PMGR_ACTIVE',
-                                 ['DONE', 'CANCELED', 'FAILED']]}
+    pdm = {'P_PMGR_SCHEDULING': [{ru.EVENT: 'state',             ru.STATE: rp.NEW                   },
+                                 {ru.EVENT: 'state',             ru.STATE: rp.PMGR_LAUNCHING_PENDING}],
+           'P_PMGR_QUEUING'   : [{ru.EVENT: 'state',             ru.STATE: rp.PMGR_LAUNCHING_PENDING},
+                                 {ru.EVENT: 'state',             ru.STATE: rp.PMGR_LAUNCHING        }],
+           'P_LRMS_SUBMITTING': [{ru.EVENT: 'state',             ru.STATE: rp.PMGR_LAUNCHING        },
+                                 {ru.EVENT: 'state',             ru.STATE: rp.PMGR_ACTIVE_PENDING   }],
+           'P_LRMS_QUEUING'   : [{ru.EVENT: 'state',             ru.STATE: rp.PMGR_ACTIVE_PENDING   },
+                                 {ru.EVENT: 'state',             ru.STATE: rp.PMGR_ACTIVE           }],
+           'P_LRMS_RUNNING'   : [{ru.EVENT: 'state',             ru.STATE: rp.PMGR_ACTIVE           },
+                                [{ru.EVENT: 'state',             ru.STATE: rp.DONE                  },
+                                 {ru.EVENT: 'state',             ru.STATE: rp.FAILED                },
+                                 {ru.EVENT: 'state',             ru.STATE: rp.CANCELED              }]],
+
+           # from utilization script
+           'util_p_total'     : [{ru.EVENT: 'bootstrap_1_start', ru.STATE: None                     },
+                                 {ru.EVENT: 'bootstrap_1_stop',  ru.STATE: None                     }],
+
+           'util_p_boot'      : [{ru.EVENT: 'bootstrap_1_start', ru.STATE: None                     },
+                                 {ru.EVENT: 'sync_rel',          ru.STATE: None                     }],
+           'util_p_setup_1'   : [{ru.EVENT: 'sync_rel',          ru.STATE: None                     },
+                                 {ru.EVENT: 'orte_dvm_start',    ru.STATE: None                     }],
+           'util_p_orte'      : [{ru.EVENT: 'orte_dvm_start',    ru.STATE: None                     },
+                                 {ru.EVENT: 'orte_dvm_ok',       ru.STATE: None                     }],
+           'util_p_setup_2'   : [{ru.EVENT: 'orte_dvm_ok',       ru.STATE: None                     },
+                                 {ru.EVENT: 'state',             ru.STATE: rp.PMGR_ACTIVE           }],
+           'util_p_uexec'     : [{ru.EVENT: 'state',             ru.STATE: rp.PMGR_ACTIVE           },
+                                 {ru.EVENT: 'cmd',               ru.STATE: None                     }],
+           'util_p_term'      : [{ru.EVENT: 'cmd',               ru.STATE: None                     },
+                                 {ru.EVENT: 'bootstrap_1_stop',  ru.STATE: None                     }],
+          }
 
     # Define timestamps of the events of the pilot's states.
-    uts = {'NEW'                         : None,
-           'UMGR_SCHEDULING_PENDING'     : None,
-           'UMGR_SCHEDULING'             : None,
-           'UMGR_STAGING_INPUT_PENDING'  : None,
-           'UMGR_STAGING_INPUT'          : None,
-           'AGENT_STAGING_INPUT_PENDING' : None,
-           'AGENT_STAGING_INPUT'         : None,
-           'AGENT_SCHEDULING_PENDING'    : None,
-           'AGENT_SCHEDULING'            : None,
-           'AGENT_EXECUTING_PENDING'     : None,
-           'AGENT_EXECUTING'             : None,
-           'AGENT_STAGING_OUTPUT_PENDING': None,
-           'AGENT_STAGING_OUTPUT'        : None,
-           'UMGR_STAGING_OUTPUT_PENDING' : None,
-           'UMGR_STAGING_OUTPUT'         : None,
-           'DONE'                        : None,
-           'CANCELED'                    : None,
-           'FAILED'                      : None}
+    uts = {rp.NEW                         : None,
+           rp.UMGR_SCHEDULING_PENDING     : None,
+           rp.UMGR_SCHEDULING             : None,
+           rp.UMGR_STAGING_INPUT_PENDING  : None,
+           rp.UMGR_STAGING_INPUT          : None,
+           rp.AGENT_STAGING_INPUT_PENDING : None,
+           rp.AGENT_STAGING_INPUT         : None,
+           rp.AGENT_SCHEDULING_PENDING    : None,
+           rp.AGENT_SCHEDULING            : None,
+           rp.AGENT_EXECUTING_PENDING     : None,
+           rp.AGENT_EXECUTING             : None,
+           rp.AGENT_STAGING_OUTPUT_PENDING: None,
+           rp.AGENT_STAGING_OUTPUT        : None,
+           rp.UMGR_STAGING_OUTPUT_PENDING : None,
+           rp.UMGR_STAGING_OUTPUT         : None,
+           rp.DONE                        : None,
+           rp.CANCELED                    : None,
+           rp.FAILED                      : None}
 
     # Define unit durations.
-    udm = {'U_UMGR_SCHEDULING'            : ['NEW',
-                                             'UMGR_SCHEDULING_PENDING'],
-           'U_UMGR_BINDING'               : ['UMGR_SCHEDULING_PENDING',
-                                             'UMGR_SCHEDULING'],
-    #    'I_UMGR_SCHEDULING'   : ['UMGR_SCHEDULING',
-    #                             'UMGR_STAGING_INPUT_PENDING'],
-    #    'I_UMGR_QUEING'       : ['UMGR_STAGING_INPUT_PENDING',
-    #                             'UMGR_STAGING_INPUT'],
-    #    'I_AGENT_SCHEDULING'  : ['UMGR_STAGING_INPUT',
-    #                             'AGENT_STAGING_INPUT_PENDING'],
-    #    'I_AGENT_QUEUING'     : ['AGENT_STAGING_INPUT_PENDING',
-    #                             'AGENT_STAGING_INPUT'],
-    #    'I_AGENT_TRANSFERRING': ['AGENT_STAGING_INPUT',
-    #                             'AGENT_SCHEDULING_PENDING'],
-           'U_AGENT_QUEUING'              : ['AGENT_SCHEDULING_PENDING',
-                                             'AGENT_SCHEDULING'],
-           'U_AGENT_SCHEDULING'           : ['AGENT_SCHEDULING',
-                                             'AGENT_EXECUTING_PENDING'],
-           'U_AGENT_QUEUING_EXEC'         : ['AGENT_EXECUTING_PENDING',
-                                             'AGENT_EXECUTING'],
-           'U_AGENT_EXECUTING'            : ['AGENT_EXECUTING',
-                                             'AGENT_STAGING_OUTPUT_PENDING']}
-    #    'O_AGENT_QUEUING'     : ['AGENT_STAGING_OUTPUT_PENDING',
-    #                             'AGENT_STAGING_OUTPUT'],
-    #    'O_UMGR_SCHEDULING'   : ['AGENT_STAGING_OUTPUT',
-    #                             'UMGR_STAGING_OUTPUT_PENDING'],
-    #    'O_UMGR_QUEUING'      : ['UMGR_STAGING_OUTPUT_PENDING',
-    #                             'UMGR_STAGING_OUTPUT'],
-    #    'O_UMGR_TRANSFERRING' : ['UMGR_STAGING_OUTPUT',
-    #                             ['DONE', 'CANCELED', 'FAILED']]}
+    udm = {'U_UMGR_SCHEDULING'      : [{ru.EVENT: 'state',                  ru.STATE: rp.NEW                         },
+                                       {ru.EVENT: 'state',                  ru.STATE: rp.UMGR_SCHEDULING_PENDING     }],
+           'U_UMGR_BINDING'         : [{ru.EVENT: 'state',                  ru.STATE: rp.UMGR_SCHEDULING_PENDING     },
+                                       {ru.EVENT: 'state',                  ru.STATE: rp.UMGR_SCHEDULING             }],
+         # 'I_UMGR_SCHEDULING'      : [{ru.EVENT: 'state',                  ru.STATE: rp.UMGR_SCHEDULING             },
+         #                             {ru.EVENT: 'state',                  ru.STATE: rp.UMGR_STAGING_INPUT_PENDING  }],
+         # 'I_UMGR_QUEING'          : [{ru.EVENT: 'state',                  ru.STATE: rp.UMGR_STAGING_INPUT_PENDING  },
+         #                             {ru.EVENT: 'state',                  ru.STATE: rp.UMGR_STAGING_INPUT          }],
+         # 'I_AGENT_SCHEDULING'     : [{ru.EVENT: 'state',                  ru.STATE: rp.UMGR_STAGING_INPUT          },
+         #                             {ru.EVENT: 'state',                  ru.STATE: rp.AGENT_STAGING_INPUT_PENDING }],
+         # 'I_AGENT_QUEUING'        : [{ru.EVENT: 'state',                  ru.STATE: rp.AGENT_STAGING_INPUT_PENDING },
+         #                             {ru.EVENT: 'state',                  ru.STATE: rp.AGENT_STAGING_INPUT         }],
+         # 'I_AGENT_TRANSFERRING'   : [{ru.EVENT: 'state',                  ru.STATE: rp.AGENT_STAGING_INPUT         },
+         #                             {ru.EVENT: 'state',                  ru.STATE: rp.AGENT_SCHEDULING_PENDING    }],
+           'U_AGENT_QUEUING'        : [{ru.EVENT: 'state',                  ru.STATE: rp.AGENT_SCHEDULING_PENDING    },
+                                       {ru.EVENT: 'state',                  ru.STATE: rp.AGENT_SCHEDULING            }],
+           'U_AGENT_SCHEDULING'     : [{ru.EVENT: 'state',                  ru.STATE: rp.AGENT_SCHEDULING            },
+                                       {ru.EVENT: 'state',                  ru.STATE: rp.AGENT_EXECUTING_PENDING     }],
+           'U_AGENT_QUEUING_EXEC'   : [{ru.EVENT: 'state',                  ru.STATE: rp.AGENT_EXECUTING_PENDING     },
+                                       {ru.EVENT: 'state',                  ru.STATE: rp.AGENT_EXECUTING             }],
+           'U_AGENT_EXECUTING'      : [{ru.EVENT: 'state',                  ru.STATE: rp.AGENT_EXECUTING             },
+                                       {ru.EVENT: 'state',                  ru.STATE: rp.AGENT_STAGING_OUTPUT_PENDING}],
+         # 'O_AGENT_QUEUING'        : [{ru.EVENT: 'state',                  ru.STATE: rp.AGENT_STAGING_OUTPUT_PENDING},
+         #                             {ru.EVENT: 'state',                  ru.STATE: rp.AGENT_STAGING_OUTPUT        }],
+         # 'O_UMGR_SCHEDULING'      : [{ru.EVENT: 'state',                  ru.STATE: rp.AGENT_STAGING_OUTPUT        },
+         #                             {ru.EVENT: 'state',                  ru.STATE: rp.UMGR_STAGING_OUTPUT_PENDING }],
+         # 'O_UMGR_QUEUING'         : [{ru.EVENT: 'state',                  ru.STATE: rp.UMGR_STAGING_OUTPUT_PENDING },
+         #                             {ru.EVENT: 'state',                  ru.STATE: rp.UMGR_STAGING_OUTPUT         }],
+         # 'O_UMGR_TRANSFERRING'    : [{ru.EVENT: 'state',                  ru.STATE: rp.UMGR_STAGING_OUTPUT         },
+         #                            [{ru.EVENT: 'state',                  ru.STATE: rp.DONE                        },
+         #                             {ru.EVENT: 'state',                  ru.STATE: rp.FAILED                      },
+         #                             {ru.EVENT: 'state',                  ru.STATE: rp.CANCELED                    }]],
+
+           # from utilization script
+            'util_u_total'          : [{ru.EVENT: 'schedule_ok',            ru.STATE: None                           },
+                                       {ru.EVENT: 'unschedule_stop',        ru.STATE: None                           }],
+
+            'util_u_equeue'         : [{ru.EVENT: 'schedule_ok',            ru.STATE: None                           },
+                                       {ru.EVENT: 'state',                  ru.STATE: rp.AGENT_EXECUTING             }],
+            'util_u_eprep'          : [{ru.EVENT: 'state',                  ru.STATE: rp.AGENT_EXECUTING             },
+                                       {ru.EVENT: 'exec_start',             ru.STATE: None                           }],
+            'util_u_exec_rp'        : [{ru.EVENT: 'exec_start',             ru.STATE: None                           },
+                                       {ru.EVENT: 'cu_start',               ru.STATE: None                           }],
+            'util_u_exec_cu'        : [{ru.EVENT: 'cu_start',               ru.STATE: None                           },
+                                       {ru.EVENT: 'cu_exec_start',          ru.STATE: None                           }],
+            'util_u_exec_orte'      : [{ru.EVENT: 'cu_exec_start',          ru.STATE: None                           },
+                                       {ru.EVENT: 'app_start',              ru.STATE: None                           }],
+            'util_u_exec_app'       : [{ru.EVENT: 'app_start',              ru.STATE: None                           },
+                                       {ru.EVENT: 'app_stop',               ru.STATE: None                           }],
+            'util_u_unschedule'     : [{ru.EVENT: 'app_stop',               ru.STATE: None                           },
+                                       {ru.EVENT: 'unschedule_stop',        ru.STATE: None                           }],
+          }
 
 
     # Find out what sessions need to be wrangled.
