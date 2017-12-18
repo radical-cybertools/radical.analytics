@@ -540,7 +540,7 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def timestamps(self, state=None, event=None, time=None):
+    def timestamps(self, state=None, event=None, time=None, first=False):
         '''
         This method accepts a set of conditions, and returns the list of
         timestamps for which those conditions applied, i.e. for which state
@@ -554,12 +554,19 @@ class Session(object):
         tuples, each defining a pair of start and end time which are used to
         constrain the matching timestamps.
 
+        If `first` is set to `True`, only the timestamps for the first matching
+        events (per entity) are returned.
+
         The returned list will be sorted.
         '''
 
         ret = list()
         for uid,entity in self._entities.iteritems():
-            ret += entity.timestamps(state=state, event=event, time=time)
+            tmp = entity.timestamps(state=state, event=event, time=time)
+            if tmp and first:
+                ret.append(tmp[0])
+            else:
+                ret += tmp
 
         return sorted(ret)
 
@@ -674,7 +681,8 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def rate(self, state=None, event=None, time=None, sampling=None):
+    def rate(self, state=None, event=None, time=None, sampling=None,
+            first=False):
         '''
         This method accepts the same parameters as the `timestamps()` method: it
         will count all matching events and state transitions as given, and will
@@ -703,12 +711,16 @@ class Session(object):
         tuples, each defining a pair of start and end time which are used to
         constrain the resulting time series.
 
+        The 'first' is defined, only the first matching event fir the selected
+        entities is considered viable.
+
         Example:
 
            session.filter(etype='unit').rate(state=[rp.AGENT_EXECUTING])
         '''
 
-        timestamps = self.timestamps(event=event, state=state, time=time)
+        timestamps = self.timestamps(event=event, state=state, time=time,
+                                     first=first)
 
         if not timestamps:
             # nothing to do
