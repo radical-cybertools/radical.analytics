@@ -1,6 +1,7 @@
 
 import os
 import sys
+import pprint
 
 import radical.utils as ru
 
@@ -192,7 +193,6 @@ class Entity(object):
     #
     def dump(self):
 
-        import pprint
         pprint.pprint(self.as_dict())
 
 
@@ -215,14 +215,17 @@ class Entity(object):
 
         if not ranges:
             ranges = self.ranges(state, event, time)
+          # print 'get %5d ranges for %s' % (len(ranges), self.uid)
+          # pprint.pprint(self.events)
 
         else:
             assert(not state)
             assert(not event)
             assert(not time)
-            
+
             # make sure the ranges are collapsed (although they likely are
             # already...)
+          # print 'use %5d ranges for %s' % (len(ranges), self.uid)
             ranges = ru.collapse_ranges(ranges)
 
         if not ranges:
@@ -233,7 +236,7 @@ class Entity(object):
 
     # --------------------------------------------------------------------------
     #
-    def timestamps(self, state=None, event=None):
+    def timestamps(self, state=None, event=None, time=None):
         """
         This method accepts a set of conditions, and returns the list of
         timestamps for which those conditions applied, i.e. for which state
@@ -242,6 +245,10 @@ class Entity(object):
 
         Both `state` and `event` can be lists, in which case the union of all
         timestamps are returned.
+
+        The `time` parameter is expected to be a single tuple, or a list of
+        tuples, each defining a pair of start and end time which are used to
+        constrain the matching timestamps.
 
         The returned list will be sorted.
         """
@@ -263,6 +270,16 @@ class Entity(object):
         for s in state:
             if s in self._states:
                 ret.append(self._states[s][ru.TIME])
+
+        # apply time filters
+        if time:
+            matched = list()
+            for etime in ret:
+                for ttuple in time:
+                    if etime >= ttuple[0] and etime <= etime[1]:
+                        matched.append(etime)
+                        break
+            ret = matched
 
         return sorted(ret)
 
@@ -297,7 +314,7 @@ class Entity(object):
         expected to be a single tuple, or a list of tuples, each defining a pair
         of start and end time which are used to constrain the resulting ranges.
         States are expected as strings, events as full event tuples 
-        
+
             [ru.TIME,  ru.NAME, ru.UID,  ru.STATE, 
              ru.EVENT, ru.MSG,  ru.ENTITY]
 
@@ -338,7 +355,7 @@ class Entity(object):
         # NOTE: this method relies on all state changes (as events in
         #       `self.states`) to also be recorded as events (as events in in
         #       `self.events` with `ru.NAME == 'state'`).
-        
+
         if not state and not event:
             raise ValueError('duration needs state and/or event arguments')
 

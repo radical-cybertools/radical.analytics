@@ -62,8 +62,10 @@ class Session(object):
             src = tgt
 
 
-        # if no sid is given, we assumeits the directory name
+        # if no sid is given, we assume its the directory name
         if not sid:
+            if src.endswith('/'):
+                src = src[:-1]
             sid = os.path.basename(src)
 
         self._sid   = sid
@@ -106,7 +108,7 @@ class Session(object):
         # session), dict values are ra.Entity instances.
         self._entities = dict()
         if _init:
-            self._initialize_entities(profile)
+            self._initialize_entities(self._profile)
 
         # we do some bookkeeping in self._properties where we keep a list of
         # property values around which we encountered in self._entities.
@@ -128,7 +130,7 @@ class Session(object):
         memo[id(self)] = ret
 
         for k, v in self.__dict__.items():
-            setattr(ret, k, deepcopy(v, memo))
+            setattr(ret, k, copy.deepcopy(v, memo))
 
         return ret
 
@@ -178,6 +180,10 @@ class Session(object):
     @property
     def t_range(self):
         return [self._t_start, self._t_stop]
+
+    @property
+    def uid(self):
+        return self._sid
 
 
     # --------------------------------------------------------------------------
@@ -471,25 +477,25 @@ class Session(object):
             if len(etype) != 2:
                 raise ValueError('relations expect an etype *tuple*')
 
-           # we interpret the query as follows: for the two given etypes, walk
-           # through the relationship tree and for all entities of etype[0]
-           # return a list of all child entities of etype[1].  The result is
-           # returned as a dict.
+            # we interpret the query as follows: for the two given etypes, walk
+            # through the relationship tree and for all entities of etype[0]
+            # return a list of all child entities of etype[1].  The result is
+            # returned as a dict.
 
-           parent_uids = self._apply_filter(etype=etype[0])
-           child_uids  = self._apply_filter(etype=etype[1])
+            parent_uids = self._apply_filter(etype=etype[0])
+            child_uids  = self._apply_filter(etype=etype[1])
 
-           rel = self._description['tree']
-           for p in parent_uids:
+            rel = self._description['tree']
+            for p in parent_uids:
 
-               ret[p] = list()
-               if p not in rel:
-                   print 'inconsistent : no relations for %s' % p
-                   continue
+                ret[p] = list()
+                if p not in rel:
+                    print 'inconsistent : no relations for %s' % p
+                    continue
 
-               for c in rel[p]['children']:
-                   if c in child_uids:
-                       ret[p].append(c)
+                for c in rel[p]['children']:
+                    if c in child_uids:
+                        ret[p].append(c)
 
         return ret
 
@@ -534,7 +540,7 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def timestamps(self, state=None, event=None):
+    def timestamps(self, state=None, event=None, time=None, first=False):
         '''
         This method accepts a set of conditions, and returns the list of
         timestamps for which those conditions applied, i.e. for which state
@@ -544,12 +550,23 @@ class Session(object):
         Both `state` and `event` can be lists, in which case the union of all
         timestamps are returned.
 
+        The `time` parameter is expected to be a single tuple, or a list of
+        tuples, each defining a pair of start and end time which are used to
+        constrain the matching timestamps.
+
+        If `first` is set to `True`, only the timestamps for the first matching
+        events (per entity) are returned.
+
         The returned list will be sorted.
         '''
 
         ret = list()
         for uid,entity in self._entities.iteritems():
-            ret += entity.timestamps(state=state, event=event)
+            tmp = entity.timestamps(state=state, event=event, time=time)
+            if tmp and first:
+                ret.append(tmp[0])
+            else:
+                ret += tmp
 
         return sorted(ret)
 
@@ -658,6 +675,119 @@ class Session(object):
                     cnt += 1
 
             ret.append([t, cnt])
+
+        return ret
+
+
+    # --------------------------------------------------------------------------
+    #
+    def rate(self, state=None, event=None, time=None, sampling=None,
+            first=False):
+        '''
+        This method accepts the same parameters as the `timestamps()` method: it
+        will count all matching events and state transitions as given, and will
+        return a time series of the rate of how many of those events and/or
+        transitions occured per second.
+
+        The additional parameter `sampling` determines the exact points in time
+        for which the rate is computed, and thus determines the sampling rate
+        for the returned time series.  If not specified, the time series will
+        contain all points at which and event occured, and thevrate value will
+        only be determined by the time passed between two consequtuve events.
+        If specified, it is interpreted as second (float) interval at which,
+        after the starting point (begin of first event matching the filters) the
+        rate is computed.
+
+        Returned is an ordered list of tuples:
+
+          [ [time_0, rate_0] ,
+            [time_1, rate_1] ,
+            ...
+            [time_n, rate_n] ]
+
+        where `time_n` is represented as `float`, and `rate_n` as `int`.
+
+        The `time` parameter is expected to be a single tuple, or a list of
+        tuples, each defining a pair of start and end time which are used to
+        constrain the resulting time series.
+
+        The 'first' is defined, only the first matching event fir the selected
+        entities is considered viable.
+
+        Example:
+
+           session.filter(etype='unit').rate(state=[rp.AGENT_EXECUTING])
+        '''
+
+        timestamps = self.timestamps(event=event, state=state, time=time,
+                                     first=first)
+
+        if not timestamps:
+            # nothing to do
+            return []
+
+
+        times = list()
+        if sampling:
+            # get min and max timestamp, and add create sampling points at regular
+            # intervals
+            r_min = timestamps[0]
+            r_max = timestamps[-1]
+
+            t = r_min
+            while t < r_max:
+                times.append(t)
+                t += sampling
+          # times.append(t)
+            times.append(r_max)
+
+        else:
+            # we create an entry at all timestamps
+            times = timestamps[:]
+
+        if not times:
+            # nothing to do
+            return []
+
+        # we need to make sure that no two consecutive timestamps are the same,
+        # as that would lead to a division by zero later on
+        times = sorted(set(times))
+
+      # import pprint
+      # pprint.pprint(times)
+
+        # make sure we start in correct state, and first data point does not
+        # occur before sampling starts
+        timestamps[0] >= times[0]
+
+        # we have the time sequence, now compute event rate at those points
+        ts_idx  = 0                # index into the list of timestamps
+        ts_len  = len(timestamps)  # number of timestamps
+        ret     = list()           # our rate time series
+        t_start = times[0]         # current samplint window
+        t_stop  = times[0]
+
+        for t in times[1:]:
+            t_start = t_stop       # slide sampling window to next sample time
+            t_stop  = t
+            cnt     = 0            # reset event counter
+
+
+            while ts_idx < ts_len:
+                if timestamps[ts_idx] <= t_stop:
+                    # timestamp is in range, count event
+                    cnt += 1
+                else:
+                    # we need to slide the sampling window
+                    break
+                # go to next timestamp
+                ts_idx += 1
+
+          # print 'window: %f - %f (%f) : %5d' % \
+          #         (t_start, t_stop, t_stop - t_start, cnt)
+
+            # sampling window completed - store rate of events in sample
+            ret.append([t_stop, cnt / (t_stop - t_start)])
 
         return ret
 
