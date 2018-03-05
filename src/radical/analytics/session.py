@@ -86,8 +86,8 @@ class Session(object):
         elif stype == 'radical.entk':
             import radical.entk as re
 
-            self._profile, accuracy, hostmap = re.utils.get_profile(src=self._src)
-            self._description = re.utils.get_description(src=self._src)
+            self._profile, accuracy, hostmap = re.utils.get_session_profile(sid=sid, src=self._src)
+            self._description = re.utils.get_session_description(sid=sid, src=self._src)
 
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
