@@ -75,7 +75,30 @@ class Session(object):
       # print 'sid: %s [%s]' % (sid, stype)
       # print 'src: %s'      % src
 
-        if stype == 'radical.pilot':
+        if stype == 'radical.analytics':
+
+            # src is expected to point either to a single profile, or to
+            # a directory tree containing profiles
+            if not src:
+                raise ValueError('RA session types need `src` specified')
+
+            profiles = list()
+            if os.path.isfile(src):
+                profiles.append(src)
+            else:
+                for root, dirs, files in os.walk(src):
+                    for f in files:
+                        if f.endswith('.prof'):
+                            profiles.append('%s/%s' % (root, f))
+
+            profiles = ru.read_profiles(profiles, sid=sid)
+            self._profile, accuracy = ru.combine_profiles(profiles)
+            self._description  = dict()
+            self._description['accuracy'] = 0.0
+            self._description['hostmap']  = dict()
+
+
+        elif stype == 'radical.pilot':
             import radical.pilot as rp
             self._profile, accuracy, hostmap \
                               = rp.utils.get_session_profile(sid=sid, src=self._src)
@@ -212,8 +235,8 @@ class Session(object):
         # all events for that uid)
         for uid,events in entity_events.iteritems():
             etype   = events[0][ru.ENTITY]
-            details = self._description['tree'].get(uid, dict())
-            details['hostid'] = self._description['hostmap'].get(uid)
+            details = self._description.get('tree', dict()).get(uid, dict())
+            details['hostid'] = self._description.get('hostmap', dict()).get(uid)
             self._entities[uid] = Entity(_uid=uid,
                                          _etype=etype,
                                          _profile=events,
@@ -450,7 +473,7 @@ class Session(object):
             state_values = None
             event_model  = None
 
-            if et in self._description['entities']:
+            if et in self._description.get('entities', dict()):
                 state_model  = self._description['entities'][et]['state_model']
                 state_values = self._description['entities'][et]['state_values']
                 event_model  = self._description['entities'][et]['event_model']
@@ -485,7 +508,7 @@ class Session(object):
             parent_uids = self._apply_filter(etype=etype[0])
             child_uids  = self._apply_filter(etype=etype[1])
 
-            rel = self._description['tree']
+            rel = self._description.get('tree', dict())
             for p in parent_uids:
 
                 ret[p] = list()
