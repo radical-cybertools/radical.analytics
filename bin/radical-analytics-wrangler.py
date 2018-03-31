@@ -173,8 +173,7 @@ def initialize_entity(etype=None):
     if etype in ['session', 'pilot', 'unit']:
         return entities[etype]
     else:
-        error = 'Cannot itialize entity %s' % etype
-        print error
+        print 'Cannot itialize entity %s' % etype
         sys.exit(1)
 
 
@@ -195,8 +194,7 @@ def load_df(etype=None, sid=None):
 
         return df
     else:
-        error = 'Cannot itialize entity %s' % etype
-        print error
+        print 'Cannot itialize entity %s' % etype
         sys.exit(1)
 
 
@@ -357,7 +355,9 @@ def load_pilots(sid, exp, sra_pilots, pdm, pu_rels, pts):
             try:
                 ps[state].append(pentity.timestamps(state=state)[0])
             except:
-                print ' WARNING: Failed to get timestamp for state %s' % state
+                if state not in rp.FINAL:
+                    print 'WARNING: Failed to get timestamp for state %s' \
+                            % state
                 ps[state].append(np.nan)
 
         # Pilot durations.
@@ -430,9 +430,9 @@ def load_units(sid, exp, sra_units, udm, pilots, sra, pu_rels, uts):
             try:
                 us[state].append(uentity.timestamps(state=state)[0])
             except:
-                if state not in 'CANCELEDFAILED':
-                    print 'WARNING: Failed to get timestampe for state %s' % \
-                        state
+                if state not in rp.FINAL:
+                    print 'WARNING: Failed to get timestampe for state %s' \
+                            % state
                 us[state].append(np.nan)
 
         # Durations.

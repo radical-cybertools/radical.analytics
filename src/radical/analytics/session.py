@@ -116,6 +116,8 @@ class Session(object):
         if _init:
             self._initialize_properties()
 
+        self.consistency()
+
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
 
