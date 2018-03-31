@@ -44,10 +44,13 @@ class Session(object):
                  src.endswith('.tar.bz')    :
                 tgt = src[:-7]
 
+            elif src.endswith('.prof'):
+                tgt = None
+
             else:
                 raise ValueError('src does not look like a tarball')
 
-            if not os.path.exists(tgt):
+            if tgt and not os.path.exists(tgt):
 
                 # need to extract
                 print 'extract tarball to %s' % tgt
@@ -59,7 +62,8 @@ class Session(object):
                     raise RuntimeError('Cannot extract tarball: %s' % repr(e))
 
             # switch to the extracted data dir
-            src = tgt
+            if tgt:
+                src = tgt
 
 
         # if no sid is given, we assume its the directory name
@@ -93,6 +97,21 @@ class Session(object):
 
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
+
+
+        elif stype == 'radical.stats':
+
+            ret   = ru.read_profiles(profiles=[self._src])
+            profs = list()
+            for val in ret.values():
+                profs += val
+
+            self._profile     = profs
+            self._description = dict()
+
+            self._description['tree']     = dict()
+            self._description['accuracy'] = 0.0
+            self._description['hostmap']  = dict()
 
 
         else:
