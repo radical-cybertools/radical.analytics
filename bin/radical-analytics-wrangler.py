@@ -362,6 +362,8 @@ def load_pilots(sid, exp, sra_pilots, pdm, pu_rels, pts):
 
         # Pilot durations.
         for duration in pdm.keys():
+            
+          
 
             # TODO: AM: why are not all inserted here?
             #           Can there be more than one (why is it a list)?
@@ -510,6 +512,8 @@ def load_session(sid, exp, sra_session, sra_pilots, sra_units,
     s['npilot_active'].append(len(sra_pilots.timestamps(state='PMGR_ACTIVE')))
     s['nunit_done'].append(len(sra_units.timestamps(state='DONE')))
     s['nunit_failed'].append(len(sra_units.timestamps(state='FAILED')))
+
+
 
     # Number of cores requested and used by the session's pilots. Make a copy of
     # the pilots DF with only the columns we need to limit memory overhead.
@@ -816,6 +820,9 @@ if __name__ == '__main__':
 
             'util_u_equeue'         : [{ru.EVENT: 'schedule_ok',            ru.STATE: None                           },
                                        {ru.EVENT: 'state',                  ru.STATE: rp.AGENT_EXECUTING             }],
+            'util_u_pre_exec'       : [{ru.EVENT: 'cu_pre_start',           ru.STATE: None                           },
+                                       {ru.EVENT: 'cu_pre_stop',            ru.STATE: None                           }],
+
             'util_u_eprep'          : [{ru.EVENT: 'state',                  ru.STATE: rp.AGENT_EXECUTING             },
                                        {ru.EVENT: 'exec_start',             ru.STATE: None                           }],
             'util_u_exec_rp'        : [{ru.EVENT: 'exec_start',             ru.STATE: None                           },
@@ -834,7 +841,7 @@ if __name__ == '__main__':
     # Find out what sessions need to be wrangled.
     rawsids = get_raw_sessions(ddir, etag, clopts)
     sids = get_new_sessions(rawsids)
-
+    print sids 
     procs = []
 
     num_workers = psutil.cpu_count(logical=False)
