@@ -21,7 +21,7 @@ import numpy             as np
 event_entity = 'unit'
 event_list   = \
     [
-        # {ru.STATE: 'NEW'                          , ru.EVENT: 'state'           },
+          {ru.STATE: 'NEW'                          , ru.EVENT: 'state'           },
         # {ru.STATE: 'UMGR_SCHEDULING_PENDING'      , ru.EVENT: 'state'           },
         # {ru.STATE: 'UMGR_SCHEDULING'              , ru.EVENT: 'state'           },
         # {ru.STATE: 'UMGR_STAGING_INPUT_PENDING'   , ru.EVENT: 'state'           },
