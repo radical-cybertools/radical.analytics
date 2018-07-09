@@ -900,7 +900,7 @@ class Session(object):
                         for node in consumer_nodes:
                             for cores_map in node[2]:
                                 resources_acquired += len(cores_map)
-                    elif resource == 'gpu':
+                    elif resource == 'gpus':
                         for node in consumer_nodes:
                             for gpu_map in node[3]:
                                 resources_acquired += len(gpu_map)
