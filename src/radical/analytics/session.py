@@ -894,7 +894,20 @@ class Session(object):
                     ranges  = consumer_entity.ranges(event=consumer_events)
                     cons_id = consumer_entity.uid
 
-                    consumer_resources[cons_id] = consumer_entity.description.get(resource)
+                    consumer_nodes = consumer_entity.cfg.get('slots').get('nodes')
+                    resources_acquired = 0
+                    if resource == 'cores':
+                        for node in consumer_nodes:
+                            for cores_map in node[2]:
+                                resources_acquired += len(cores_map)
+                    elif resource == 'gpu':
+                        for node in consumer_nodes:
+                            for gpu_map in node[3]:
+                                resources_acquired += len(gpu_map)
+                    else:
+                        raise ValueError('Utilization for resource not supported')
+                    
+                    consumer_resources[cons_id] = resources_acquired
 
                     # Update consumer_ranges if there is at least one range
                     consumer_ranges.update({cons_id: ranges}) if len(ranges) != 0 else None
