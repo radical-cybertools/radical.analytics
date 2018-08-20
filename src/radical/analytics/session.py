@@ -2,6 +2,7 @@
 import os
 import sys
 import copy
+import glob
 import tarfile
 
 import radical.utils as ru
@@ -36,8 +37,12 @@ class Session(object):
         elif os.path.isfile(src):
 
             # src is afile - we assume its a tarball and extract it
-            if  src.endswith('.tgz') or \
-                src.endswith('.tbz')    :
+            if  src.endswith('.prof'):
+                # use as is
+                tgt = src
+
+            elif src.endswith('.tgz') or \
+                 src.endswith('.tbz')    :
                 tgt = src[:-4]
 
             elif src.endswith('.tar.gz') or \
@@ -45,7 +50,8 @@ class Session(object):
                 tgt = src[:-7]
 
             else:
-                raise ValueError('src does not look like a tarball')
+                raise ValueError('src does not look like a tarball or profile')
+
 
             if not os.path.exists(tgt):
 
@@ -94,6 +100,20 @@ class Session(object):
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
 
+
+        elif stype == 'radical.prof':
+
+            if os.path.isdir(src): profiles = glob.glob("%s/*.prof")
+            else                 : profiles = [src]
+
+            profiles          = ru.read_profiles(profiles, src)
+            profile, accuracy = ru.combine_profiles(profiles)
+            self._profile     = ru.clean_profile(profile, src)
+
+            self._description = {'tree'     : dict(), 
+                                 'entities' : list()}
+            self._description['accuracy'] = accuracy
+            self._description['hostmap']  = dict()
 
         else:
             raise ValueError('unsupported session type [%s]' % stype)
@@ -540,7 +560,7 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def timestamps(self, state=None, event=None):
+    def timestamps(self, state=None, event=None, time=None, first=False):
         '''
         This method accepts a set of conditions, and returns the list of
         timestamps for which those conditions applied, i.e. for which state
@@ -550,12 +570,23 @@ class Session(object):
         Both `state` and `event` can be lists, in which case the union of all
         timestamps are returned.
 
+        The `time` parameter is expected to be a single tuple, or a list of
+        tuples, each defining a pair of start and end time which are used to
+        constrain the matching timestamps.
+
+        If `first` is set to `True`, only the timestamps for the first matching
+        events (per entity) are returned.
+
         The returned list will be sorted.
         '''
 
         ret = list()
         for uid,entity in self._entities.iteritems():
-            ret += entity.timestamps(state=state, event=event)
+            tmp = entity.timestamps(state=state, event=event, time=time)
+            if tmp and first:
+                ret.append(tmp[0])
+            else:
+                ret += tmp
 
         return sorted(ret)
 
@@ -664,6 +695,119 @@ class Session(object):
                     cnt += 1
 
             ret.append([t, cnt])
+
+        return ret
+
+
+    # --------------------------------------------------------------------------
+    #
+    def rate(self, state=None, event=None, time=None, sampling=None,
+            first=False):
+        '''
+        This method accepts the same parameters as the `timestamps()` method: it
+        will count all matching events and state transitions as given, and will
+        return a time series of the rate of how many of those events and/or
+        transitions occured per second.
+
+        The additional parameter `sampling` determines the exact points in time
+        for which the rate is computed, and thus determines the sampling rate
+        for the returned time series.  If not specified, the time series will
+        contain all points at which and event occured, and thevrate value will
+        only be determined by the time passed between two consequtuve events.
+        If specified, it is interpreted as second (float) interval at which,
+        after the starting point (begin of first event matching the filters) the
+        rate is computed.
+
+        Returned is an ordered list of tuples:
+
+          [ [time_0, rate_0] ,
+            [time_1, rate_1] ,
+            ...
+            [time_n, rate_n] ]
+
+        where `time_n` is represented as `float`, and `rate_n` as `int`.
+
+        The `time` parameter is expected to be a single tuple, or a list of
+        tuples, each defining a pair of start and end time which are used to
+        constrain the resulting time series.
+
+        The 'first' is defined, only the first matching event fir the selected
+        entities is considered viable.
+
+        Example:
+
+           session.filter(etype='unit').rate(state=[rp.AGENT_EXECUTING])
+        '''
+
+        timestamps = self.timestamps(event=event, state=state, time=time,
+                                     first=first)
+
+        if not timestamps:
+            # nothing to do
+            return []
+
+
+        times = list()
+        if sampling:
+            # get min and max timestamp, and add create sampling points at regular
+            # intervals
+            r_min = timestamps[0]
+            r_max = timestamps[-1]
+
+            t = r_min
+            while t < r_max:
+                times.append(t)
+                t += sampling
+          # times.append(t)
+            times.append(r_max)
+
+        else:
+            # we create an entry at all timestamps
+            times = timestamps[:]
+
+        if not times:
+            # nothing to do
+            return []
+
+        # we need to make sure that no two consecutive timestamps are the same,
+        # as that would lead to a division by zero later on
+        times = sorted(set(times))
+
+      # import pprint
+      # pprint.pprint(times)
+
+        # make sure we start in correct state, and first data point does not
+        # occur before sampling starts
+        timestamps[0] >= times[0]
+
+        # we have the time sequence, now compute event rate at those points
+        ts_idx  = 0                # index into the list of timestamps
+        ts_len  = len(timestamps)  # number of timestamps
+        ret     = list()           # our rate time series
+        t_start = times[0]         # current samplint window
+        t_stop  = times[0]
+
+        for t in times[1:]:
+            t_start = t_stop       # slide sampling window to next sample time
+            t_stop  = t
+            cnt     = 0            # reset event counter
+
+
+            while ts_idx < ts_len:
+                if timestamps[ts_idx] <= t_stop:
+                    # timestamp is in range, count event
+                    cnt += 1
+                else:
+                    # we need to slide the sampling window
+                    break
+                # go to next timestamp
+                ts_idx += 1
+
+          # print 'window: %f - %f (%f) : %5d' % \
+          #         (t_start, t_stop, t_stop - t_start, cnt)
+
+            # sampling window completed - store rate of events in sample
+            ret.append([t_stop, cnt / (t_stop - t_start)])
 
         return ret
 
