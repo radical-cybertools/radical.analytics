@@ -5,7 +5,6 @@ __license__   = 'MIT'
 
 
 import sys
-import pprint
 
 import radical.utils     as ru
 import radical.analytics as ra
@@ -18,44 +17,50 @@ import numpy             as np
 # type `event_entity`..  Before plotting, we sort those entities by the
 # timestamp of the first event in the event list
 
-event_entity = 'unit'
+event_entity = 'task'
 event_list   = \
     [
-          {ru.STATE: 'NEW'                          , ru.EVENT: 'state'           },
-        # {ru.STATE: 'UMGR_SCHEDULING_PENDING'      , ru.EVENT: 'state'           },
-        # {ru.STATE: 'UMGR_SCHEDULING'              , ru.EVENT: 'state'           },
-        # {ru.STATE: 'UMGR_STAGING_INPUT_PENDING'   , ru.EVENT: 'state'           },
-        # {ru.STATE: 'UMGR_STAGING_INPUT'           , ru.EVENT: 'state'           },
-        # {ru.STATE: 'AGENT_STAGING_INPUT_PENDING'  , ru.EVENT: 'state'           },
-          {ru.COMP : 'agent_0'                      , ru.EVENT: 'get'             },
-        # {ru.STATE: 'AGENT_STAGING_INPUT'          , ru.EVENT: 'state'           },
-        # {ru.STATE: 'AGENT_SCHEDULING_PENDING'     , ru.EVENT: 'state'           },
-        # {ru.STATE: 'AGENT_SCHEDULING'             , ru.EVENT: 'state'           },
-          {ru.STATE: None                           , ru.EVENT: 'schedule_ok'     },
-        # {ru.STATE: 'AGENT_EXECUTING_PENDING'      , ru.EVENT: 'state'           },
-          {ru.STATE: 'AGENT_EXECUTING'              , ru.EVENT: 'state'           },
-          {ru.STATE: None                           , ru.EVENT: 'exec_mkdir'      },
-          {ru.STATE: None                           , ru.EVENT: 'exec_mkdir_done' },
-          {ru.STATE: None                           , ru.EVENT: 'exec_start'      },
-        # {ru.STATE: None                           , ru.EVENT: 'exec_ok'         },
-          {ru.STATE: None                           , ru.EVENT: 'exec_stop'       },
-        # {ru.STATE: 'AGENT_STAGING_OUTPUT_PENDING' , ru.EVENT: 'state'           },
-        # {ru.STATE: 'UMGR_STAGING_OUTPUT_PENDING'  , ru.EVENT: 'state'           },
-        # {ru.STATE: 'UMGR_STAGING_OUTPUT'          , ru.EVENT: 'state'           },
-        # {ru.STATE: 'AGENT_STAGING_OUTPUT'         , ru.EVENT: 'state'           },
-          {ru.STATE: 'DONE'                         , ru.EVENT: 'state'           },
+      # # {ru.STATE: 'NEW'                          , ru.EVENT: 'state'           },
+      # # {ru.STATE: 'UMGR_SCHEDULING_PENDING'      , ru.EVENT: 'state'           },
+      # # {ru.STATE: 'UMGR_SCHEDULING'              , ru.EVENT: 'state'           },
+      # # {ru.STATE: 'UMGR_STAGING_INPUT_PENDING'   , ru.EVENT: 'state'           },
+      # # {ru.STATE: 'UMGR_STAGING_INPUT'           , ru.EVENT: 'state'           },
+      # # {ru.STATE: 'AGENT_STAGING_INPUT_PENDING'  , ru.EVENT: 'state'           },
+      #   {ru.COMP : 'agent_0'                      , ru.EVENT: 'get'             },
+      # # {ru.STATE: 'AGENT_STAGING_INPUT'          , ru.EVENT: 'state'           },
+      #   {ru.STATE: 'AGENT_SCHEDULING_PENDING'     , ru.EVENT: 'state'           },
+      #   {ru.STATE: 'AGENT_SCHEDULING'             , ru.EVENT: 'state'           },
+      # # {ru.STATE: None                           , ru.EVENT: 'schedule_ok'     },
+      #   {ru.STATE: 'AGENT_EXECUTING_PENDING'      , ru.EVENT: 'state'           },
+      #   {ru.STATE: 'AGENT_EXECUTING'              , ru.EVENT: 'state'           },
+      # # {ru.STATE: None                           , ru.EVENT: 'exec_mkdir'      },
+      # # {ru.STATE: None                           , ru.EVENT: 'exec_mkdir_done' },
+      #   {ru.STATE: None                           , ru.EVENT: 'exec_start'      },
+      # # {ru.STATE: None                           , ru.EVENT: 'exec_ok'         },
+      #   {ru.STATE: None                           , ru.EVENT: 'exec_stop'       },
+      # # {ru.STATE: 'AGENT_STAGING_OUTPUT_PENDING' , ru.EVENT: 'state'           },
+      #   {ru.STATE: 'UMGR_STAGING_OUTPUT_PENDING'  , ru.EVENT: 'state'           },
+      # # {ru.STATE: 'UMGR_STAGING_OUTPUT'          , ru.EVENT: 'state'           },
+      # # {ru.STATE: 'AGENT_STAGING_OUTPUT'         , ru.EVENT: 'state'           },
+      # # {ru.STATE: 'DONE'                         , ru.EVENT: 'state'           },
+          {ru.STATE: None                           , ru.EVENT: 'date_start'      },
+          {ru.STATE: None                           , ru.EVENT: 'date_finish'     },
     ]
 
 # ---------------------------------------------------------------------------     ---
 #
 if __name__ == '__main__':
 
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
         sys.exit(1)
 
-    src     = sys.argv[1]
-    session = ra.Session(src, 'radical.pilot')
+    src = sys.argv[1]
+
+    if len(sys.argv) == 2: stype = 'radical.pilot'
+    else                 : stype = sys.argv[2]
+
+    session = ra.Session(src, stype)
 
     # A formatting helper before starting...
     def ppheader(message):
