@@ -5,7 +5,6 @@ __license__   = 'MIT'
 
 
 import sys
-import pprint
 
 import radical.utils     as ru
 import radical.analytics as ra
@@ -18,7 +17,7 @@ import numpy             as np
 # type `event_entity`..  Before plotting, we sort those entities by the
 # timestamp of the first event in the event list
 
-event_entity = 'unit'
+event_entity = 'task'
 event_list   = \
     [
           {ru.STATE: 'NEW'                          , ru.EVENT: 'state'           },
@@ -44,18 +43,24 @@ event_list   = \
         # {ru.STATE: 'UMGR_STAGING_OUTPUT'          , ru.EVENT: 'state'           },
         # {ru.STATE: 'AGENT_STAGING_OUTPUT'         , ru.EVENT: 'state'           },
           {ru.STATE: 'DONE'                         , ru.EVENT: 'state'           },
+      #   {ru.STATE: None                           , ru.EVENT: 'date_start'      },
+      #   {ru.STATE: None                           , ru.EVENT: 'date_finish'     },
     ]
 
 # ---------------------------------------------------------------------------     ---
 #
 if __name__ == '__main__':
 
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
         sys.exit(1)
 
-    src     = sys.argv[1]
-    session = ra.Session(src, 'radical.pilot')
+    src = sys.argv[1]
+
+    if len(sys.argv) == 2: stype = 'radical.pilot'
+    else                 : stype = sys.argv[2]
+
+    session = ra.Session(src, stype)
 
     # A formatting helper before starting...
     def ppheader(message):
