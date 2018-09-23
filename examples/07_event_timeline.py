@@ -88,7 +88,7 @@ if __name__ == '__main__':
 
   # sort x-axis (unit IDs) by 'uid', by time of execution 'time', or by pipeline order
   # ('work')
-    order = 'time'
+    order = 'work'
 
     if order == 'uid':
         sorted_uids = sorted(work.keys())
