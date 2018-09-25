@@ -38,10 +38,10 @@ class Entity(object):
 
         self._states      = dict()
         self._events      = list()
-        self._consistency = { 'log'         : list(), 
-                              'state_model' : None, 
-                              'event_model' : None, 
-                              'timestamps'  : None}
+        self._consistency = {'log'         : list(), 
+                             'state_model' : None, 
+                             'event_model' : None, 
+                             'timestamps'  : None}
 
         self._t_start     = None
         self._t_stop      = None

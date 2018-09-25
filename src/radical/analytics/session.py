@@ -39,10 +39,12 @@ class Session(object):
             if  src.endswith('.tgz') or \
                 src.endswith('.tbz')    :
                 tgt = src[:-4]
+                ext = src[-2:]
 
             elif src.endswith('.tar.gz') or \
                  src.endswith('.tar.bz')    :
                 tgt = src[:-7]
+                ext = src[-2:]
 
             else:
                 raise ValueError('src does not look like a tarball')
@@ -52,7 +54,10 @@ class Session(object):
                 # need to extract
                 print 'extract tarball to %s' % tgt
                 try:
-                    tf = tarfile.open(name=src, mode='r:bz2')
+                    if   ext == 'bz': mode = 'r:bz2'
+                    elif ext == 'gz': mode = 'r:gz'
+                    else            : mode = 'r'
+                    tf = tarfile.open(name=src, mode=mode)
                     tf.extractall(path=os.path.dirname(tgt))
 
                 except Exception as e:
@@ -102,6 +107,9 @@ class Session(object):
         self._t_stop  = None
         self._ttc     = None
         self._log     = None
+
+        # user defined time offset
+        self._tzero   = 0.0
 
         # internal state is represented by a dict of entities:
         # dict keys are entity uids (which are assumed to be unique per
@@ -393,7 +401,7 @@ class Session(object):
 
         uids = self._apply_filter(etype=etype, uid=uid, state=state,
                                   event=event, time=time)
-        return [self._entities[uid] for uid in uids]
+        return [self._entities[_uid] for _uid in uids]
 
 
     # --------------------------------------------------------------------------
@@ -953,6 +961,21 @@ class Session(object):
                 self._rep.plain('\n')
 
         return ret
+
+
+    # --------------------------------------------------------------------------
+    #
+    def tzero(self, t):
+
+        old_tzero   = self._tzero
+        self._tzero = t
+
+        for euid,e in self._entities.iteritems():
+
+            # entity.states are shallow copies of the events
+            for event in e.events:
+                event[ru.TIME] += old_tzero
+                event[ru.TIME] -= self._tzero
 
 
 # ------------------------------------------------------------------------------
