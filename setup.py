@@ -261,6 +261,8 @@ setup_args = {
     'packages'           : find_packages('src'),
     'package_dir'        : {'': 'src'},
     'scripts'            : ['bin/radical-analytics-version',
+                            'bin/radical-analytics-check', 
+                            'bin/radical-analytics-check.ev',   # TODO: share/
                            ],
     'package_data'       : {'': ['*.txt', '*.sh', '*.json', '*.gz', 'VERSION', 'SDIST', sdist_name]},
     'cmdclass'           : {
