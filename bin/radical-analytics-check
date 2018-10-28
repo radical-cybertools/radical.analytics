@@ -39,7 +39,7 @@ if __name__ == '__main__':
                 all_events.append(line.strip())
 
         session  = ra.Session(src, stype)
-        rp       = session.filter(etype='rp',    inplace=False)
+        rp       = session.filter(etype=['rp', 'pmgr', 'umgr'], inplace=False)
         pilots   = session.filter(etype='pilot', inplace=False)
         units    = session.filter(etype='unit',  inplace=True)
         sid      = session.uid
