@@ -5,6 +5,20 @@
     https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen+
 
 
+0.50.1 Release                                                        2018-11-20
+--------------------------------------------------------------------------------
+
+  - fixes to EnTK integration
+
+
+0.50.0 Release                                                        2018-08-20
+--------------------------------------------------------------------------------
+
+  - support sessions which only have profiles, but a limited or no event or
+    state model
+
+  
+  
 0.47 Release                                                          2017-11-19
 --------------------------------------------------------------------------------
 
