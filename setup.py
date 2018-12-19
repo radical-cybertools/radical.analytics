@@ -3,7 +3,7 @@
 __author__    = 'RADICAL Team'
 __email__     = 'radical@rutgers.edu'
 __copyright__ = 'Copyright 2013-16, RADICAL Research, Rutgers University'
-__license__   = 'MIT'
+__license__   = 'GPL.v2'
 
 
 """ Setup script, only usable via pip. """
@@ -240,13 +240,13 @@ setup_args = {
     'maintainer'         : 'The RADICAL Group',
     'maintainer_email'   : 'radical@rutgers.edu',
     'url'                : 'https://www.github.com/radical-cybertools/radical.utils/',
-    'license'            : 'MIT',
+    'license'            : 'GPL.v2',
     'keywords'           : 'radical analytics',
     'classifiers'        : [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Environment :: Console',
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: GPL.v2 License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
