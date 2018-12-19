@@ -5,6 +5,12 @@
     https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen+
 
 
+0.50.3 Release                                                        2018-12-19
+--------------------------------------------------------------------------------
+
+  - fix license inconsistency
+
+
 0.50.2 Release                                                        2018-12-19
 --------------------------------------------------------------------------------
 
