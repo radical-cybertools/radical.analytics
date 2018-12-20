@@ -263,7 +263,8 @@ setup_args = {
     'scripts'            : ['bin/radical-analytics-version',
                             'bin/radical-analytics-wrangler.py',
                            ],
-    'package_data'       : {'': ['*.txt', '*.sh', '*.json', '*.gz', 'VERSION', 'SDIST', sdist_name]},
+    'package_data'       : {'': ['*.txt', '*.sh', '*.json', '*.gz', 'VERSION',
+                                 'LICENSE', 'CHANGES.md', 'SDIST', sdist_name]},
     'cmdclass'           : {
         'test'           : our_test,
     },
