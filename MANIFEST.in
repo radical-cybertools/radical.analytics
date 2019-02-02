@@ -1,5 +1,5 @@
 
-include VERSION README.md LICENSE.md CHANGES.md
+include VERSION README.md LICENSE.md CHANGES.md LICENSE
 
 recursive-include radical *
 recursive-include tests   *
