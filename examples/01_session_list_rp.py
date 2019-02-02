@@ -20,12 +20,16 @@ This example illustrates the use of the method ra.Session.list()
 #
 if __name__ == '__main__':
 
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
         sys.exit(1)
 
     src     = sys.argv[1]
-    session = ra.Session(src, 'radical.pilot')
+
+    if len(sys.argv) == 2: stype = 'radical.pilot'
+    else                 : stype = sys.argv[2]
+
+    session = ra.Session(src, stype)
 
     # A formatting helper before starting...
     def ppheader(message):

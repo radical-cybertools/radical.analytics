@@ -2,6 +2,7 @@
 import os
 import sys
 import copy
+import glob
 import tarfile
 
 import radical.utils as ru
@@ -36,8 +37,12 @@ class Session(object):
         elif os.path.isfile(src):
 
             # src is afile - we assume its a tarball and extract it
-            if  src.endswith('.tgz') or \
-                src.endswith('.tbz')    :
+            if  src.endswith('.prof'):
+                # use as is
+                tgt = src
+
+            elif src.endswith('.tgz') or \
+                 src.endswith('.tbz')    :
                 tgt = src[:-4]
 
             elif src.endswith('.tar.gz') or \
@@ -45,7 +50,8 @@ class Session(object):
                 tgt = src[:-7]
 
             else:
-                raise ValueError('src does not look like a tarball')
+                raise ValueError('src does not look like a tarball or profile')
+
 
             if not os.path.exists(tgt):
 
@@ -88,12 +94,26 @@ class Session(object):
         elif stype == 'radical.entk':
             import radical.entk as re
 
-            self._profile, accuracy, hostmap = re.utils.get_profile(src=self._src)
-            self._description = re.utils.get_description(src=self._src)
+            self._profile, accuracy, hostmap = re.utils.get_session_profile(sid=sid, src=self._src)
+            self._description = re.utils.get_session_description(sid=sid, src=self._src)
 
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
 
+
+        elif stype == 'radical.prof':
+
+            if os.path.isdir(src): profiles = glob.glob("%s/*.prof")
+            else                 : profiles = [src]
+
+            profiles          = ru.read_profiles(profiles, src)
+            profile, accuracy = ru.combine_profiles(profiles)
+            self._profile     = ru.clean_profile(profile, src)
+
+            self._description = {'tree'     : dict(), 
+                                 'entities' : list()}
+            self._description['accuracy'] = accuracy
+            self._description['hostmap']  = dict()
 
         else:
             raise ValueError('unsupported session type [%s]' % stype)
