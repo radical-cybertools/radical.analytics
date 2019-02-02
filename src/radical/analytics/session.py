@@ -138,7 +138,9 @@ class Session(object):
         self._t_start = None
         self._t_stop  = None
         self._ttc     = None
-        self._log     = None
+        self._log     = ru.Logger('radical.analytics')
+        self._rep     = ru.Reporter('radical.analytics')
+
 
         # internal state is represented by a dict of entities:
         # dict keys are entity uids (which are assumed to be unique per
@@ -153,10 +155,9 @@ class Session(object):
         if _init:
             self._initialize_properties()
 
-        self.consistency()
-
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
+      # self.consistency()
 
 
     # --------------------------------------------------------------------------
@@ -189,17 +190,6 @@ class Session(object):
 
         # FIXME: we may want to filter the session description etc. wrt. to the
         #        entity types remaining after a filter.
-
-
-    # --------------------------------------------------------------------------
-    #
-    @property
-    def _rep(self):
-
-        if not self._log:
-            self._log = ru.get_logger('radical.analytics')
-
-        return self._log.report
 
 
     # --------------------------------------------------------------------------
