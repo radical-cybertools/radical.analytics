@@ -2,6 +2,7 @@
 import os
 import sys
 import copy
+import glob
 import tarfile
 
 import radical.utils as ru
@@ -36,18 +37,26 @@ class Session(object):
         elif os.path.isfile(src):
 
             # src is afile - we assume its a tarball and extract it
-            if  src.endswith('.tgz') or \
-                src.endswith('.tbz')    :
+            if  src.endswith('.prof'):
+                # use as is
+                tgt = src
+
+            elif src.endswith('.tgz') or \
+                 src.endswith('.tbz')    :
                 tgt = src[:-4]
 
             elif src.endswith('.tar.gz') or \
                  src.endswith('.tar.bz')    :
                 tgt = src[:-7]
 
-            else:
-                raise ValueError('src does not look like a tarball')
+            elif src.endswith('.prof'):
+                tgt = None
 
-            if not os.path.exists(tgt):
+            else:
+                raise ValueError('src does not look like a tarball or profile')
+
+
+            if tgt and not os.path.exists(tgt):
 
                 # need to extract
                 print 'extract tarball to %s' % tgt
@@ -59,7 +68,8 @@ class Session(object):
                     raise RuntimeError('Cannot extract tarball: %s' % repr(e))
 
             # switch to the extracted data dir
-            src = tgt
+            if tgt:
+                src = tgt
 
 
         # if no sid is given, we assume its the directory name
@@ -75,21 +85,47 @@ class Session(object):
       # print 'sid: %s [%s]' % (sid, stype)
       # print 'src: %s'      % src
 
-        if stype == 'radical.pilot':
-            import radical.pilot as rp
+        if stype == 'radical':
+
+            # src is expected to point either to a single profile, or to
+            # a directory tree containing profiles
+            if not src:
+                raise ValueError('RA session types need `src` specified')
+
+            profiles = list()
+            if os.path.isfile(src):
+                profiles.append(src)
+            else:
+                for root, dirs, files in os.walk(src):
+                    for f in files:
+                        if f.endswith('.prof'):
+                            profiles.append('%s/%s' % (root, f))
+
+            profiles                = ru.read_profiles(profiles, sid=sid)
+            self._profile, accuracy = ru.combine_profiles(profiles)
+            self._description       = {'tree'     : dict(),
+                                       'entities' : list(),
+                                       'hostmap'  : dict(),
+                                       'accuracy' : 0.0}
+
+        elif stype == 'radical.pilot':
+
+            import radical.pilot.utils as rpu
             self._profile, accuracy, hostmap \
-                              = rp.utils.get_session_profile(sid=sid, src=self._src)
-            self._description = rp.utils.get_session_description(sid=sid, src=self._src)
+                              = rpu.get_session_profile    (sid=sid, src=self._src)
+            self._description = rpu.get_session_description(sid=sid, src=self._src)
 
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
 
 
         elif stype == 'radical.entk':
-            import radical.entk as re
 
-            self._profile, accuracy, hostmap = re.utils.get_profile(src=self._src)
-            self._description = re.utils.get_description(src=self._src)
+            import radical.entk.utils as reu
+
+            self._profile, accuracy, hostmap \
+                              = reu.get_session_profile    (sid=sid, src=self._src)
+            self._description = reu.get_session_description(sid=sid, src=self._src)
 
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
@@ -97,6 +133,7 @@ class Session(object):
 
         else:
             raise ValueError('unsupported session type [%s]' % stype)
+
 
         self._t_start = None
         self._t_stop  = None
@@ -214,8 +251,8 @@ class Session(object):
         # all events for that uid)
         for uid,events in entity_events.iteritems():
             etype   = events[0][ru.ENTITY]
-            details = self._description['tree'].get(uid, dict())
-            details['hostid'] = self._description['hostmap'].get(uid)
+            details = self._description.get('tree', dict()).get(uid, dict())
+            details['hostid'] = self._description.get('hostmap', dict()).get(uid)
             self._entities[uid] = Entity(_uid=uid,
                                          _etype=etype,
                                          _profile=events,
@@ -452,7 +489,7 @@ class Session(object):
             state_values = None
             event_model  = None
 
-            if et in self._description['entities']:
+            if et in self._description.get('entities', dict()):
                 state_model  = self._description['entities'][et]['state_model']
                 state_values = self._description['entities'][et]['state_values']
                 event_model  = self._description['entities'][et]['event_model']
@@ -487,7 +524,7 @@ class Session(object):
             parent_uids = self._apply_filter(etype=etype[0])
             child_uids  = self._apply_filter(etype=etype[1])
 
-            rel = self._description['tree']
+            rel = self._description.get('tree', dict())
             for p in parent_uids:
 
                 ret[p] = list()
@@ -896,7 +933,20 @@ class Session(object):
                     ranges  = consumer_entity.ranges(event=consumer_events)
                     cons_id = consumer_entity.uid
 
-                    consumer_resources[cons_id] = consumer_entity.description.get(resource)
+                    consumer_nodes = consumer_entity.cfg.get('slots').get('nodes')
+                    resources_acquired = 0
+                    if resource == 'cores':
+                        for node in consumer_nodes:
+                            for cores_map in node[2]:
+                                resources_acquired += len(cores_map)
+                    elif resource == 'gpus':
+                        for node in consumer_nodes:
+                            for gpu_map in node[3]:
+                                resources_acquired += len(gpu_map)
+                    else:
+                        raise ValueError('Utilization for resource not supported')
+                    
+                    consumer_resources[cons_id] = resources_acquired
 
                     # Update consumer_ranges if there is at least one range
                     consumer_ranges.update({cons_id: ranges}) if len(ranges) != 0 else None

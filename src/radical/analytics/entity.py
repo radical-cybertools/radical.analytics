@@ -38,22 +38,16 @@ class Entity(object):
 
         self._states      = dict()
         self._events      = list()
-        self._consistency = { 'log'         : list(), 
-                              'state_model' : None, 
-                              'event_model' : None, 
-                              'timestamps'  : None}
+        self._consistency = {'log'         : list(), 
+                             'state_model' : None, 
+                             'event_model' : None, 
+                             'timestamps'  : None}
 
         self._t_start     = None
         self._t_stop      = None
         self._ttc         = None
 
         self._initialize(_profile)
-
-      # print '%s events     : %20d kB' % (self._uid, ru.get_size(e0._events)/ (1024))
-      # print '%s states     : %20d kB' % (self._uid, ru.get_size(e0._states)/ (1024))
-      # print '%s consistency: %20d kB' % (self._uid, ru.get_size(e0._consistency)/ (1024))
-      # print '%s #events    : %20d   ' % (self._uid, ru.get_size(len(e0._events)))
-      # print
 
 
     # --------------------------------------------------------------------------
@@ -139,6 +133,10 @@ class Entity(object):
             self._t_start = min(self._t_start, t)
             self._t_stop  = max(self._t_stop,  t)
 
+            # FIXME: this should be phased out
+            if event[ru.EVENT] in 'advance':
+                event[ru.EVENT] = 'state'
+
             if event[ru.EVENT] == 'state':
                 state = event[ru.STATE]
                 self._states[state] = event
@@ -150,8 +148,7 @@ class Entity(object):
         if profile:
             self._ttc = self._t_stop - self._t_start
 
-        # FIXME: assert state model adherence here
-        # FIXME: sort events by time
+        # FIXME: assert state model adherence here (if state model is defined)
 
 
     # --------------------------------------------------------------------------
@@ -287,6 +284,7 @@ class Entity(object):
     # --------------------------------------------------------------------------
     #
     def _match_event(self, needle, hay):
+
         for key in range(ru.PROF_KEY_MAX):
             if needle[key] is not None:
                 if needle[key] != hay[key]:
@@ -408,9 +406,9 @@ class Entity(object):
         ranges     = list()
         this_range = [None, None]
 
-        # FIXME: this assumes that `self.events` are time sorted
+        # NOTE: this assumes that `self.events` are time sorted
         for e in self._events:
-            if None == this_range[0]:
+            if this_range[0] is None:
                 # check for an initial event.
                 for c in conds_init:
                     if self._match_event(c, e):
