@@ -77,7 +77,7 @@ if __name__ == '__main__':
         for event in event_list:
             times = thing.timestamps(event=event)
             if times: tstamps.append(times[0])
-            else    : tstamps.append(None)
+            else    : tstamps.append(np.nan)
 
         data[thing.uid] = tstamps
 
@@ -92,8 +92,8 @@ if __name__ == '__main__':
 
         durations = list()
         durations.append(tstamps[-1] - tstamps[0])  # global duration
-        for i in range(len(tstamps)-1):
-            durations.append(tstamps[i+1] - tstamps[i])
+        for i in range(len(tstamps) - 1):
+            durations.append(tstamps[i + 1] - tstamps[i])
 
         # create plottable data
         sorted_data.append([index] + durations)
