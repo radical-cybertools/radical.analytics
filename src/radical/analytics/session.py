@@ -49,11 +49,14 @@ class Session(object):
                  src.endswith('.tar.bz')    :
                 tgt = src[:-7]
 
+            elif src.endswith('.prof'):
+                tgt = None
+
             else:
                 raise ValueError('src does not look like a tarball or profile')
 
 
-            if not os.path.exists(tgt):
+            if tgt and not os.path.exists(tgt):
 
                 # need to extract
                 print 'extract tarball to %s' % tgt
@@ -65,7 +68,8 @@ class Session(object):
                     raise RuntimeError('Cannot extract tarball: %s' % repr(e))
 
             # switch to the extracted data dir
-            src = tgt
+            if tgt:
+                src = tgt
 
 
         # if no sid is given, we assume its the directory name
@@ -124,7 +128,7 @@ class Session(object):
             self._description['hostmap']  = hostmap
 
 
-        elif stype == 'radical.prof':
+        elif stype == 'radical':
 
             if os.path.isdir(src): profiles = glob.glob("%s/*.prof")
             else                 : profiles = [src]
@@ -134,9 +138,9 @@ class Session(object):
             self._profile     = ru.clean_profile(profile, src)
 
             self._description = {'tree'     : dict(), 
-                                 'entities' : list()}
-            self._description['accuracy'] = accuracy
-            self._description['hostmap']  = dict()
+                                 'entities' : list(), 
+                                 'hostmap'  : dict(), 
+                                 'accuracy' : 0.0}
 
         else:
             raise ValueError('unsupported session type [%s]' % stype)
