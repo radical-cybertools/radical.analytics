@@ -362,8 +362,7 @@ def load_pilots(sid, exp, sra_pilots, pdm, pu_rels, pts):
                 ps[state].append(pentity.timestamps(state=state)[0])
             except:
                 if state not in rp.FINAL:
-                    print 'WARNING: Failed to get timestamp for state %s' \
-                            % state
+                    print 'WARNING: no timestamp for state %s' % state
                 ps[state].append(np.nan)
 
         # Pilot durations.
@@ -827,6 +826,8 @@ if __name__ == '__main__':
            # from utilization script
             'util_u_total'          : [{ru.EVENT: 'schedule_ok',            ru.STATE: None                           },
                                        {ru.EVENT: 'unschedule_stop',        ru.STATE: None                           }],
+            'cu_exec_start_stop'    : [{ru.EVENT: 'cu_exec_start',          ru.STATE: None                           },
+                                       {ru.EVENT: 'cu_exec_stop',           ru.STATE: None                           }],
             'util_u_equeue'         : [{ru.EVENT: 'schedule_ok',            ru.STATE: None                           },
                                        {ru.EVENT: 'state',                  ru.STATE: rp.AGENT_EXECUTING             }],
             'util_u_pre_exec'       : [{ru.EVENT: 'cu_pre_start',           ru.STATE: None                           },
