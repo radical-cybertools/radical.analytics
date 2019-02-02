@@ -821,10 +821,10 @@ class Session(object):
         return ret
 
 
-    #-------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     #
-    def utilization(self, owner, consumer, resource, 
-        owner_events=None,consumer_events=None):
+    def utilization(self, owner, consumer, resource, owner_events=None,
+                                                     consumer_events=None):
         '''
         This method accepts as parameters :
         owner           : The entity name of the owner of the resources
@@ -883,10 +883,10 @@ class Session(object):
                                         {ru.EVENT: 'exec_stop' }])
         '''
         ret = dict()
-        
-        # Filter the session to get a session of the owners. If that is empty return an
-        # empty dict
-        
+
+        # Filter the session to get a session of the owners. If that is empty
+        # return an empty dict
+
         relations = self .describe('relations', [owner, consumer])
         if not relations:
             return dict()
@@ -934,12 +934,14 @@ class Session(object):
                             for gpu_map in node[3]:
                                 resources_acquired += len(gpu_map)
                     else:
-                        raise ValueError('Utilization for resource not supported')
-                    
+                        raise ValueError('unsupported utilization resource')
+
                     consumer_resources[cons_id] = resources_acquired
 
                     # Update consumer_ranges if there is at least one range
-                    consumer_ranges.update({cons_id: ranges}) if len(ranges) != 0 else None
+                    if ranges:
+                        consumer_ranges.update({cons_id: ranges})
+
 
                 # Sort consumer_ranges based on their values. This command
                 # returns a dictionary, which is sorted based on the first value
@@ -958,7 +960,8 @@ class Session(object):
                         times.append(r[1])
                 times.sort()
 
-                # we have the time sequence, now compute utilization at those points
+                # we have the time sequence, now compute utilization
+                # at those points
                 util = list()
                 for t in times:
                     cnt = 0
