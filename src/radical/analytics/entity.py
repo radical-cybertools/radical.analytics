@@ -236,7 +236,7 @@ class Entity(object):
 
     # --------------------------------------------------------------------------
     #
-    def timestamps(self, state=None, event=None):
+    def timestamps(self, state=None, event=None, time=None):
         """
         This method accepts a set of conditions, and returns the list of
         timestamps for which those conditions applied, i.e. for which state
@@ -245,6 +245,10 @@ class Entity(object):
 
         Both `state` and `event` can be lists, in which case the union of all
         timestamps are returned.
+
+        The `time` parameter is expected to be a single tuple, or a list of
+        tuples, each defining a pair of start and end time which are used to
+        constrain the matching timestamps.
 
         The returned list will be sorted.
         """
@@ -266,6 +270,16 @@ class Entity(object):
         for s in state:
             if s in self._states:
                 ret.append(self._states[s][ru.TIME])
+
+        # apply time filters
+        if time:
+            matched = list()
+            for etime in ret:
+                for ttuple in time:
+                    if etime >= ttuple[0] and etime <= etime[1]:
+                        matched.append(etime)
+                        break
+            ret = matched
 
         return sorted(ret)
 
