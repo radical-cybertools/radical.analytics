@@ -1,0 +1,16 @@
+#time,name,uid,state,event,msg
+1503465805.0392,pmgr.0000:,,,sync abs,js-17-212.jetstream-cloud.org:127.0.0.1:1503465805.04:1503465805.04:sys
+1503465805.0400,pmgr.0000:MainThread,pmgr.0000,,initialize,
+1503465807.2219,pmgr.0000:MainThread,pmgr.0000,,create pmgr,
+1503465807.3275,pmgr.0000:MainThread,,,PMGR setup done,
+1503465811.1305,pmgr.0000:MainThread,pilot.0000,NEW,advance,
+1503465811.1807,pmgr.0000:MainThread,pilot.0000,PMGR_LAUNCHING_PENDING,advance,
+1503465811.1811,pmgr.0000:MainThread,pilot.0000,PMGR_LAUNCHING_PENDING,publish,
+1503465811.1815,pmgr.0000:MainThread,pilot.0000,PMGR_LAUNCHING_PENDING,put,pmgr.launching.queue.input.0000
+1503465811.1841,pmgr.0000:pmgr.0000.subscriber._state_sub_cb,pilot.0000,PMGR_LAUNCHING,advance,
+1503465823.9753,pmgr.0000:pmgr.0000.subscriber._state_sub_cb,pilot.0000,PMGR_ACTIVE_PENDING,advance,
+1503469215.5137,pmgr.0000:pmgr.0000.idler._state_pull_cb,pilot.0000,PMGR_ACTIVE,advance,
+1503469215.5142,pmgr.0000:pmgr.0000.idler._state_pull_cb,pilot.0000,PMGR_ACTIVE,publish,
+1503470035.4372,pmgr.0000:pmgr.0000.subscriber._state_sub_cb,pilot.0000,DONE,advance,
+1503470035.9441,pmgr.0000:MainThread,pmgr.0000,,stopped,
+1503470035.9442,pmgr.0000:MainThread,,,END,

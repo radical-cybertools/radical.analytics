@@ -1,0 +1,178 @@
+{
+  "uid": "pilot.0000",
+  "etype": "pilot",
+  "events": [
+[0.0,"state","agent_0","MainThread","pilot.0000","PMGR_ACTIVE","","pilot"],
+[4.433599948883057,"state","pmgr.0000","MainThread","pilot.0000","NEW","","pilot"],
+[4.446199893951416,"state","pmgr.0000","MainThread","pilot.0000","PMGR_LAUNCHING_PENDING","","pilot"],
+[4.446699857711792,"put","pmgr.0000","MainThread","pilot.0000","PMGR_LAUNCHING_PENDING","pmgr.launching.queue.input.0000","pilot"],
+[4.447200059890747,"update_request","update.0.child","update.0.child.subscriber._state_cb","pilot.0000","","PMGR_LAUNCHING_PENDING","pilot"],
+[4.449499845504761,"state","pmgr.0000","pmgr.0000.subscriber._state_sub_cb","pilot.0000","PMGR_LAUNCHING","","pilot"],
+[4.457900047302246,"update_pushed","update.0.child","update.0.child.subscriber._state_cb","pilot.0000","","PMGR_LAUNCHING_PENDING","pilot"],
+[4.458099842071533,"update_request","update.0.child","update.0.child.subscriber._state_cb","pilot.0000","","PMGR_LAUNCHING","pilot"],
+[5.236199855804443,"update_pushed","update.0.child","update.0.child.subscriber._state_cb","pilot.0000","","PMGR_LAUNCHING","pilot"],
+[21.666899919509888,"update_request","update.0.child","update.0.child.subscriber._state_cb","pilot.0000","","PMGR_ACTIVE_PENDING","pilot"],
+[21.668299913406372,"state","pmgr.0000","pmgr.0000.subscriber._state_sub_cb","pilot.0000","PMGR_ACTIVE_PENDING","","pilot"],
+[21.685499906539917,"update_pushed","update.0.child","update.0.child.subscriber._state_cb","pilot.0000","","PMGR_ACTIVE_PENDING","pilot"],
+[29.150099992752075,"sync_rel","agent_0","MainThread","pilot.0000","","agent_0 start","pilot"],
+[29.752099990844727,"update_request","update.0.child","update.0.child.subscriber._state_cb","pilot.0000","","PMGR_ACTIVE","pilot"],
+[29.760799884796143,"hostname","agent_0","MainThread","pilot.0000","","nwk-105-174.nwk.ruw.rutgers.ed","pilot"],
+[29.939599990844727,"update_pushed","update.0.child","update.0.child.subscriber._state_cb","pilot.0000","","PMGR_ACTIVE","pilot"],
+[30.722899913787842,"update_request","update.0.child","update.0.child.subscriber._state_cb","pilot.0000","","PMGR_ACTIVE","pilot"],
+[32.28690004348755,"update_pushed","update.0.child","update.0.child.idler._idle_cb","pilot.0000","","PMGR_ACTIVE","pilot"],
+[50.227399826049805,"state","pmgr.0000","MainThread","pilot.0000","FAILED","","pilot"],
+[50.22889995574951,"update_request","update.0.child","update.0.child.subscriber._state_cb","pilot.0000","","FAILED","pilot"],
+[50.240999937057495,"update_pushed","update.0.child","update.0.child.subscriber._state_cb","pilot.0000","","FAILED","pilot"],
+[50.507999897003174,"cmd","agent_0","agent_0.idler._agent_command_cb","pilot.0000","","cancel_pilot : []","pilot"]
+],
+  "details": {
+    "hostid": "nwk-105-174.nwk.ruw.rutgers.edu",
+    "uid": "pilot.0000",
+    "cfg": {
+      "export_to_c": null,
+      "spawner": "POPEN",
+      "cu_pre_exec": null,
+      "owner": "agent_0",
+      "bridges": {
+        "state_pubsub": {
+          "bulk_size": 0,
+          "stall_hwm": 1,
+          "log_level": "debug"
+        },
+        "agent_unschedule_pubsub": {
+          "bulk_size": 0,
+          "stall_hwm": 1,
+          "log_level": "debug"
+        },
+        "log_pubsub": {
+          "bulk_size": 0,
+          "stall_hwm": 1,
+          "log_level": "debug"
+        },
+        "agent_staging_output_queue": {
+          "bulk_size": 0,
+          "stall_hwm": 1,
+          "log_level": "debug"
+        },
+        "agent_staging_input_queue": {
+          "bulk_size": 0,
+          "stall_hwm": 1,
+          "log_level": "debug"
+        },
+        "agent_scheduling_queue": {
+          "bulk_size": 0,
+          "stall_hwm": 1,
+          "log_level": "debug"
+        },
+        "control_pubsub": {
+          "bulk_size": 0,
+          "stall_hwm": 1,
+          "log_level": "debug"
+        },
+        "agent_executing_queue": {
+          "bulk_size": 0,
+          "stall_hwm": 1,
+          "log_level": "debug"
+        },
+        "agent_reschedule_pubsub": {
+          "bulk_size": 0,
+          "stall_hwm": 1,
+          "log_level": "debug"
+        }
+      },
+      "logdir": ".",
+      "task_launch_method": "FORK",
+      "pilot_sandbox": "/Users/itomaldonado/radical.pilot.sandbox/rp.session.nwk-105-174.nwk.ruw.rutgers.edu.itomaldonado.017421.0007/pilot.0000/",
+      "cu_tmp": null,
+      "cu_post_exec": null,
+      "components": {
+        "AgentExecutingComponent": {
+          "count": 1
+        },
+        "AgentSchedulingComponent": {
+          "count": 1
+        },
+        "UpdateWorker": {
+          "count": 1
+        },
+        "AgentStagingInputComponent": {
+          "count": 1
+        },
+        "AgentStagingOutputComponent": {
+          "count": 1
+        }
+      },
+      "cores_per_node": 0,
+      "agent_launch_method": "FORK",
+      "bulk_collection_time": 1.0,
+      "mpi_launch_method": "MPIEXEC",
+      "scheduler": "CONTINUOUS",
+      "session_sandbox": "/Users/itomaldonado/radical.pilot.sandbox/rp.session.nwk-105-174.nwk.ruw.rutgers.edu.itomaldonado.017421.0007",
+      "lrms": "FORK",
+      "pilot_id": "pilot.0000",
+      "runtime": 15,
+      "dburl": "mongodb://rp:rp@ds015335.mlab.com:15335/rp",
+      "target": "local",
+      "staging_area": "staging_area",
+      "bulk_collection_size": 100,
+      "staging_schema": "staging",
+      "resource_sandbox": "/Users/itomaldonado/radical.pilot.sandbox",
+      "session_id": "rp.session.nwk-105-174.nwk.ruw.rutgers.edu.itomaldonado.017421.0007",
+      "mode": "shared",
+      "max_io_loglength": 1024,
+      "debug": 10,
+      "cores": 32,
+      "resource_cfg": {
+        "filesystem_endpoint": "file://localhost/",
+        "agent_scheduler": "CONTINUOUS",
+        "virtenv_mode": "create",
+        "description": "Your local machine.",
+        "default_remote_workdir": "$HOME",
+        "rp_version": "local",
+        "agent_launch_method": "FORK",
+        "python_interpreter": "python2.7",
+        "mpi_launch_method": "MPIEXEC",
+        "label": "local.localhost",
+        "agent_spawner": "POPEN",
+        "python_dist": "default",
+        "task_launch_method": "FORK",
+        "lrms": "FORK",
+        "job_manager_endpoint": "fork://localhost/",
+        "local": {
+          "filesystem_endpoint": "file://localhost/",
+          "job_manager_endpoint": "fork://localhost/"
+        },
+        "notes": "To use the ssh schema, make sure that ssh access to localhost is enabled.",
+        "ssh": {
+          "filesystem_endpoint": "sftp://localhost/",
+          "job_manager_endpoint": "ssh://localhost/"
+        },
+        "schemas": [
+          "local",
+          "ssh"
+        ]
+      },
+      "db_poll_sleeptime": 1.0
+    },
+    "etype": "pilot",
+    "has": [
+      "unit"
+    ],
+    "children": [
+      "unit.000001"
+    ],
+    "description": {
+      "queue": null,
+      "resource": "local.localhost",
+      "exit_on_error": true,
+      "candidate_hosts": null,
+      "project": null,
+      "sandbox": null,
+      "cleanup": null,
+      "access_schema": null,
+      "memory": null,
+      "cores": 32,
+      "runtime": 15
+    }
+  }
+}
