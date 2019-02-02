@@ -17,7 +17,7 @@ import numpy             as np
 # type `event_entity`..  Before plotting, we sort those entities by the
 # timestamp of the first event in the event list
 
-event_entity = 'task'
+event_entity = 'unit'
 event_list   = \
     [
           {ru.STATE: 'NEW'                          , ru.EVENT: 'state'           },

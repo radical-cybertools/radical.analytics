@@ -113,6 +113,7 @@ class Session(object):
                                        'hostmap'  : dict(),
                                        'accuracy' : 0.0}
 
+
         elif stype == 'radical.pilot':
 
             import radical.pilot.utils as rpu
