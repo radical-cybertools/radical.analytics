@@ -1,6 +1,7 @@
 
 import os
 import sys
+import pprint
 
 import radical.utils as ru
 
@@ -155,6 +156,29 @@ class Entity(object):
 
     # --------------------------------------------------------------------------
     #
+    def _ensure_tuplelist(self, events):
+
+        if not events:
+            return []
+
+        ret = list()
+        if not isinstance(events, list):
+            events = [events]
+
+        for e in events:
+            if isinstance(e,dict):
+                et = ru.PROF_KEY_MAX * [None]
+                for k,v in e.iteritems():
+                    et[k] = v
+                ret.append(tuple(et))
+            else:
+                ret.append(e)
+
+        return ret
+
+
+    # --------------------------------------------------------------------------
+    #
     def as_dict(self):
 
         return {
@@ -169,7 +193,6 @@ class Entity(object):
     #
     def dump(self):
 
-        import pprint
         pprint.pprint(self.as_dict())
 
 
@@ -192,14 +215,17 @@ class Entity(object):
 
         if not ranges:
             ranges = self.ranges(state, event, time)
+          # print 'get %5d ranges for %s' % (len(ranges), self.uid)
+          # pprint.pprint(self.events)
 
         else:
             assert(not state)
             assert(not event)
             assert(not time)
-            
+
             # make sure the ranges are collapsed (although they likely are
             # already...)
+          # print 'use %5d ranges for %s' % (len(ranges), self.uid)
             ranges = ru.collapse_ranges(ranges)
 
         if not ranges:
@@ -210,7 +236,7 @@ class Entity(object):
 
     # --------------------------------------------------------------------------
     #
-    def timestamps(self, state=None, event=None):
+    def timestamps(self, state=None, event=None, time=None):
         """
         This method accepts a set of conditions, and returns the list of
         timestamps for which those conditions applied, i.e. for which state
@@ -220,13 +246,14 @@ class Entity(object):
         Both `state` and `event` can be lists, in which case the union of all
         timestamps are returned.
 
+        The `time` parameter is expected to be a single tuple, or a list of
+        tuples, each defining a pair of start and end time which are used to
+        constrain the matching timestamps.
+
         The returned list will be sorted.
         """
 
-        if not event:
-            event = []
-        elif not isinstance(event, list):
-            event = [event]
+        event = self._ensure_tuplelist(event)
 
         if not state:
             state = []
@@ -243,6 +270,16 @@ class Entity(object):
         for s in state:
             if s in self._states:
                 ret.append(self._states[s][ru.TIME])
+
+        # apply time filters
+        if time:
+            matched = list()
+            for etime in ret:
+                for ttuple in time:
+                    if etime >= ttuple[0] and etime <= etime[1]:
+                        matched.append(etime)
+                        break
+            ret = matched
 
         return sorted(ret)
 
@@ -277,7 +314,7 @@ class Entity(object):
         expected to be a single tuple, or a list of tuples, each defining a pair
         of start and end time which are used to constrain the resulting ranges.
         States are expected as strings, events as full event tuples 
-        
+
             [ru.TIME,  ru.NAME, ru.UID,  ru.STATE, 
              ru.EVENT, ru.MSG,  ru.ENTITY]
 
@@ -293,7 +330,7 @@ class Entity(object):
             conditions have been met (when `expand` is set to `False` [default])
             OR
           - determine the *last* timestamp when any of the given final
-            conditions have been met (when `expand` is set to `False` [default])
+            conditions have been met (when `expand` is set to `True`)
 
         From that final point in time the search for the next initial condition
         applies again, which may result in another time range to be found.  The
@@ -318,7 +355,7 @@ class Entity(object):
         # NOTE: this method relies on all state changes (as events in
         #       `self.states`) to also be recorded as events (as events in in
         #       `self.events` with `ru.NAME == 'state'`).
-        
+
         if not state and not event:
             raise ValueError('duration needs state and/or event arguments')
 
@@ -368,11 +405,8 @@ class Entity(object):
             else:
                 conds_final.append(e)
 
-        t_start    = sys.float_info.max
-        t_stop     = sys.float_info.min
         ranges     = list()
         this_range = [None, None]
-        in_range   = False
 
         # FIXME: this assumes that `self.events` are time sorted
         for e in self._events:
@@ -415,13 +449,12 @@ class Entity(object):
 
             # for each range in ret, we make  sure that it does not violate any
             # time filter
-            for errange in ranges:
+            for erange in ranges:
                 for trange in time:
                     new_start = max(trange[0], erange[0])
                     new_stop  = min(trange[1], erange[1])
                     if new_stop > new_start:
                         ret.append([new_start, new_stop])
-            return ret
 
         if collapse:
             return ru.collapse_ranges(ret)

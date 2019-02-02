@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 
-import os
 import sys
-import glob
 import pprint
-import radical.utils as ru
-import radical.pilot as rp
 import radical.analytics as ra
 
 __copyright__ = 'Copyright 2013-2016, http://radical.rutgers.edu'
@@ -20,25 +16,16 @@ This example illustrates the use of the method ra.Session.describe()
 #
 if __name__ == '__main__':
 
-    if len(sys.argv) != 2:
-        print "\n\tusage: %s <dir>\n" % sys.argv[0]
+    if len(sys.argv) < 2:
+        print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
         sys.exit(1)
 
-    src = sys.argv[1]
+    src     = sys.argv[1]
 
-    # find json file in dir, and derive session id
-    json_files = glob.glob('%s/*.json' % src)
+    if len(sys.argv) == 2: stype = 'radical.pilot'
+    else                 : stype = sys.argv[2]
 
-    if len(json_files) < 1: raise ValueError('%s contains no json file!' % src)
-    if len(json_files) > 1: raise ValueError('%s contains more than one json file!' % src)
-
-    json_file = json_files[0]
-    json      = ru.read_json(json_file)
-    sid       = os.path.basename(json_file)[:-5]
-
-    print 'sid: %s' % sid
-
-    session = ra.Session(sid, 'radical.pilot', src=src)
+    session = ra.Session(src, stype)
 
     # A formatting helper before starting...
     def ppheader(message):
