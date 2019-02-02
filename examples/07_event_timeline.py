@@ -17,7 +17,7 @@ import numpy             as np
 # type `event_entity`..  Before plotting, we sort those entities by the
 # timestamp of the first event in the event list
 
-event_entity = 'task'
+event_entity = 'unit'
 event_list   = \
     [
           {ru.STATE: 'NEW'                          , ru.EVENT: 'state'           },
@@ -102,7 +102,7 @@ if __name__ == '__main__':
 
     plt.figure(figsize=(20,14))
     for e_idx in range(len(event_list)):
-        plt.plot(np_data[:,0], np_data[:,(1+e_idx)], label=event_list[e_idx])
+        plt.plot(np_data[:,0], np_data[:,(1 + e_idx)], label=event_list[e_idx])
 
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),
           ncol=2, fancybox=True, shadow=True)
