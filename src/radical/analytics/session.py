@@ -1140,14 +1140,19 @@ class Session(object):
     # --------------------------------------------------------------------------
     #
     def tzero(self, t):
+        '''
+        Setting a `tzero` timestamp will shift all timestamps for all entities
+        in this session by that amount.  This simplifies the alignment of
+        multiple sessions, or the focus on specific events.
+        '''
 
         old_tzero   = self._tzero
         self._tzero = t
 
-        for euid,e in self._entities.iteritems():
+        for entity in self._entities.values():
 
             # entity.states are shallow copies of the events
-            for event in e.events:
+            for event in entity.events:
                 event[ru.TIME] += old_tzero
                 event[ru.TIME] -= self._tzero
 
