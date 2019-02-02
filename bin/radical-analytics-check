@@ -1,0 +1,125 @@
+#!/usr/bin/env python
+
+__copyright__ = 'Copyright 2013-2016, http://radical.rutgers.edu'
+__license__   = 'MIT'
+
+
+import os
+import sys
+
+import radical.utils     as ru
+import radical.analytics as ra
+
+
+# ------------------------------------------------------------------------------
+#
+if __name__ == '__main__':
+
+    sources = sys.argv[1:]
+
+    stypes = {'ra': 'radical.analytics',
+              'rp': 'radical.pilot',
+              're': 'radical.entk'}
+
+    for src in sources:
+
+        src = src.rstrip('/')
+
+     #  # always point to the tarballs
+     #  if src[-4:] != '.tbz':
+     #      src += '.tbz'
+
+        base  = os.path.basename(src)
+        sidx  = base[0:2]
+        stype = stypes[sidx]
+
+        # build up the list of events we expect
+        found_events = set()
+        all_events   = dict()
+
+        import radical.pilot as rp
+        rp_path = os.path.dirname(rp.__file__)
+        ev_path = '%s/../../../../../share/radical.pilot/events.md' % rp_path
+
+        with open(ev_path, 'r') as fin:
+            for line in fin.readlines():
+                if ' : ' in line:
+                    line = line.strip()
+                    if line.startswith('* '):
+                        continue
+                    elems = line.split(':', 1)
+                    all_events[elems[0].strip()] = elems[1].strip()
+
+        session  = ra.Session(src, stype)
+        rp       = session.filter(etype=['rp', 'pmgr', 'umgr'], inplace=False)
+        pilots   = session.filter(etype='pilot', inplace=False)
+        units    = session.filter(etype='unit',  inplace=True)
+        sid      = session.uid
+        n_events = 0
+        n_types  = 0
+
+        print
+        print '-----------------------------------------------------------'
+        print '  source  : %s' % base 
+        print '  session : %s' % sid
+        setypes = dict()
+        for p in rp.get():
+            for e in p.events:
+                t = e[ru.EVENT]
+                if t not in setypes: setypes[t]  = 1
+                else               : setypes[t] += 1
+        for t in sorted(setypes.keys()):
+            print '            %6d : %s' % (setypes[t], t)
+            n_events += setypes[t]
+        n_types += len(setypes.keys())
+
+
+        print
+        print '  pilots  : %6d' % len(pilots.get())
+        petypes = dict()
+        for p in pilots.get():
+            for e in p.events:
+                t = e[ru.EVENT]
+                if t not in petypes: petypes[t]  = 1
+                else               : petypes[t] += 1
+        for t in sorted(petypes.keys()):
+            print '            %6d : %s' % (petypes[t], t)
+            n_events += petypes[t]
+        n_types += len(petypes.keys())
+
+
+        print
+        print '  units   : %6d' % len(units.get())
+        uetypes = dict()
+        for u in units.get():
+            for e in u.events:
+                t = e[ru.EVENT]
+                if t not in uetypes: uetypes[t]  = 1
+                else               : uetypes[t] += 1
+        for t in sorted(uetypes.keys()):
+            print '            %6d : %s' % (uetypes[t], t)
+            n_events += uetypes[t]
+        n_types += len(uetypes.keys())
+
+        print
+        print '  total   : %6d  (%d types)' % (n_events, n_types)
+
+        found   = setypes.keys() + petypes.keys() + uetypes.keys()
+        missing = list()
+        allkeys = sorted(all_events.keys())
+        for e in allkeys:
+            if e not in found:
+                missing.append(e,)
+
+        print
+        print '  missing:  %6d' % len(missing)
+        for e in sorted(missing):
+            print '                     %-20s : %s' % (e, all_events[e])
+        print
+        print '-----------------------------------------------------------'
+        print
+
+
+# ------------------------------------------------------------------------------
+
+
