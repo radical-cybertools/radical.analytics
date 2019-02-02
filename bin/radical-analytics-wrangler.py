@@ -174,11 +174,11 @@ def initialize_entity(etype=None):
         entities['session'][duration] = list()
         entities['unit'][duration]    = list()
 
-    # Return the empty data structure of the requested entity.
     if etype not in ['session', 'pilot', 'unit']:
         print 'Cannot itialize entity %s' % etype
         sys.exit(1)
 
+    # Return the empty data structure of the requested entity.
     return entities[etype]
 
 
@@ -361,7 +361,9 @@ def load_pilots(sid, exp, sra_pilots, pdm, pu_rels, pts):
             try:
                 ps[state].append(pentity.timestamps(state=state)[0])
             except:
-                print ' WARNING: Failed to get timestamp for state %s' % state
+                if state not in rp.FINAL:
+                    print 'WARNING: Failed to get timestamp for state %s' \
+                            % state
                 ps[state].append(np.nan)
 
         # Pilot durations.
