@@ -134,6 +134,7 @@ class Session(object):
         else:
             raise ValueError('unsupported session type [%s]' % stype)
 
+
         self._t_start = None
         self._t_stop  = None
         self._ttc     = None
