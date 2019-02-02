@@ -85,7 +85,7 @@ class Session(object):
       # print 'sid: %s [%s]' % (sid, stype)
       # print 'src: %s'      % src
 
-        if stype == 'radical.analytics':
+        if stype == 'radical':
 
             # src is expected to point either to a single profile, or to
             # a directory tree containing profiles
@@ -101,46 +101,35 @@ class Session(object):
                         if f.endswith('.prof'):
                             profiles.append('%s/%s' % (root, f))
 
-            profiles = ru.read_profiles(profiles, sid=sid)
+            profiles                = ru.read_profiles(profiles, sid=sid)
             self._profile, accuracy = ru.combine_profiles(profiles)
-            self._description  = dict()
-            self._description['accuracy'] = 0.0
-            self._description['hostmap']  = dict()
-
+            self._description       = {'tree'     : dict(),
+                                       'entities' : list(),
+                                       'hostmap'  : dict(),
+                                       'accuracy' : 0.0}
 
         elif stype == 'radical.pilot':
-            import radical.pilot as rp
+
+            import radical.pilot.utils as rpu
             self._profile, accuracy, hostmap \
-                              = rp.utils.get_session_profile(sid=sid, src=self._src)
-            self._description = rp.utils.get_session_description(sid=sid, src=self._src)
+                              = rpu.get_session_profile    (sid=sid, src=self._src)
+            self._description = rpu.get_session_description(sid=sid, src=self._src)
 
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
 
 
         elif stype == 'radical.entk':
-            import radical.entk as re
 
-            self._profile, accuracy, hostmap = re.utils.get_session_profile(sid=sid, src=self._src)
-            self._description = re.utils.get_session_description(sid=sid, src=self._src)
+            import radical.entk.utils as reu
+
+            self._profile, accuracy, hostmap \
+                              = reu.get_session_profile    (sid=sid, src=self._src)
+            self._description = reu.get_session_description(sid=sid, src=self._src)
 
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
 
-
-        elif stype == 'radical':
-
-            if os.path.isdir(src): profiles = glob.glob("%s/*.prof")
-            else                 : profiles = [src]
-
-            profiles          = ru.read_profiles(profiles, src)
-            profile, accuracy = ru.combine_profiles(profiles)
-            self._profile     = ru.clean_profile(profile, src)
-
-            self._description = {'tree'     : dict(), 
-                                 'entities' : list(), 
-                                 'hostmap'  : dict(), 
-                                 'accuracy' : 0.0}
 
         else:
             raise ValueError('unsupported session type [%s]' % stype)
