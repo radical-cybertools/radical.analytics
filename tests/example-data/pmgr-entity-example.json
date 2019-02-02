@@ -1,0 +1,67 @@
+{
+  "uid": "pmgr.0000",
+  "etype": "pmgr",
+  "events": [
+    [
+      0.6434998512268066,
+      "setup_done",
+      "pmgr.0000",
+      "MainThread",
+      "pmgr.0000",
+      "",
+      "",
+      "pmgr"
+    ]
+  ],
+  "details": {
+    "hostid": null,
+    "uid": "pmgr.0000",
+    "cfg": {
+      "owner": "pmgr.0000",
+      "bridges": {
+        "pmgr_launching_queue": {
+          "addr_out": "tcp://172.27.105.174:63326",
+          "bulk_size": 0,
+          "stall_hwm": 1,
+          "log_level": "debug",
+          "addr_in": "tcp://172.27.105.174:63325"
+        },
+        "control_pubsub": {
+          "addr_out": "tcp://172.27.105.174:63311",
+          "bulk_size": 0,
+          "stall_hwm": 1,
+          "log_level": "debug",
+          "addr_in": "tcp://172.27.105.174:63310"
+        },
+        "state_pubsub": {
+          "addr_out": "tcp://172.27.105.174:63313",
+          "bulk_size": 0,
+          "stall_hwm": 1,
+          "log_level": "debug",
+          "addr_in": "tcp://172.27.105.174:63312"
+        },
+        "log_pubsub": {
+          "addr_out": "tcp://172.27.105.174:63315",
+          "bulk_size": 0,
+          "stall_hwm": 1,
+          "log_level": "debug",
+          "addr_in": "tcp://172.27.105.174:63314"
+        }
+      },
+      "db_poll_sleeptime": 1.0,
+      "uid": "pmgr.0000",
+      "components": {
+        "PMGRLaunchingComponent": {
+          "count": 1
+        }
+      }
+    },
+    "etype": "pmgr",
+    "has": [
+      "pilot"
+    ],
+    "children": [
+      "pilot.0000"
+    ]
+  }
+}

@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-import os
 import sys
-import glob
 import pprint
+
 import radical.utils as ru
 import radical.pilot as rp
 import radical.analytics as ra
@@ -19,25 +18,17 @@ This example illustrates the use of the method ra.Session.get()
 #
 if __name__ == '__main__':
 
-    if len(sys.argv) != 2:
-        print "\n\tusage: %s <dir>\n" % sys.argv[0]
+    if len(sys.argv) < 2:
+        print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
         sys.exit(1)
 
     src = sys.argv[1]
 
-    # find json file in dir, and derive session id
-    json_files = glob.glob('%s/*.json' % src)
+    if len(sys.argv) == 2: stype = 'radical.pilot'
+    else                 : stype = sys.argv[2]
 
-    if len(json_files) < 1: raise ValueError('%s contains no json file!' % src)
-    if len(json_files) > 1: raise ValueError('%s contains more than one json file!' % src)
+    session = ra.Session(src, stype)
 
-    json_file = json_files[0]
-    json      = ru.read_json(json_file)
-    sid       = os.path.basename(json_file)[:-5]
-
-    print 'sid: %s' % sid
-
-    session = ra.Session(sid, 'radical.pilot', src=src)
 
     # A formatting helper before starting...
     def ppheader(message):
@@ -92,7 +83,7 @@ if __name__ == '__main__':
     # timestamp of when the unit has been created, i.e., the property 'time' of
     # the state NEW:
     ppheader("Property 'time' of the state rp.NEW of the entities with uid 'unit.000000'")
-    timestamp = unit[0].states[rp.NEW]['time']
+    timestamp = unit[0].states[rp.NEW][ru.TIME]
     pprint.pprint(timestamp)
 
     # ra.Session.get() can also been used to to get all the entities in our
@@ -105,15 +96,15 @@ if __name__ == '__main__':
     # We can then print the timestamp of the state 'NEW' for all the entities
     # having that state by using something like:
     ppheader("Timestamp of all the entities with state rp.NEW")
-    timestamps = [entity.states[rp.NEW]['time'] for entity in entities]
+    timestamps = [entity.states[rp.NEW][ru.TIME] for entity in entities]
     pprint.pprint(timestamps)
 
     # We can also create tailored data structures for our analyis. For
     # example, using tuples to name entities, state, and timestamp:
     ppheader("Named entities with state rp.NEW and its timestamp")
     named_timestamps = [(entity.uid,
-                         entity.states[rp.NEW]['state'],
-                         entity.states[rp.NEW]['time']) for entity in entities]
+                         entity.states[rp.NEW][ru.STATE],
+                         entity.states[rp.NEW][ru.TIME]) for entity in entities]
     pprint.pprint(named_timestamps)
 
     sys.exit(0)

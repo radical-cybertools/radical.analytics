@@ -1,8 +1,9 @@
 
-
 import os
 import sys
 import copy
+import glob
+import tarfile
 
 import radical.utils as ru
 
@@ -13,51 +14,121 @@ from .entity import Entity
 #
 class Session(object):
 
-    def __init__(self, sid, stype, src=None, _entities=None, _init=True):
-        """
+    def __init__(self, src, stype, sid=None, _entities=None, _init=True):
+        '''
         Create a radical.analytics session for analysis.
 
         The session is created from a set of profiles, which usually have been
         produced from some other session object in the RCT stack, such as
-        radical.pilot.  The `ra.Session` constructor expects the respecive
-        session ID and session type.  It optionally accepts a `src` parameter
-        which can point to a location where the profiles are expected to be
-        found, or where they will be stored after fetching them.  The default
-        value for `src` is `$PWD/sid`.
-        """
+        radical.pilot. Profiles are accepted in two forms: in a directory, or in
+        a tarball (of such a directory).  In the latter case, the tarball are
+        extracted into `$TMP`, and then handled just as the directory case.
+
+        If no `sid` (session ID) is specified, that ID is derived from the
+        directory name.
+        '''
+
+        if not os.path.exists(src):
+            raise ValueError('src [%s] does not exist' % src)
+
+        if os.path.isdir(src):
+            pass
+
+        elif os.path.isfile(src):
+
+            # src is afile - we assume its a tarball and extract it
+            if  src.endswith('.prof'):
+                # use as is
+                tgt = src
+
+            elif src.endswith('.tgz') or \
+                 src.endswith('.tbz')    :
+                tgt = src[:-4]
+
+            elif src.endswith('.tar.gz') or \
+                 src.endswith('.tar.bz')    :
+                tgt = src[:-7]
+
+            else:
+                raise ValueError('src does not look like a tarball or profile')
+
+
+            if not os.path.exists(tgt):
+
+                # need to extract
+                print 'extract tarball to %s' % tgt
+                try:
+                    tf = tarfile.open(name=src, mode='r:bz2')
+                    tf.extractall(path=os.path.dirname(tgt))
+
+                except Exception as e:
+                    raise RuntimeError('Cannot extract tarball: %s' % repr(e))
+
+            # switch to the extracted data dir
+            src = tgt
+
+
+        # if no sid is given, we assume its the directory name
+        if not sid:
+            if src.endswith('/'):
+                src = src[:-1]
+            sid = os.path.basename(src)
 
         self._sid   = sid
+        self._src   = src
         self._stype = stype
 
-        if not src:
-            src = "%s/%s" % (os.getcwd(), sid)
-
-        self._src = src
+      # print 'sid: %s [%s]' % (sid, stype)
+      # print 'src: %s'      % src
 
         if stype == 'radical.pilot':
             import radical.pilot as rp
             self._profile, accuracy, hostmap \
-                              = rp.utils.get_session_profile    (sid=sid, src=self._src)
+                              = rp.utils.get_session_profile(sid=sid, src=self._src)
             self._description = rp.utils.get_session_description(sid=sid, src=self._src)
 
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
 
+
+        elif stype == 'radical.entk':
+            import radical.entk as re
+
+            self._profile, accuracy, hostmap = re.utils.get_session_profile(sid=sid, src=self._src)
+            self._description = re.utils.get_session_description(sid=sid, src=self._src)
+
+            self._description['accuracy'] = accuracy
+            self._description['hostmap']  = hostmap
+
+
+        elif stype == 'radical.prof':
+
+            if os.path.isdir(src): profiles = glob.glob("%s/*.prof")
+            else                 : profiles = [src]
+
+            profiles          = ru.read_profiles(profiles, src)
+            profile, accuracy = ru.combine_profiles(profiles)
+            self._profile     = ru.clean_profile(profile, src)
+
+            self._description = {'tree'     : dict(), 
+                                 'entities' : list()}
+            self._description['accuracy'] = accuracy
+            self._description['hostmap']  = dict()
+
         else:
             raise ValueError('unsupported session type [%s]' % stype)
 
-        self._t_start     = None
-        self._t_stop      = None
-        self._ttc         = None
-
-        self._log         = None
+        self._t_start = None
+        self._t_stop  = None
+        self._ttc     = None
+        self._log     = None
 
         # internal state is represented by a dict of entities:
         # dict keys are entity uids (which are assumed to be unique per
         # session), dict values are ra.Entity instances.
         self._entities = dict()
         if _init:
-            self._initialize_entities()
+            self._initialize_entities(self._profile)
 
         # we do some bookkeeping in self._properties where we keep a list of
         # property values around which we encountered in self._entities.
@@ -79,7 +150,7 @@ class Session(object):
         memo[id(self)] = ret
 
         for k, v in self.__dict__.items():
-            setattr(ret, k, deepcopy(v, memo))
+            setattr(ret, k, copy.deepcopy(v, memo))
 
         return ret
 
@@ -87,13 +158,13 @@ class Session(object):
     # --------------------------------------------------------------------------
     #
     def _reinit(self, entities):
-        """
+        '''
         After creating a session clone, we have identical sets of descriptions,
         profiles, and entities.  However, if we apply a filter during the clone
         creation, we end up with a deep copy which should have a *different* set
         of entities.  This method applies that new entity set to such a cloned
         session.
-        """
+        '''
 
         self._entities = entities
 
@@ -130,23 +201,27 @@ class Session(object):
     def t_range(self):
         return [self._t_start, self._t_stop]
 
+    @property
+    def uid(self):
+        return self._sid
+
 
     # --------------------------------------------------------------------------
     #
-    def _initialize_entities(self):
-        """
-        populate self._entities from self._profile and
+    def _initialize_entities(self, profile):
+        '''
+        populate self._entities from profile and
         self._description.
 
         NOTE: We derive entity types via some heuristics for now: we assume the
         first part of any dot-separated uid to signify an entity type.
-        """
+        '''
 
         # create entities from the profile events:
         entity_events = dict()
 
-        for event in self._profile:
-            uid = event['uid']
+        for event in profile:
+            uid = event[ru.UID]
 
             if uid not in entity_events:
                 entity_events[uid] = list()
@@ -156,19 +231,19 @@ class Session(object):
         # entity type in one of the events (and assume it is consistent over
         # all events for that uid)
         for uid,events in entity_events.iteritems():
-            etype   = events[0]['entity_type']
+            etype   = events[0][ru.ENTITY]
             details = self._description['tree'].get(uid, dict())
             details['hostid'] = self._description['hostmap'].get(uid)
             self._entities[uid] = Entity(_uid=uid,
                                          _etype=etype,
-                                         _profile=events, 
+                                         _profile=events,
                                          _details=details)
 
 
     # --------------------------------------------------------------------------
     #
     def _initialize_properties(self):
-        """
+        '''
         populate self._properties from self._entities.  Self._properties has the
         following format:
 
@@ -190,7 +265,7 @@ class Session(object):
           - etype (type of entities)
           - event (names of events)
           - state (state identifiers)
-        """
+        '''
 
         # FIXME: initializing properties can be expensive, and we might not
         #        always need them anyway.  So we can lazily defer this
@@ -200,10 +275,10 @@ class Session(object):
         # evaluated once on construction, in `_initialize_entities()`.  Now we
         # don't parse all that stuff again, but only re-initialize after
         # in-place filtering etc.
-        self._properties = { 'uid'   : dict(),
-                             'etype' : dict(),
-                             'event' : dict(),
-                             'state' : dict()}
+        self._properties = {'uid'   : dict(),
+                            'etype' : dict(),
+                            'event' : dict(),
+                            'state' : dict()}
 
         if self._entities:
             self._t_start = sys.float_info.max
@@ -228,9 +303,10 @@ class Session(object):
                 self._properties['state'][state] += 1
 
             for event in e.events:
-                if event not in self._properties['event']:
-                    self._properties['event'][event] = 0
-                self._properties['event'][event] += 1
+                name = event[ru.EVENT]
+                if name not in self._properties['event']:
+                    self._properties['event'][name] = 0
+                self._properties['event'][name] += 1
 
 
         if self._entities:
@@ -245,11 +321,11 @@ class Session(object):
         # iterate through all self._entities and collect UIDs of all entities
         # which match the given set of filters (after removing all events which
         # are not in the given time ranges)
-        if not etype: etype = []
-        if not uid  : uid   = []
-        if not state: state = []
-        if not event: event = []
-        if not time : time  = []
+        if not etype: etype = list()
+        if not uid  : uid   = list()
+        if not state: state = list()
+        if not event: event = list()
+        if not time : time  = list()
 
         if etype and not isinstance(etype, list): etype = [etype]
         if uid   and not isinstance(uid  , list): uid   = [uid  ]
@@ -266,25 +342,25 @@ class Session(object):
 
             if state:
                 match = False
-                for s,sdict in entity.states.iteritems():
-                    if time and not ru.in_range(sdict['time'], time):
+                for s,stuple in entity.states.iteritems():
+                    if time and not ru.in_range(stuple[ru.TIME], time):
                         continue
                     if s in state:
                         match = True
                         break
                 if not match:
-                     continue
+                    continue
 
             if event:
                 match = False
-                for e,edict in entity.events.iteritems():
-                    if time and not ru.in_range(edict['time'], time):
+                for e,etuple in entity.events.iteritems():
+                    if time and not ru.in_range(etuple[ru.TIME], time):
                         continue
                     if e in event:
                         match = True
                         break
                 if not match:
-                     continue
+                    continue
 
             # all existing filters have been passed - this is a match!
             ret.append(eid)
@@ -297,12 +373,12 @@ class Session(object):
     def _dump(self):
 
         for uid,entity in self._entities.iteritems():
-            print "\n\n === %s" % uid
+            print '\n\n === %s' % uid
             entity.dump()
             for event in entity.events:
-                print "  = %s" % event
+                print '  = %s' % event
                 for e in entity.events[event]:
-                    print "    %s" % e
+                    print '    %s' % e
 
 
     # --------------------------------------------------------------------------
@@ -323,7 +399,7 @@ class Session(object):
         ret = list()
         for _pname in pnames:
             if _pname not in self._properties:
-                raise KeyError('no such property known (%s) / %s' \
+                raise KeyError('no such property known (%s) / %s'
                         % (_pname, self._properties.keys()))
             ret.append(self._properties[_pname].keys())
 
@@ -360,7 +436,7 @@ class Session(object):
             # create a new session with the resulting entity list
             ret = Session(sid=self._sid, stype=self._stype, src=self._src,
                           _init=False)
-            ret._reinit(entities = {uid:self._entities[uid] for uid in uids})
+            ret._reinit(entities={uid:self._entities[uid] for uid in uids})
             ret._initialize_properties()
             return ret
 
@@ -370,12 +446,16 @@ class Session(object):
     def describe(self, mode=None, etype=None):
 
         if mode not in [None, 'state_model', 'state_values',
-                              'event_model', 'relations']:
+                              'event_model', 'relations',
+                              'statistics']:
             raise ValueError('describe parameter "mode" invalid')
 
         if not etype and not mode:
             # no entity filter applied: return the full description
             return self._description
+
+        if mode == 'statistics':
+            return self._properties
 
         if not etype:
             etype = self.list('etype')
@@ -414,91 +494,74 @@ class Session(object):
                 ret[et] = {'event_model'  : event_model}
 
         if not mode or mode == 'relations':
+            if len(etype) != 2:
+                raise ValueError('relations expect an etype *tuple*')
 
-           if len(etype) != 2:
-               raise ValueError('relations expect an etype *tuple*')
+            # we interpret the query as follows: for the two given etypes, walk
+            # through the relationship tree and for all entities of etype[0]
+            # return a list of all child entities of etype[1].  The result is
+            # returned as a dict.
 
-           # we interpret the query as follows: for the two given etypes, walk
-           # through the relationship tree and for all entities of etype[0]
-           # return a list of all child entities of etype[1].  The result is
-           # returned as a dict.
+            parent_uids = self._apply_filter(etype=etype[0])
+            child_uids  = self._apply_filter(etype=etype[1])
 
-           parent_uids = self._apply_filter(etype=etype[0])
-           child_uids  = self._apply_filter(etype=etype[1])
+            rel = self._description['tree']
+            for p in parent_uids:
 
-           rel = self._description['tree']
-           for p in parent_uids:
+                ret[p] = list()
+                if p not in rel:
+                    print 'inconsistent : no relations for %s' % p
+                    continue
 
-               ret[p] = list()
-               if p not in rel:
-                   print 'inconsistent : no relations for %s' % p
-                   continue
-
-               for c in rel[p]['children']:
-                   if c in child_uids:
-                       ret[p].append(c)
+                for c in rel[p]['children']:
+                    if c in child_uids:
+                        ret[p].append(c)
 
         return ret
 
 
     # --------------------------------------------------------------------------
     #
-    def ranges(self, state=None, event=None, time=None):
-        """
-        This method accepts a set of initial and final conditions, in the form
-        of range of state and or event specifiers:
+    def ranges(self, state=None, event=None, time=None, collapse=True):
+        '''
+        This method accepts a set of initial and final conditions, and will get
+        time ranges in accordance to those conditions from all session entities.
+        The resulting set of ranges is then collapsed to the minimal equivalent
+        set of ranges covering the same set of times.
 
-          entity.ranges(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'],
-                                'FINAL_STATE_1',   'FINAL_STATE_2']],
-                        event=['initial_event_1',  'final_event'],
-                        time =[[2.0, 2.5], [3.0, 3.5]])
+        Please refer to the `Entity.ranges()` documentation on detail on the
+        constrain parameters.
 
-        More specifically, the `state` and `event` parameter are expected to be
-        a tuple, where the first element defines the initial condition, and the
-        second element defines the final condition. Each element can be a string
-        or a list of strings.  The `time` parameter is expected to be a single
-        tuple, or a list of tuples, each defining a pair of start and end time
-        which are used to constrain the resulting ranges.
-
-        The parameters are interpreted as follows:
-
-          - for any entity known to the session
-            - determine the maximum time range during which the entity has been
-              between initial and final conditions
-
-          - collapse the resulting set of ranges into the smallest possible set
-            of ranges which cover the same, but not more nor less, of the
-            domain (floats).
-
-          - limit the resulting ranges by the `time` constraints, if such are
-            given.
-
-
-        Example:
-
-           session.ranges(state=[rp.NEW, rp.FINAL]))
-
-        where `rp.FINAL` is a list of final unit states.
-        """
+        Setting 'collapse' to 'True' (default) will prompt the method to
+        collapse the resulting set of ranges.
+        '''
 
         ranges = list()
         for uid,entity in self._entities.iteritems():
             try:
-                ranges += entity.ranges(state, event, time)
+                tmp = entity.ranges(state, event, time, collapse=False)
+                ranges += tmp
             except ValueError:
+                print 'no ranges for %s' % uid
                 # ignore entities for which the conditions did not apply
                 pass
 
         if not ranges:
-            raise ValueError('no duration defined for given constraints')
+            return []
 
-        return ru.collapse_ranges(ranges)
+        if collapse:
+            ret = ru.collapse_ranges(ranges)
+        else:
+            ret = ranges
+
+        # sort ranges by start time and return
+        return sorted(ret, key=lambda r: r[1])
 
 
     # --------------------------------------------------------------------------
     #
-    def timestamps(self, state=None, event=None):
-        """
+    def timestamps(self, state=None, event=None, time=None, first=False):
+        '''
         This method accepts a set of conditions, and returns the list of
         timestamps for which those conditions applied, i.e. for which state
         transitions or events are known which match the given 'state' or 'event'
@@ -507,43 +570,61 @@ class Session(object):
         Both `state` and `event` can be lists, in which case the union of all
         timestamps are returned.
 
+        The `time` parameter is expected to be a single tuple, or a list of
+        tuples, each defining a pair of start and end time which are used to
+        constrain the matching timestamps.
+
+        If `first` is set to `True`, only the timestamps for the first matching
+        events (per entity) are returned.
+
         The returned list will be sorted.
-        """
+        '''
 
         ret = list()
         for uid,entity in self._entities.iteritems():
-            ret += entity.timestamps(state=state, event=event)
+            tmp = entity.timestamps(state=state, event=event, time=time)
+            if tmp and first:
+                ret.append(tmp[0])
+            else:
+                ret += tmp
 
         return sorted(ret)
 
 
     # --------------------------------------------------------------------------
     #
-    def duration(self, state=None, event=None, time=None):
-        """
+    def duration(self, state=None, event=None, time=None, ranges=None):
+        '''
         This method accepts the same set of parameters as the `ranges()` method,
         and will use the `ranges()` method to obtain a set of ranges.  It will
-        return the sum of the durations for all resulting ranges.
+        return the sum of the durations for all resulting & collapsed ranges.
 
         Example:
 
            session.duration(state=[rp.NEW, rp.FINAL]))
 
         where `rp.FINAL` is a list of final unit states.
-        """
+        '''
 
-        ret    = 0.0
-        ranges = self.ranges(state, event, time)
-        for r in ranges:
-            ret += r[1] - r[0]
+        if not ranges:
+            ranges = self.ranges(state, event, time)
 
-        return ret
+        else:
+            assert(not state)
+            assert(not event)
+            assert(not time)
+            
+            # make sure the ranges are collapsed (although they likely are
+            # already...)
+            ranges = ru.collapse_ranges(ranges)
+
+        return sum(r[1] - r[0] for r in ranges) 
 
 
     # --------------------------------------------------------------------------
     #
     def concurrency(self, state=None, event=None, time=None, sampling=None):
-        """
+        '''
         This method accepts the same set of parameters as the `ranges()` method,
         and will use the `ranges()` method to obtain a set of ranges.  It will
         return a time series, counting the number of units which are
@@ -570,7 +651,7 @@ class Session(object):
 
            session.filter(etype='unit').concurrency(state=[rp.AGENT_EXECUTING,
                                         rp.AGENT_STAGING_OUTPUT_PENDING])
-        """
+        '''
 
         ranges = list()
         for uid,e in self._entities.iteritems():
@@ -729,9 +810,262 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def consistency(self, mode=None):
-        """
+    def rate(self, state=None, event=None, time=None, sampling=None,
+            first=False):
+        '''
+        This method accepts the same parameters as the `timestamps()` method: it
+        will count all matching events and state transitions as given, and will
+        return a time series of the rate of how many of those events and/or
+        transitions occured per second.
 
+        The additional parameter `sampling` determines the exact points in time
+        for which the rate is computed, and thus determines the sampling rate
+        for the returned time series.  If not specified, the time series will
+        contain all points at which and event occured, and thevrate value will
+        only be determined by the time passed between two consequtuve events.
+        If specified, it is interpreted as second (float) interval at which,
+        after the starting point (begin of first event matching the filters) the
+        rate is computed.
+
+        Returned is an ordered list of tuples:
+
+          [ [time_0, rate_0] ,
+            [time_1, rate_1] ,
+            ...
+            [time_n, rate_n] ]
+
+        where `time_n` is represented as `float`, and `rate_n` as `int`.
+
+        The `time` parameter is expected to be a single tuple, or a list of
+        tuples, each defining a pair of start and end time which are used to
+        constrain the resulting time series.
+
+        The 'first' is defined, only the first matching event fir the selected
+        entities is considered viable.
+
+        Example:
+
+           session.filter(etype='unit').rate(state=[rp.AGENT_EXECUTING])
+        '''
+
+        timestamps = self.timestamps(event=event, state=state, time=time,
+                                     first=first)
+
+        if not timestamps:
+            # nothing to do
+            return []
+
+
+        times = list()
+        if sampling:
+            # get min and max timestamp, and add create sampling points at regular
+            # intervals
+            r_min = timestamps[0]
+            r_max = timestamps[-1]
+
+            t = r_min
+            while t < r_max:
+                times.append(t)
+                t += sampling
+          # times.append(t)
+            times.append(r_max)
+
+        else:
+            # we create an entry at all timestamps
+            times = timestamps[:]
+
+        if not times:
+            # nothing to do
+            return []
+
+        # we need to make sure that no two consecutive timestamps are the same,
+        # as that would lead to a division by zero later on
+        times = sorted(set(times))
+
+      # import pprint
+      # pprint.pprint(times)
+
+        # make sure we start in correct state, and first data point does not
+        # occur before sampling starts
+        timestamps[0] >= times[0]
+
+        # we have the time sequence, now compute event rate at those points
+        ts_idx  = 0                # index into the list of timestamps
+        ts_len  = len(timestamps)  # number of timestamps
+        ret     = list()           # our rate time series
+        t_start = times[0]         # current samplint window
+        t_stop  = times[0]
+
+        for t in times[1:]:
+            t_start = t_stop       # slide sampling window to next sample time
+            t_stop  = t
+            cnt     = 0            # reset event counter
+
+
+            while ts_idx < ts_len:
+                if timestamps[ts_idx] <= t_stop:
+                    # timestamp is in range, count event
+                    cnt += 1
+                else:
+                    # we need to slide the sampling window
+                    break
+                # go to next timestamp
+                ts_idx += 1
+
+          # print 'window: %f - %f (%f) : %5d' % \
+          #         (t_start, t_stop, t_stop - t_start, cnt)
+
+            # sampling window completed - store rate of events in sample
+            ret.append([t_stop, cnt / (t_stop - t_start)])
+
+        return ret
+
+
+    #-------------------------------------------------------------------------------------
+    #
+    def utilization(self, owner, consumer, resource, 
+        owner_events=None,consumer_events=None):
+        '''
+        This method accepts as parameters :
+        owner           : The entity name of the owner of the resources
+        consumer        : The ename of the entity that consumes the resources
+                          owned by owner
+        resource        : The type of resources whose utilization is requested,
+                          eg. Cores, Memory, GPUS etc.
+        owner_events    : A list of owner's/owners' events that will be used as
+                          starting and ending points for the utilization. The
+                          selected events should be meaningful for resource
+                          consumption. This method does not do any check on that
+                          sense.
+        consumer_events : A list of owner's/owners' events that will be used as
+                          starting and ending points for the utilization. The
+                          selected events should be meaningful for resource
+                          consumption. This method does not do any check on that
+                          sense.
+
+        Based on these parameters the resources of the owners are collected, as
+        well as, the times when the consumer(s) used those resources.
+
+        Returned is a dictionary of the form:
+
+
+            { 'owner_0': {'range'      : owner_range,
+                          'resources'  : resource_size,
+                          'utilization': [[time_0, resource_utilization_0],
+                                          [time_1, resource_utilization_1],
+                                          ...
+                                          [time_n, resource_utilization_n]]},
+
+              'owner_1': {'range'      : owner_range,
+                          'resources'  : resource_size,
+                          'utilization': [[time_0, resource_utilization_0],
+                                          [time_1, resource_utilization_1],
+                                          ...
+                                          [time_n, resource_utilization_n]]},
+              ...      
+              'owner_n': {'range'      : owner_range,
+                          'resources'  : resource_size,
+                          'utilization': [[time_0, resource_utilization_0],
+                                          [time_1, resource_utilization_1],
+                                          ...
+                                          [time_n, resource_utilization_n]]}
+
+        where `time_n` is represented as `float`, `resource_utilization_n` as
+        `int`, and resource_size is the total resources the owner has.
+
+
+        Example:
+
+            session.utilization(owner='pilot',
+                                consumer='unit', 
+                                resource='cores',
+                                events=[{ru.EVENT: 'exec_start'},
+                                        {ru.EVENT: 'exec_stop' }])
+        '''
+        ret = dict()
+        
+        # Filter the session to get a session of the owners. If that is empty return an
+        # empty dict
+        
+        relations = self .describe('relations', [owner, consumer])
+        if not relations:
+            return dict()
+
+        owners = self.filter(etype=owner, inplace=False)
+        if not owners:
+            return dict()
+
+        # Filter the self to get the consumers. If none are found, return an
+        # empty dict.
+        #
+        # FIXME: this should return an dict with zero utilization over the full
+        #        time range the resource exist.
+        #
+        for owner_entity in owners.get():
+            owner_id        = owner_entity.uid
+            owner_resources = owner_entity.description.get(resource)
+            owner_range     = owner_entity.ranges(event=owner_events)
+
+            consumers = self.filter(etype=consumer, uid=relations[owner_id],
+                                    inplace=False)
+            if not consumers:
+                util = [0]
+
+            else:
+                # Go through the consumer entities and create two dictionaries.
+                # The first keeps track of how many resources each consumer
+                # consumes, and the second has the ranges based on the events.
+                consumer_resources = dict()
+                consumer_ranges    = dict()
+
+                for consumer_entity in consumers.get():
+
+                    ranges  = consumer_entity.ranges(event=consumer_events)
+                    cons_id = consumer_entity.uid
+
+                    consumer_resources[cons_id] = consumer_entity.description.get(resource)
+
+                    # Update consumer_ranges if there is at least one range
+                    consumer_ranges.update({cons_id: ranges}) if len(ranges) != 0 else None
+
+                # Sort consumer_ranges based on their values. This command
+                # returns a dictionary, which is sorted based on the first value
+                # of each entry. In the end the key, are out of order but the
+                # values are.
+                consumer_ranges = sorted(consumer_ranges.iteritems(),
+                                         key=lambda (k,v): (v[0],k))
+
+                # Create a timeseries that contains all moments in consumer
+                # ranges and sort. This way we have a list that has time any
+                # change has happened.
+                times = list()
+                for cons_id,ranges in consumer_ranges:
+                    for r in ranges:
+                        times.append(r[0])
+                        times.append(r[1])
+                times.sort()
+
+                # we have the time sequence, now compute utilization at those points
+                util = list()
+                for t in times:
+                    cnt = 0
+                    for cons_id,ranges in consumer_ranges:
+                        for r in ranges:
+                            if t >= r[0] and t <= r[1]:
+                                cnt += consumer_resources[cons_id]
+
+                    util.append([t, cnt])
+
+            ret[owner_id] = {'range'      : owner_range,
+                             'resources'  : owner_resources,
+                             'utilization': util}
+        return ret
+
+
+    # --------------------------------------------------------------------------
+    #
+    def consistency(self, mode=None):
+        '''
         Perform a number of data consistency checks, and return a set of UIDs
         for entities which have been found to be inconsistent.
         The method accepts a single parameter `mode` which can be a list of
@@ -758,11 +1092,10 @@ class Session(object):
         The boolean values each indicate consistency of the respective test, the
         `log` will contain human readable information about specific consistency
         violations.
-        """
+        '''
 
         # FIXME: we could move the method to the entity, so that we can check
         #        consistency for each entity individually.
-
 
         self._rep.header('running consistency checks')
 
@@ -796,11 +1129,6 @@ class Session(object):
             self._rep.info('%s state model\n' % et)
             sm = self.describe('state_model', etype=et)
             sv = self.describe('state_values', etype=et)[et]['state_values']
-
-          # print
-          # print et
-          # print sv
-          # print
 
             for e in self.get(etype=et):
 

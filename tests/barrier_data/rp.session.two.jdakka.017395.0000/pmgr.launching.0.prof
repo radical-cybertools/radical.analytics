@@ -1,0 +1,7 @@
+#time,name,uid,state,event,msg
+1502991317.2385,pmgr.launching.0:,,,sync abs,localhost.localdomain:138.201.86.166:1502991317.22:1502991317.22:ntp
+#time,name,uid,state,event,msg
+1502991317.2385,pmgr.launching.0:,,,sync abs,localhost.localdomain:138.201.86.166:1502991317.22:1502991317.22:ntp
+1502991317.3339,pmgr.launching.0:MainThread,pmgr.launching.0,,initialize,
+1502992404.6401,pmgr.launching.0:MainThread,pmgr.launching.0,,stopped,
+1502992404.6402,pmgr.launching.0:MainThread,,,END,
