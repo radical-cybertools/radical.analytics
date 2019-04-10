@@ -20,7 +20,7 @@ version_short, version_detail, version_base, \
         version_branch, sdist_name, sdist_path = ru.get_version(paths=[root])
 version = version_short
 
-logger = ru.get_logger('radical.analytics')
+logger = ru.Logger('radical.analytics')
 logger.info('radical.analytics    version: %s' % version_detail)
 
 # ------------------------------------------------------------------------------

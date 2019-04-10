@@ -21,6 +21,7 @@ if __name__ == '__main__':
               'rp': 'radical.pilot',
               're': 'radical.entk'}
 
+    ret = 0
     for src in sources:
 
         src = src.rstrip('/')
@@ -109,15 +110,26 @@ if __name__ == '__main__':
         allkeys = sorted(all_events.keys())
         for e in allkeys:
             if e not in found:
-                missing.append(e,)
+                missing.append(e)
 
         print
         print '  missing:  %6d' % len(missing)
         for e in sorted(missing):
-            print '                     %-20s : %s' % (e, all_events[e])
+
+            if '[' in all_events[e]:
+                # conditional event - ignore
+                c = ' '
+            else:
+                # missing mandatory event
+                c    = '*'
+                ret += 1
+
+            print '                  %s  %-20s : %s' % (c, e, all_events[e])
         print
         print '-----------------------------------------------------------'
         print
+
+    sys.exit(ret)
 
 
 # ------------------------------------------------------------------------------
