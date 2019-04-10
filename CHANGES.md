@@ -5,6 +5,26 @@
     https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen+
 
 
+0.60.0 Release                                                        2019-04-10
+--------------------------------------------------------------------------------
+
+  - fail on and mark missing mandatory events 
+  - add a native radical.analytics session (#63) 
+  - add events to capture pre-exec durations (#67) 
+  - add consistency check
+  - add allocation plot script 
+  - add figure size option
+  - add plotting class 
+  - add concurrency plot 
+  - add statistics
+  - add utilization plot
+  - example fixes
+  - fix issue (#74)
+  - fix logger creation 
+  - fix prints in wrangler
+  - apply coding guidelines 
+
+
 0.50.4 Release                                                        2018-12-20
 --------------------------------------------------------------------------------
 
