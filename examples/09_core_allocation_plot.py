@@ -102,7 +102,7 @@ if __name__ == '__main__':
     plt.xlim([tmin, tmax])
     plt.ylim([ymin, ymax])
 
-    fig.savefig('09_core_allocation.svg')
+    fig.savefig('09_core_allocation.png')
 
 
 # ------------------------------------------------------------------------------

@@ -59,7 +59,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     src     = sys.argv[1]
-    session = ra.Session(src, 'radical.pilot')
+    session = ra.Session(src, 'radical')
 
     # A formatting helper before starting...
     def ppheader(message):

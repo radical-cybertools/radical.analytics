@@ -74,7 +74,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     src     = sys.argv[1]
-    session = ra.Session(src, 'radical.pilot')
+    session = ra.Session(src, 'radical')
 
     # A formatting helper before starting...
     def ppheader(message):
@@ -90,6 +90,8 @@ if __name__ == '__main__':
         tstamps = list()
         for event in event_list:
             times = thing.timestamps(event=event)
+            for e in thing.events:
+                print e
             if times: tstamps.append(times[0])
             else    : tstamps.append(None)
 
@@ -106,6 +108,7 @@ if __name__ == '__main__':
 
         # rebase
         t_zero = tstamps[0]
+        print tstamps
         for i in range(len(tstamps)):
             if tstamps[i]:
                 tstamps[i] = tstamps[i] - t_zero
