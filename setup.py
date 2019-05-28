@@ -270,7 +270,7 @@ setup_args = {
         'test'           : our_test,
     },
     'install_requires'   : ['radical.utils',
-                            'matplotlib',
+                            'matplotlib<=3.0',
                             'psutil',
                             'pandas',
                             'numpy',
