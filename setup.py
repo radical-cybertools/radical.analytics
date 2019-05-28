@@ -234,7 +234,7 @@ setup_args = {
     'version'            : version,
     'description'        : 'The RADICAL analytics framework '
                            '(http://radical.rutgers.edu/)',
-    'long_description'   : (read('README.md') + '\n\n' + read('CHANGES.md')),
+  # 'long_description'   : (read('README.md') + '\n\n' + read('CHANGES.md')),
     'author'             : 'RADICAL Group at Rutgers University',
     'author_email'       : 'radical@rutgers.edu',
     'maintainer'         : 'The RADICAL Group',
