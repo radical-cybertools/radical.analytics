@@ -5,6 +5,12 @@
     https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen+
 
 
+0.60.1 Hotfix                                                         2019-05-28
+--------------------------------------------------------------------------------
+
+  - fix deployement dependency (thanks Matteo!)
+
+
 0.60.0 Release                                                        2019-04-10
 --------------------------------------------------------------------------------
 
