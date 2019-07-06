@@ -10,7 +10,7 @@ from .plotter import Plotter
 
 
 # ------------------------------------------------------------------------------
-# 
+#
 import os
 import radical.utils as ru
 
