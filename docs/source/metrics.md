@@ -202,15 +202,13 @@ But the metrics also have several drawbacks:
  - While the resulting numbers have the units of time, they do not represent
    real time.  Specifically, the individual times do *not* add up to over all
    times:
-
-```     
+   ```     
    P -: "      ----         -  ----  -             -                     "
    P =: "          ========  ==    ============     ==================   "
    P  : "........         ...........       .......                   ..."
    
    11 * '-' + 40 * '=' + 29 * ' ' = 80 ticks
-```
-
+   ```
    So the resulting sum is 80 time ticks, where originally the system consisted
    of 2 components, each running for 64 ticks = 128 ticks.  The projection
    collapses overlapping ranges to a single range, thus removing information!
