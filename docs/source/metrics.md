@@ -10,10 +10,10 @@ it allows statements like
   - the system spent 2 minutes in state C, indicating it was starving for work
 
 etc.  Time measurements and statements like the above are not always intuitive
-when applied to distributed systems, and specifically to systems where several
-components are concurrently active.
+when applied to distributed systems though, and specifically to systems where
+several components are concurrently active.
 
-For example, lets consider a simple concurrent system with two components.  We
+For example, consider a simple concurrent system with two components.  We can
 depict its presumed behaviour with glyphs: space (' ') for being idle, '-' for
 waiting for some data, '=' for being active:
 
@@ -37,7 +37,7 @@ sum up contributions for the individual components:
   C_0:  23 * ' ' +  7 * '-' + 34 * '='  =  64
   C_1:  40 * ' ' +  6 * '-' + 18 * '='  =  64
   -------------------------------------------
-  T_s"  63 * ' ' + 13 * '-' + 52          128
+  T_s"  63 * ' ' + 13 * '-' + 52 * '='  = 128
 ```
 
 This kind of works for the system above - but that scheme quickly breaks down if
@@ -59,7 +59,7 @@ Specifically:
 
 A slightly less naive metric is to calculate how much time is used by the system
 (i.e., by *any* system component) in a specific task or state.  This represents
-a projection of the system component activities like this:
+a *projection* of the system component activities like this:
 
 ```
   C_0: "        --========    ----========        -==================   "
@@ -70,8 +70,7 @@ a projection of the system component activities like this:
 ```
 
 (The choice of space as significant glyph didn't work out :-P  They are
-represented by dots ('.') in the last line above.  We'll ignore idle times
-from now on.)
+represented by dots ('.') in the last line above.)
 
 The resulting metrics give an overview over system activities over time, and do
 represent *overall* system behavior in some sense.  We can make statements like
