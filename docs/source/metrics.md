@@ -170,7 +170,7 @@ Specifically:
  - How are times counted if a certain component does not exist?
  - What does the overall time represent?
  - What does the result represent semantically, e.g., when is a system
-     efficient or inefficient?
+   efficient or inefficient?
 
 A slightly less naive metric is to calculate how much time is used by the system
 (i.e., by *any* system component) in a specific task or state.  This represents
@@ -199,36 +199,35 @@ these now:
      
 But the metrics also have several drawbacks:
 
-   - While the resulting numbers have the units of time, they do not represent
-     real time.  Specifically, the individual times do *not* add up to over all
-     times:
+ - While the resulting numbers have the units of time, they do not represent
+   real time.  Specifically, the individual times do *not* add up to over all
+   times:
 
 ```     
-      P -: "      ----         -  ----  -             -                     "
-      P =: "          ========  ==    ============     ==================   "
-      P  : "........         ...........       .......                   ..."
-      
-      11 * '-' + 40 * '=' + 29 * ' ' = 80 ticks
+   P -: "      ----         -  ----  -             -                     "
+   P =: "          ========  ==    ============     ==================   "
+   P  : "........         ...........       .......                   ..."
+   
+   11 * '-' + 40 * '=' + 29 * ' ' = 80 ticks
 ```
 
-      So the resulting sum is 80 time ticks, where originally the system
-      consisted of 2 components, each running for 64 ticks = 128 ticks.  The
-      projection collapses overlapping ranges to a single range, thus removing
-      information!
-      
-    - The metric does not weight activities, making it less intuitive.  Consider
-      an extreme case: a system of 100 components, all living for 100 ticks,
-      has one component which is active 100% of the time, and 99 components
-      which are inactive 100% of the time.  Our metric would would account for
-      100 active ticks and 100 inactive ticks.
-      
-      - The result seems to naively indicate that the system was busy all the
-        time - which is true, but does not characterize the behavior well.
-      - the result weighs all active components (1) and all inactive components
-        (99) the same, seeming to indicate that the system was active at 50%,
-        which does not well represent the behavior.
-        
+   So the resulting sum is 80 time ticks, where originally the system consisted
+   of 2 components, each running for 64 ticks = 128 ticks.  The projection
+   collapses overlapping ranges to a single range, thus removing information!
+    
+ - The metric does not weight activities, making it less intuitive.  Consider an
+   extreme case: a system of 100 components, all living for 100 ticks, has one
+   component which is active 100% of the time, and 99 components which are
+   inactive 100% of the time.  Our metric would would account for 100 active
+   ticks and 100 inactive ticks.
+   
+   - The result seems to naively indicate that the system was active all the
+     time -- which is true, but does not characterize the behavior well.
+   - the result weighs all active components (1) and all inactive components
+     (99) the same, seeming to indicate that the system was active at 50%, which
+     does not represent the behavior very well.
         
 So, while the metric is better able to represent the system behavior than simply
 adding time ticks for all components, it requires significant caution when
 interpreting the resulting values.
+
