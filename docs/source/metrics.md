@@ -16,6 +16,7 @@ a specific purpose, the resource is called Idle (U_i).  Since a resource is
 either used for a specific purpose or not used at all, the sum of all
 utilization types plus Idle will always be 100%.
 
+```
 |------------------------|----------------------------------|------------------|
 | Symbol                 | Description                      | Unit             |
 |------------------------|----------------------------------|------------------|
@@ -48,9 +49,9 @@ utilization types plus Idle will always be 100%.
 | Idle                   |                                  |                  |
 | U_i = A_i * 100% / A_i | fraction of A_i in A             | percent          |
 |------------------------|----------------------------------|------------------|
+```
 
-
-It holds that U_a + U_s + U_i == U = 100%.
+It holds that `U_a + U_s + U_i == U = 100%`.
 
 Utilization is an integral measure, in the sense that overall utilization is
 a sum (integral) over all contributing individual resources and individual
@@ -113,7 +114,6 @@ just like application utilization and system utilization can be subdivided into
 different contributions by application tasks and system components.
         
     
-
 Time measurements
 =================
 
@@ -132,48 +132,58 @@ For example, lets consider a simple concurrent system with two components.  We
 depict its presumed behaviour with glyphs: space (' ') for being idle, '-' for
 waiting for some data, '=' for being active:
 
+```
   C_0: "        --========    ----========        -==================   "
   C_1: "      ----=======  -==      -=========                          "
-  
+```
+
 For each individual component, we can specify idle, wait and active times by
 counting bins with the respective glyphs:
 
+```
   C_0:  23 * ' ' +  7 * '-' + 34 * '='  = 64
   C_1:  40 * ' ' +  6 * '-' + 18 * '='  = 64
-  
+```
+
 But how do we calculate time for the *overall* system?  A naive approach is to
 sum up contributions for the individual components:
 
+```
   C_0:  23 * ' ' +  7 * '-' + 34 * '='  =  64
   C_1:  40 * ' ' +  6 * '-' + 18 * '='  =  64
   -------------------------------------------
   T_s"  63 * ' ' + 13 * '-' + 52          128
-  
+```
+
 This kind of works for the system above - but that scheme quickly breaks down if
 components do not have the same overall runtimes, or if new components get
 created over time:
-        
+
+```
   C_0:      "   --========    "                                           
   C_1: "      ----=======  -==      -=========                          "
   C_0:                     "  ----========        -==================   "
-  
+```
+
 Specifically:
 
-   - How are times counted if a certain component does not exist?
-   - What does the overall time represent?
-   - What does the result represent semantically, e.g., when is a system
+ - How are times counted if a certain component does not exist?
+ - What does the overall time represent?
+ - What does the result represent semantically, e.g., when is a system
      efficient or inefficient?
 
 A slightly less naive metric is to calculate how much time is used by the system
 (i.e., by *any* system component) in a specific task or state.  This represents
 a projection of the system component activities like this:
 
+```
   C_0: "        --========    ----========        -==================   "
   C_1: "      ----=======  -==      -=========                          "
   P -: "      ----         -  ----  -             -                     "
   P =: "          ========  ==    ============     ==================   "
   P  : "........         ...........       .......                   ..."
-  
+```
+
 (The choice of space as significant glyph didn't work out :-P  They are
 represented by dots ('.') in the last line above.  We'll ignore idle times
 from now on.)
@@ -182,9 +192,9 @@ The resulting metrics give an overview over system activities over time, and do
 represent *overall* system behavior in some sense.  We can make statements like
 these now:
 
-   - The system was active with task A for 50% of the time.
-   - The system overall spent more time on task A than on Task B.
-   - The system was inefficient as it only spent 10% of its time executing the
+ - The system was active with task A for 50% of the time.
+ - The system overall spent more time on task A than on Task B.
+ - The system was inefficient as it only spent 10% of its time executing the
      important task C, while it spent 60% of its time starting up (task A).
      
 But the metrics also have several drawbacks:
@@ -192,13 +202,15 @@ But the metrics also have several drawbacks:
    - While the resulting numbers have the units of time, they do not represent
      real time.  Specifically, the individual times do *not* add up to over all
      times:
-     
+
+```     
       P -: "      ----         -  ----  -             -                     "
       P =: "          ========  ==    ============     ==================   "
       P  : "........         ...........       .......                   ..."
       
       11 * '-' + 40 * '=' + 29 * ' ' = 80 ticks
-      
+```
+
       So the resulting sum is 80 time ticks, where originally the system
       consisted of 2 components, each running for 64 ticks = 128 ticks.  The
       projection collapses overlapping ranges to a single range, thus removing
@@ -220,7 +232,3 @@ But the metrics also have several drawbacks:
 So, while the metric is better able to represent the system behavior than simply
 adding time ticks for all components, it requires significant caution when
 interpreting the resulting values.
-      
-      
-  
-
