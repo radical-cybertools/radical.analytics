@@ -1,117 +1,266 @@
-    
 Time measurements
 =================
 
-It usually is insightful to measure times to characterize a system behaviour, as
-it allows statements like
+It usually is insightful to measure time durations to characterize the
+behavior of a system. For example, this characterization allows to make
+statements like:
 
-  - the system spent 2 seconds on task A
-  - the system spent more time on task A than on task B
-  - the system spent 2 minutes in state C, indicating it was starving for work
+  * the system spent 2 seconds on task A
+  * the system spent more time on task A than on task B
+  * the system spent 2 minutes in state C
 
-etc.  Time measurements and statements like the above are not always intuitive
-when applied to distributed systems though, and specifically to systems where
-several components are concurrently active.
+Time duration measurements and statements like those above are not always
+intuitive when applied to distributed systems because several components might
+be active at the same time (i.e., concurrency).
 
-For example, consider a simple concurrent system with two components.  We can
-depict its presumed behaviour with glyphs: space (' ') for being idle, '-' for
-waiting for some data, '=' for being active:
+For example, consider a simple concurrent C system with two components C_0 and
+C_1.  We model the behavior of each component of C with three states:
 
-```
-  C_0: "        --========    ----========        -==================   "
-  C_1: "      ----=======  -==      -=========                          "
-```
+  * Idling
+  * Staging
+  * Running
 
-For each individual component, we can specify idle, wait and active times by
-counting bins with the respective glyphs:
+Consistently, we model the execution of each component of C with a trace made
+of six timestamps:
 
-```
-  C_0:  23 * ' ' +  7 * '-' + 34 * '='  = 64
-  C_1:  40 * ' ' +  6 * '-' + 18 * '='  = 64
-```
+  * Start Idling
+  * Stop Idling
+  * Start Staging
+  * Stop Staging
+  * Start Running
+  * Stop Running
 
-But how do we calculate time for the *overall* system?  A naive approach is to
-sum up contributions for the individual components:
+We simplify the execution model assuming:
 
-```
-  C_0:  23 * ' ' +  7 * '-' + 34 * '='  =  64
-  C_1:  40 * ' ' +  6 * '-' + 18 * '='  =  64
-  -------------------------------------------
-  T_s"  63 * ' ' + 13 * '-' + 52 * '='  = 128
-```
+  * Stop Idling = Start Staging
+  * Stop Staging = Start Running
 
-This kind of works for the system above - but that scheme quickly breaks down if
-components do not have the same overall runtimes, or if new components get
-created over time:
+Obtaining the following profile for each component of C:
 
 ```
-  C_0:      "   --========    "                                           
-  C_1: "      ----=======  -==      -=========                          "
-  C_0:                     "  ----========        -==================   "
+C_*
+Timestamps: Start Idling     Start Staging     Start Running     Stop Running
+                 |----------------|-----------------|----------------|
+States    :            Idling            Staging           Running
 ```
 
-Specifically:
+Pictorially, we represent this profile the following glyphs:
 
- - How are times counted if a certain component does not exist?
- - What does the overall time represent?
- - What does the result represent semantically, e.g., when is a system
-   efficient or inefficient?
+  * Start/End: '|'
+  * Idling: '.'
+  * Staging: '-' 
+  * Running: '='
 
-A slightly less naive metric is to calculate how much time is used by the system
-(i.e., by *any* system component) in a specific task or state.  This represents
-a *projection* of the system component activities like this:
+and the following diagram:
 
 ```
-  C_0: "        --========    ----========        -==================   "
-  C_1: "      ----=======  -==      -=========                          "
-  P -: "      ----         -  ----  -             -                     "
-  P =: "          ========  ==    ============     ==================   "
-  P  : "........         ...........       .......                   ..."
+  C_0 |........--====================|
 ```
 
-(The choice of space as significant glyph didn't work out :-P  They are
-represented by dots ('.') in the last line above.)
+Quantitatively, we can measure the total execution time (TTX) of each
+component of C by counting bins with the respective glyphs and summing the
+time spent idling, staging and running:
 
-The resulting metrics give an overview over system activities over time, and do
-represent *overall* system behavior in some sense.  We can make statements like
-these now:
+```
+  TTX_C_0 =  8 * '.' + 2 * '-' + 20 * '='  = 30
+```
 
- - The system was active with task A for 50% of the time.
- - The system overall spent more time on task A than on Task B.
- - The system was inefficient as it only spent 10% of its time executing the
-     important task C, while it spent 60% of its time starting up (task A).
-     
-But the metrics also have several drawbacks:
+This execution model can be extended to represent multiple sequence of idling,
+staging and running for each component of C. For example,
 
- - While the resulting numbers have the units of time, they do not represent
-   real time.  Specifically, the individual times do *not* add up to over all
-   times:
-   ```     
-   P -: "      ----         -  ----  -             -                     "
-   P =: "          ========  ==    ============     ==================   "
-   P  : "........         ...........       .......                   ..."
-   
-   11 * '-' + 40 * '=' + 29 * ' ' = 80 ticks
-   ```
-   So the resulting sum is 80 time ticks, where originally the system consisted
-   of 2 components, each running for 64 ticks = 128 ticks.  The projection
-   collapses overlapping ranges to a single range, thus removing information!
-    
- - The metric does not weight activities, making it less intuitive.  Consider an
-   extreme case: a system of 100 components, all living for 100 ticks, has one
-   component which is active 100% of the time, and 99 components which are
-   inactive 100% of the time.  Our metric would would account for 100 active
-   ticks and 100 inactive ticks.
-   
-   - The result seems to naively indicate that the system was active all the
-     time -- which is true, but does not characterize the behavior well.
-   - the result weighs all active components (1) and all inactive components
-     (99) the same, seeming to indicate that the system was active at 50%, which
-     does not represent the behavior very well.
-        
-So, while the metric is better able to represent the system behavior than simply
-adding time ticks for all components, it requires significant caution when
-interpreting the resulting values.
+```
+  C_0 |........--====================...--------==========|
+  TTX_C_0 =  11 * '.' + 10 * '-' + 30 * '='  = 51
+```
+
+and mapped over an observation time line:
+
+```
+  C_0            |........--====================...--------==========|
+             +----+----+----+----+----+----+----+----+----+----+----+----+----+----
+  Seconds    0    5    10   15   20   25   30   35   40   45   50   55   60   65
+
+  TTX_C_0 =  11s * '.' + 10s * '-' + 30s * '='  = 51s
+```
+
+We can use the same approach to model the execution of C as defined above:
+
+```
+  C_0            |........--====================...--------==========|
+  C_1        |..---------=======...--------============|
+             +----+----+----+----+----+----+----+----+----+----+----+----+----+----
+  Seconds    0    5    10   15   20   25   30   35   40   45   50   55   60   65
+
+  TTX_C_0 =  11s * '.' + 10s * '-' + 30s * '='  = 51s
+  TTX_C_1 =  5s  * '.' + 17s * '-' + 18s * '='  = 40s
+```
+
+But how do we calculate the *overall* TTC for C?  A naive approach would be to
+sum the TTX of the individual components:
+
+```
+  TTX_C_0 =  11 * '.' + 10 * '-' + 30 * '='  = 51s +
+  TTX_C_1 =  5  * '.' + 17 * '-' + 18 * '='  = 40s
+  -------------------------------------------------
+  TTX_C   =  16 * ' ' + 27 * '-' + 48 * '='  = 90s
+```
+
+Clearly, this does not accurately measure the execution time of C. As clearly
+depicted in Diagram 4, TTX_C is 55s with 0.99s precision. In order to
+accurately measure TTX_C we need to account for the concurrency of C_0 and
+C_1. These components may execute: (1) at completely different times; (2)
+exactly at the same time; or (3) partly at different times and partly at the
+same time. Diagrammatically:
+
+```
+(1)
+
+  C_0        |........--====================...--------==========|
+  C_1                                                                   |..---------=======...--------============|
+             +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----
+  Seconds    0    5    10   15   20   25   30   35   40   45   50   55   60   65   70   75   80   85   90   95   100
+
+(2)
+
+  C_0        |........--====================...--------==========|
+  C_1        |........--====================...--------==========|
+             +----+----+----+----+----+----+----+----+----+----+----+----+----+----
+  Seconds    0    5    10   15   20   25   30   35   40   45   50   55   60   65
+
+(3)
+
+  C_0            |........--====================...--------==========|
+  C_1        |..---------=======...--------============|
+             +----+----+----+----+----+----+----+----+----+----+----+----+----+----
+  Seconds    0    5    10   15   20   25   30   35   40   45   50   55   60   65
+
+```
+
+Mathematically, we can calculate TTX_C of (1), (2) and (3):
+1. orthogonally projecting C_0 and C_1 traces onto the same time line. For
+   example, in 1, projecting the Idling state of C_0 produces two pairs of
+   projections: (1-8) and (31-33).
+2. Measuring the distance D between the two outmost projections among
+   overlapping projections of ALL the states.
+3. Summing the distances in case of non-overlapping Ds.
+
+```
+(1)
+
+
+  TTX_C =  D(1-8)   + D(9-10)  + D(11-30) + D(31-33) + D(34-41) + D(42-51)  + 
+           D(60-61) + D(62-70) + D(71-77) + D(78-80) + D(81-88) + D(89-100)
+        =  8 + 2 + 20 + 3 + 8 + 10 +
+           2 + 9 + 7  + 3 + 8 + 12
+        =  51 + 41 = 92s
+``` 
+
+Note that:
+- The projection of all states of C_0 and C_0 are contiguous but not overlapping;
+- the total time to EXECUTION (TTX) of C is 92s, even if the total time to
+  COMPLETION (TTC) of C is 100s. This is desirable because in (1), there are
+  8s between the end of C_0 and the beginning of C_1. In those 8s, C is not
+  executing.
+
+```
+(2)
+
+  TTX_C =  D(1-8,1-8) + D(9-10,9-10) + D(11-30,11-30) + D(31-33,31-33) + D(34-41,34-41) + D(42-51,42-51)
+        =  D(1-8) + D(9-10) + D(11-30) + D(31-33) + D(34-41) + D(42-51)
+        =  8 + 2 + 20 + 3 + 8 + 10
+        =  51s
+```
+
+Remember that D is the distance between the two outmost projections of
+OVERLAPPING pairs. Also, note that in this case TTX_C = TTC_C.
+
+```
+(3)
+
+  TTX_C =  D(1-2) + D(3-11,5-12,11-18,13-14,15-34,19-21,22-29,30-41,35-37,38-45) + D(46-55)
+        =  D(1-2) + D(3-45) + D(46-55)
+        =  2 + 43 + 10
+        =  55s
+```
+
+Also in this case, TTX_C = TTC_C.
+
+TTX and TTC are metrics of the system activities over time. They represent the
+*overall* behavior of the system but, as such, they hide information about the
+specific state of single subsystems. This MUST be taken into account when
+measuring overheads and characterizing the system behavior to support its
+optimization.
+
+Suppose we consider idling as a type of overhead of C, something that an
+optimization of C should minimize. For case (1), C idles for:
+
+```
+  Idling_C =  D(1-8)   + D(31-33) +
+              D(60-61) + D(78-80)
+           =  8 + 3 + 
+              2 + 3
+           =  16s
+```
+
+Assuming an ideal optimization, the TTX of C should indeed be reduced by 16s
+and TTC of 16+8s, assuming the contiguous execution of C_0 and C_1. The same
+analysis applies to case (2) because C is idling exactly at the same times of
+both C_0 and C_1. This is a byproduct of the equal executions of C_0 and C_1,
+a corner case that does not repeat in (3).
+
+In (3), C is idling 2 seconds while C_1 idles but once C_0 starts, C is
+staging and executing C_1 while C_0 idles and is executing C_0 when C_1 idles.
+As such, the idling overhead of C is:
+
+```
+  Idling_C =  D(1-2) = 2s
+```
+
+Something that could be optimized by making C_0 and C_1 to start at the same
+time.
+
+With this approach, valuable information about the optimization of C is lost.
+A better approach is to define the total idling overhead of C as we calculated
+TTX:
+
+```
+  Total_Idling_C =  D(1-2) + D(5-12) + D(19-21) + D(35-37)
+                 =  2 + 8 + 3 = 13s
+
+```
+
+Semantically, Total_Idling_C measures all the time in which at least one
+component of C was idling. It is fundamental to note that this metric *does*
+take into account the overlapping among idling times across components.
+Suppose an optimized case (4) of (3) in which the execution of C_0 and C_1
+starts at the same time. The diagram of 4's execution is:
+
+```
+(4)
+
+  C_0        |........--====================...--------==========|
+  C_1        |..---------=======...--------============|
+             +----+----+----+----+----+----+----+----+----+----+----+----+----+----
+  Seconds    0    5    10   15   20   25   30   35   40   45   50   55   60   65
+
+```
+
+And 4's Total_Idling_C is:
+
+```
+  Idling_C =  D(1-2,1-8) + D(19-21) + D(35-37)
+           =  8 + 3 = 11s
+
+```
+
+This metric *does* account for the 2 seconds in which both C_0 and C_1 were
+idling and therefore C was idling. Nonetheless, when we use Total_Idling_C we
+MUST specify that additivity does not hold among the total measures of
+different states of C, i.e.:
+
+```
+Total Idling + Total Staging + Total Executing > TTX
+```
 
 
 Utilization:
