@@ -623,12 +623,12 @@ class Session(object):
             assert(not state)
             assert(not event)
             assert(not time)
-            
+
             # make sure the ranges are collapsed (although they likely are
             # already...)
             ranges = ru.collapse_ranges(ranges)
 
-        return sum(r[1] - r[0] for r in ranges) 
+        return sum(r[1] - r[0] for r in ranges)
 
 
     # --------------------------------------------------------------------------
@@ -722,7 +722,7 @@ class Session(object):
         The additional parameter `sampling` determines the exact points in time
         for which the rate is computed, and thus determines the sampling rate
         for the returned time series.  If not specified, the time series will
-        contain all points at which and event occured, and thevrate value will
+        contain all points at which and event occured, and the rate value will
         only be determined by the time passed between two consequtuve events.
         If specified, it is interpreted as second (float) interval at which,
         after the starting point (begin of first event matching the filters) the
@@ -828,27 +828,20 @@ class Session(object):
                                                      consumer_events=None):
         '''
         This method accepts as parameters :
-        owner           : The entity name of the owner of the resources
-        consumer        : The ename of the entity that consumes the resources
-                          owned by owner
-        resource        : The type of resources whose utilization is requested,
-                          eg. Cores, Memory, GPUS etc.
-        owner_events    : A list of owner's/owners' events that will be used as
-                          starting and ending points for the utilization. The
-                          selected events should be meaningful for resource
-                          consumption. This method does not do any check on that
-                          sense.
-        consumer_events : A list of owner's/owners' events that will be used as
-                          starting and ending points for the utilization. The
-                          selected events should be meaningful for resource
-                          consumption. This method does not do any check on that
-                          sense.
+        owner          : The entity name of the owner of the resources
+        consumer       : The ename of the entity that consumes the resources
+                         owned by owner
+        resource       : The type of resources whose utilization is requested,
+                         eg. Cores, Memory, GPUS etc.
+        owner_events   : A list of owner's/owners' events that will be used as
+                         starting and ending points for the resource ownership.
+        consumer_events: A list of owner's/owners' events that will be used as
+                         starting and ending points for resource consumption.
 
         Based on these parameters the resources of the owners are collected, as
         well as, the times when the consumer(s) used those resources.
 
         Returned is a dictionary of the form:
-
 
             { 'owner_0': {'range'      : owner_range,
                           'resources'  : resource_size,
@@ -863,7 +856,7 @@ class Session(object):
                                           [time_1, resource_utilization_1],
                                           ...
                                           [time_n, resource_utilization_n]]},
-              ...      
+              ...
               'owner_n': {'range'      : owner_range,
                           'resources'  : resource_size,
                           'utilization': [[time_0, resource_utilization_0],
@@ -877,11 +870,13 @@ class Session(object):
 
         Example:
 
-            session.utilization(owner='pilot',
-                                consumer='unit', 
-                                resource='cores',
-                                events=[{ru.EVENT: 'exec_start'},
-                                        {ru.EVENT: 'exec_stop' }])
+            s.utilization(owner          = 'pilot',
+                          consumer       = 'unit',
+                          resource       = 'cores',
+                          owner_events   = [{ru.EVENT: 'bootstrap_0_start'},
+                                            {ru.EVENT: 'bootstrap_0_stop' }])
+                          consumer_events= [{ru.EVENT: 'exec_start'},
+                                            {ru.EVENT: 'exec_stop' }])
         '''
         ret = dict()
 
@@ -902,10 +897,10 @@ class Session(object):
         # FIXME: this should return an dict with zero utilization over the full
         #        time range the resource exist.
         #
-        for owner_entity in owners.get():
-            owner_id        = owner_entity.uid
-            owner_resources = owner_entity.description.get(resource)
-            owner_range     = owner_entity.ranges(event=owner_events)
+        for o in owners.get():
+            owner_id        = o.uid
+            owner_resources = o.description.get(resource)
+            owner_range     = o.ranges(event=owner_events)
 
             consumers = self.filter(etype=consumer, uid=relations[owner_id],
                                     inplace=False)
@@ -919,21 +914,19 @@ class Session(object):
                 consumer_resources = dict()
                 consumer_ranges    = dict()
 
-                for consumer_entity in consumers.get():
+                for c in consumers.get():
 
-                    ranges  = consumer_entity.ranges(event=consumer_events)
-                    cons_id = consumer_entity.uid
+                    ranges  = c.ranges(event=consumer_events)
+                    cons_id = c.uid
 
-                    consumer_nodes = consumer_entity.cfg.get('slots').get('nodes')
                     resources_acquired = 0
                     if resource == 'cores':
-                        for node in consumer_nodes:
-                            for cores_map in node[2]:
-                                resources_acquired += len(cores_map)
+                        cores   = c.description['cpu_processes'] * \
+                                  c.description['cpu_threads']
+                        resources_acquired += cores
                     elif resource == 'gpus':
-                        for node in consumer_nodes:
-                            for gpu_map in node[3]:
-                                resources_acquired += len(gpu_map)
+                        gpus    = c.description['gpu_processes']
+                        resources_acquired += len(gpus)
                     else:
                         raise ValueError('unsupported utilization resource')
 
