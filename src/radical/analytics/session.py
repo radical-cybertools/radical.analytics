@@ -36,6 +36,8 @@ class Session(object):
 
         elif os.path.isfile(src):
 
+            ext = None
+
             # src is afile - we assume its a tarball and extract it
             if  src.endswith('.prof'):
                 # use as is
@@ -44,10 +46,12 @@ class Session(object):
             elif src.endswith('.tgz') or \
                  src.endswith('.tbz')    :
                 tgt = src[:-4]
+                ext = src[-3:]
 
             elif src.endswith('.tar.gz') or \
                  src.endswith('.tar.bz')    :
                 tgt = src[:-7]
+                ext = src[-6:]
 
             elif src.endswith('.prof'):
                 tgt = None
@@ -61,8 +65,15 @@ class Session(object):
                 # need to extract
                 print 'extract tarball to %s' % tgt
                 try:
-                    tf = tarfile.open(name=src, mode='r:bz2')
-                    tf.extractall(path=os.path.dirname(tgt))
+                    if ext in ['tbz', 'tar.bz']:
+                        tf = tarfile.open(name=src, mode='r:bz2')
+                        tf.extractall(path=os.path.dirname(tgt))
+                    elif ext in ['tgz, tar.gz']:
+                        tf = tarfile.open(name=src, mode='r:gz')
+                        tf.extractall(path=os.path.dirname(tgt))
+                    else:
+                        # 'no tarball'
+                        pass
 
                 except Exception as e:
                     raise RuntimeError('Cannot extract tarball: %s' % repr(e))

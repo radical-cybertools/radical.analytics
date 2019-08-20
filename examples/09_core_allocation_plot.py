@@ -16,8 +16,12 @@ import radical.utils     as ru
 import radical.analytics as ra
 
 
-region = [{ru.STATE: None, ru.EVENT: 'schedule_ok'     },
-          {ru.STATE: None, ru.EVENT: 'unschedule_stop' }]
+region_alloc = [{ru.STATE: None, ru.EVENT: 'bootstrap_0_start'},
+                {ru.STATE: None, ru.EVENT: 'bootstrap_0_stop' }]
+region_block = [{ru.STATE: None, ru.EVENT: 'schedule_ok'      },
+                {ru.STATE: None, ru.EVENT: 'unschedule_stop'  }]
+region_use   = [{ru.STATE: None, ru.EVENT: 'exec_start'       },
+                {ru.STATE: None, ru.EVENT: 'exec_stop'        }]
 
 
 # ------------------------------------------------------------------------------
@@ -31,9 +35,8 @@ if __name__ == '__main__':
     src     = sys.argv[1]
     session = ra.Session(src, 'radical.pilot')
 
-
-    units  = session.filter(etype='unit',  inplace=False)
     pilots = session.filter(etype='pilot', inplace=False)
+    units  = session.filter(etype='unit',  inplace=True)
     print '#units : %d' % len(units.get())
     print '#pilots: %d' % len(pilots.get())
 
@@ -76,16 +79,50 @@ if __name__ == '__main__':
     # prep figure
     fig  = plt.figure(figsize=(20,14))
     ax   = fig.add_subplot(111)
-    cmap = mpl.cm.get_cmap('prism')
+
+    c_alloc = mpl.cm.get_cmap('Purples')
+    c_block = mpl.cm.get_cmap('Wistia')
+    c_use   = mpl.cm.get_cmap('winter')
+
+    # find all alloced nodes, cores, gpus ranges, translate into boxes
+    for thing in pilots.get():
+
+        ts = thing.timestamps(event=region_alloc)
+        c  = c_alloc(0.35)
+        ys = [(ymin, ymax)]
+
+        for y in ys:
+            orig_x = ts[0]
+            orig_y = y[0]
+            width  = ts[1] - ts[0]
+            height = y[-1] - y[0] + 1
+
+            ax.add_patch(mpl.patches.Rectangle((orig_x, orig_y), width, height,
+                         facecolor=c, edgecolor='black', fill=True, lw=0.2))
+
+            part += width * height
 
     # find all used nodes, cores, gpus ranges, translate into boxes
     for thing in units.get():
 
         slots = thing.cfg['slots']['nodes']
-        ys = slots_to_ys(slots)
-        ts = thing.timestamps(event=[{ru.EVENT: 'schedule_ok'    },
-                                     {ru.EVENT: 'unschedule_stop'}])
-        c = cmap(random.random())
+        ys    = slots_to_ys(slots)
+
+        ts    = thing.timestamps(event=region_block)
+        c     = c_block(random.random())
+        for y in ys:
+            orig_x = ts[0]
+            orig_y = y[0]
+            width  = ts[1] - ts[0]
+            height = y[-1] - y[0] + 1
+
+            ax.add_patch(mpl.patches.Rectangle((orig_x, orig_y), width, height,
+                         facecolor=c, edgecolor='black', fill=True, lw=0.2))
+
+            part += width * height
+
+        ts    = thing.timestamps(event=region_use)
+        c     = c_use(random.random())
         for y in ys:
             orig_x = ts[0]
             orig_y = y[0]
@@ -102,7 +139,8 @@ if __name__ == '__main__':
     plt.xlim([tmin, tmax])
     plt.ylim([ymin, ymax])
 
-    fig.savefig('09_core_allocation.svg')
+    fig.savefig('09_core_allocation.png')
+    plt.show()
 
 
 # ------------------------------------------------------------------------------
