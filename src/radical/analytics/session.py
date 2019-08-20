@@ -49,6 +49,9 @@ class Session(object):
                  src.endswith('.tar.bz')    :
                 tgt = src[:-7]
 
+            elif src.endswith('.tar.bz2')    :
+                tgt = src[:-8]
+
             elif src.endswith('.prof'):
                 tgt = None
 
@@ -623,12 +626,12 @@ class Session(object):
             assert(not state)
             assert(not event)
             assert(not time)
-            
+
             # make sure the ranges are collapsed (although they likely are
             # already...)
             ranges = ru.collapse_ranges(ranges)
 
-        return sum(r[1] - r[0] for r in ranges) 
+        return sum(r[1] - r[0] for r in ranges)
 
 
     # --------------------------------------------------------------------------
@@ -863,7 +866,7 @@ class Session(object):
                                           [time_1, resource_utilization_1],
                                           ...
                                           [time_n, resource_utilization_n]]},
-              ...      
+              ...
               'owner_n': {'range'      : owner_range,
                           'resources'  : resource_size,
                           'utilization': [[time_0, resource_utilization_0],
@@ -878,7 +881,7 @@ class Session(object):
         Example:
 
             session.utilization(owner='pilot',
-                                consumer='unit', 
+                                consumer='unit',
                                 resource='cores',
                                 events=[{ru.EVENT: 'exec_start'},
                                         {ru.EVENT: 'exec_stop' }])
