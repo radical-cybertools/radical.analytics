@@ -5,7 +5,8 @@ import copy
 import glob
 import tarfile
 
-import radical.utils as ru
+import more_itertools as mit
+import radical.utils  as ru
 
 from .entity import Entity
 
@@ -225,6 +226,10 @@ class Session(object):
     @property
     def uid(self):
         return self._sid
+
+    @property
+    def stype(self):
+        return self._stype
 
 
     # --------------------------------------------------------------------------
@@ -1037,6 +1042,187 @@ class Session(object):
             ret.extend(self._consistency_state_model())
 
         return list(set(ret))  # make list unique
+
+
+    # --------------------------------------------------------------------------
+    #
+    def usage(self, alloc_entity, alloc_events,
+                    block_entity, block_events,
+                    use_entity,   use_events):
+        '''
+        Parameters:
+            alloc_entity: entity  which allocates resources
+            alloc_events: list of event tuples which specify allocation time
+            block_entity: entity  which blocks resources
+            block_events: list of event tuples which specify blocking time
+            use_entity:   entity  which uses resources
+            use_events:   list of event tuples which specify usage time
+
+        Semantics:
+
+            This method creates a dict with three entries: `alloc`, `block`,
+            `use`.  Those three dict entries in turn have a a dict of entity IDs
+            for all entities which have blocks in the respective category, and
+            foreach of those entity IDs the dict values will be a list of
+            rectangles.
+
+            The semantics is as follows:
+
+              - a resource is considered
+                - `alloc`ated when it is owned by the RCT application;
+                - `block`ed when it is reserveed for a specific task;
+                - `use`d when it is utilized by that task.
+
+              - each of the rectangles represents a continuous block of
+                resources which is alloced / blocked / used:
+                - x_0 time when alloc/block/usage begins
+                - x_1 time when alloc/block/usage ends
+                - y_0 lowest index of a continuous block of resource IDs
+                - y_1 highest index of a continuous block of resource IDs
+
+              - any specific entity (pilot, task) can have a *set* of such
+                resource blocks, for example, a task might be placed over
+                multiple, non-consecutive nodes
+
+              - gpu and cpu resources are rendered as separate blocks
+                (rectangles).
+
+        Example (RP):
+
+            usage('pilot',[{ru.STATE: None, ru.EVENT: 'bootstrap_0_start'},
+                           {ru.STATE: None, ru.EVENT: 'bootstrap_0_stop' }],
+                  'unit', [{ru.STATE: None, ru.EVENT: 'schedule_ok'      },
+                           {ru.STATE: None, ru.EVENT: 'unschedule_stop'  }],
+                  'unit', [{ru.STATE: None, ru.EVENT: 'exec_start'       },
+                           {ru.STATE: None, ru.EVENT: 'exec_stop'        }])
+        '''
+
+        # this is currently only supported for RP sessions, as we only know for
+        # pilots and units how to dig resource information out of session and
+        # entity metadata.
+        assert(self.stype == 'radical.pilot'), \
+               'stype %s unsupported' % self._stype
+
+        # for RP sessions, create resource indices which can be used to
+        # determine the y-axis values for the rectangles.  This is basically
+        # a dict of node_names for each alloc_entity which points to two indexes
+        # for each node: one starting index for GPUs, and one for CPU cores
+        res_idx = dict()
+
+        idx = 0
+        for ae in self.get(etype=alloc_entity):
+            uid   = ae.uid
+            nodes = ae.cfg['resource_details']['rm_info']['node_list']
+            cpn   = ae.cfg['resource_details']['rm_info']['cores_per_node']
+            gpn   = ae.cfg['resource_details']['rm_info']['gpus_per_node']
+
+            if ae.uid not in res_idx:
+                res_idx[ae.uid] = dict()
+
+            res_idx[ae.uid]['_min'] = idx
+
+            for n in nodes:
+                res_idx[ae.uid][n[1]] = [[idx      , idx + cpn       - 1],
+                                         [idx + cpn, idx + cpn + gpn - 1]]
+                idx += cpn
+                idx += gpn
+
+            res_idx[ae.uid]['_max'] = idx - 1
+
+        # ----------------------------------------------------------------------
+        # RP specific helper method to convert given entity information into
+        # a set of y-value ranges.  This returns a tuple of lists where each
+        # list contains tuples of resource indexes (y-values)
+        def get_res_idx(entity):
+
+            if entity.etype == 'pilot':
+
+              # print '----'
+              # print entity.uid
+              # import pprint
+              # pprint.pprint(res_idx[entity.uid])
+
+                # we assume min/max to cover CPU and GPU
+                return [[[res_idx[entity.uid]['_min'],
+                          res_idx[entity.uid]['_max']]], []]
+
+            elif entity.etype == 'unit':
+
+                # find owning pilot
+                pid = entity.cfg.get('pilot')
+                if not pid:
+                    # no resources used
+                    return [[],[]]
+
+                cpu_idx = list()
+                gpu_idx = list()
+                for slot in entity.cfg['slots']['nodes']:
+                    node_id = slot['uid']
+                    for cslot in slot['core_map']:
+                        for c in cslot:
+                            cpu_idx.append(res_idx[pid][node_id][0][0] + c)
+                    for gslot in slot['gpu_map']:
+                        for g in gslot:
+                            gpu_idx.append(res_idx[pid][node_id][1][0] + g)
+
+                # identify continuous groups of y-values and return
+                return [
+                        [list(g) for g in mit.consecutive_groups(cpu_idx)],
+                        [list(g) for g in mit.consecutive_groups(gpu_idx)]
+                       ]
+        # ----------------------------------------------------------------------
+
+        ret = {'alloc': dict(),
+               'block': dict(),
+               'use'  : dict()}
+
+        etypes = {'alloc': {'etype' : alloc_entity,
+                            'events': alloc_events},
+                  'block': {'etype' : block_entity,
+                            'events': block_events},
+                  'use'  : {'etype' : use_entity,
+                            'events': use_events}}
+
+        for entity in self.get():
+
+            for mode in ['alloc', 'block', 'use']:
+
+                if etypes[mode]['etype'] == entity.etype:
+
+                    event_list = etypes[mode]['events']
+                    if not event_list:
+                        continue
+
+                    if not isinstance(event_list[0], list):
+                        event_list = [event_list]
+
+                    uid = entity.uid
+                    if uid not in ret[mode]:
+                        ret[mode][uid] = list()
+
+                    for events in event_list:
+                        assert len(events) == 2
+
+                        y_values = get_res_idx(entity)
+                        t_values = entity.ranges(event=events)
+
+                      # print
+                      # print uid
+                      # print events
+                      #
+                      # import pprint
+                      # pprint.pprint(t_values)
+                      # pprint.pprint(y_values)
+
+                        for t_range in t_values:
+                            for y_range in y_values[0]:
+                                ret[mode][uid].append([t_range[0], t_range[-1],
+                                                       y_range[0], y_range[-1]])
+                            for y_range in y_values[1]:
+                                ret[mode][uid].append([t_range[0], t_range[-1],
+                                                       y_range[0], y_range[-1]])
+
+        return ret
 
 
     # --------------------------------------------------------------------------

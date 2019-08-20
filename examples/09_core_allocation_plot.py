@@ -16,12 +16,12 @@ import radical.utils     as ru
 import radical.analytics as ra
 
 
-region_alloc = [{ru.STATE: None, ru.EVENT: 'bootstrap_0_start'},
-                {ru.STATE: None, ru.EVENT: 'bootstrap_0_stop' }]
-region_block = [{ru.STATE: None, ru.EVENT: 'schedule_ok'      },
-                {ru.STATE: None, ru.EVENT: 'unschedule_stop'  }]
-region_use   = [{ru.STATE: None, ru.EVENT: 'exec_start'       },
-                {ru.STATE: None, ru.EVENT: 'exec_stop'        }]
+resource_alloc = [{ru.STATE: None, ru.EVENT: 'bootstrap_0_start'},
+                  {ru.STATE: None, ru.EVENT: 'bootstrap_0_stop' }]
+resource_block = [{ru.STATE: None, ru.EVENT: 'schedule_ok'      },
+                  {ru.STATE: None, ru.EVENT: 'unschedule_stop'  }]
+resource_use   = [{ru.STATE: None, ru.EVENT: 'exec_start'       },
+                  {ru.STATE: None, ru.EVENT: 'exec_stop'        }]
 
 
 # ------------------------------------------------------------------------------
@@ -32,114 +32,82 @@ if __name__ == '__main__':
         print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
         sys.exit(1)
 
-    src     = sys.argv[1]
-    session = ra.Session(src, 'radical.pilot')
+    src = sys.argv[1]
+    rps = ra.Session(src, 'radical.pilot')
+    ump = rps.usage('pilot', [{ru.STATE: None, ru.EVENT: 'bootstrap_0_start'},
+                              {ru.STATE: None, ru.EVENT: 'bootstrap_0_stop' }],
+                    'unit',  [{ru.STATE: None, ru.EVENT: 'schedule_ok'      },
+                              {ru.STATE: None, ru.EVENT: 'unschedule_stop'  }],
+                    'unit',  [{ru.STATE: None, ru.EVENT: 'exec_start'       },
+                              {ru.STATE: None, ru.EVENT: 'exec_stop'        }])
 
-    pilots = session.filter(etype='pilot', inplace=False)
-    units  = session.filter(etype='unit',  inplace=True)
-    print '#units : %d' % len(units.get())
-    print '#pilots: %d' % len(pilots.get())
+    # The sum of areas for all `alloc` blocks gives the total allocated set of
+    # resources. We similarly can compute the are covered for blocked and used
+    # resources, thereby deriving the respecitve overall utilizations
+    alloced = 0.0
+    for uid in ump['alloc']:
+        for block in ump['alloc'][uid]:
+            x = block[1] - block[0]
+            y = block[3] - block[2] + 1.0
+            alloced += x * y
 
-    assert(len(pilots.get()) == 1)
+    blocked = 0.0
+    for uid in ump['block']:
+        for block in ump['block'][uid]:
+            x = block[1] - block[0]
+            y = block[3] - block[2] + 1.0
+            blocked += x * y
 
-    pilot = pilots.get()[0]
-    nodes = pilot.cfg['resource_details']['rm_info']['node_list']
-    cpn   = pilot.cfg['resource_details']['rm_info']['cores_per_node']
-    gpn   = pilot.cfg['resource_details']['rm_info']['gpus_per_node']
-    non   = len(nodes)
-    nuids = [n[1] for n in nodes]
-    ymin  = 0
-    ymax  = non * (cpn + gpn)
+    used = 0.0
+    for uid in ump['use']:
+        for block in ump['use'][uid]:
+            x = block[1] - block[0]
+            y = block[3] - block[2] + 1.0
+            used += x * y
 
-    tmin  = pilot.events[ 0][ru.TIME]
-    tmax  = pilot.events[-1][ru.TIME]
-
-    full  = ymax * tmax
-    part  = 0.0
-
-    def slots_to_ys(slots):
-        '''
-        convert give slots into a set of y-value ranges
-        '''
-        # find all y-values
-        values = list()
-        for slot in slots:
-            ybase = nuids.index(slot['uid']) * (cpn + gpn)
-            for cslot in slot['core_map']:
-                for c in cslot:
-                    values.append(ybase + c)
-            for gslot in slot['gpu_map']:
-                for g in gslot:
-                    values.append(ybase + cpn + g)
-
-        # find continuous ranges of y-values
-        return [list(group) for group in mit.consecutive_groups(values)]
-
+    print 'alloc: %10.2f [%5.1f%%]' % (alloced, 100.0)
+    print 'block: %10.2f [%5.1f%%]' % (blocked, 100.0 * blocked / alloced)
+    print 'use  : %10.2f [%5.1f%%]' % (used,    100.0 * used    / alloced)
 
     # prep figure
     fig  = plt.figure(figsize=(20,14))
     ax   = fig.add_subplot(111)
 
-    c_alloc = mpl.cm.get_cmap('Purples')
-    c_block = mpl.cm.get_cmap('Wistia')
-    c_use   = mpl.cm.get_cmap('winter')
+    colors = {'alloc': mpl.cm.get_cmap('Wistia')(0.15),
+              'block': mpl.cm.get_cmap('Wistia')(0.50),
+              'use'  : mpl.cm.get_cmap('Wistia')(0.85)}
 
-    # find all alloced nodes, cores, gpus ranges, translate into boxes
-    for thing in pilots.get():
+    x_min = 0.0
+    x_max = 0.0
+    y_min = 0.0
+    y_max = 0.0
+    for mode in ['alloc', 'block', 'use']:
 
-        ts = thing.timestamps(event=region_alloc)
-        c  = c_alloc(0.35)
-        ys = [(ymin, ymax)]
+        color = colors[mode]
+        for uid in ump[mode]:
 
-        for y in ys:
-            orig_x = ts[0]
-            orig_y = y[0]
-            width  = ts[1] - ts[0]
-            height = y[-1] - y[0] + 1
+            for block in ump[mode][uid]:
+                orig_x = block[0]
+                orig_y = block[2] - 0.5
+                width  = block[1] - block[0]
+                height = block[3] - block[2] + 1.0
 
-            ax.add_patch(mpl.patches.Rectangle((orig_x, orig_y), width, height,
-                         facecolor=c, edgecolor='black', fill=True, lw=0.2))
+                x_min = min(x_min, orig_x)
+                y_min = min(y_min, orig_y)
+                x_max = max(x_max, orig_x + width)
+                y_max = max(y_max, orig_y + height)
 
-            part += width * height
+                patch = mpl.patches.Rectangle((orig_x, orig_y), width, height,
+                                              facecolor=color,
+                                              edgecolor='black',
+                                              fill=True, lw=0.05)
+                ax.add_patch(patch)
 
-    # find all used nodes, cores, gpus ranges, translate into boxes
-    for thing in units.get():
-
-        slots = thing.cfg['slots']['nodes']
-        ys    = slots_to_ys(slots)
-
-        ts    = thing.timestamps(event=region_block)
-        c     = c_block(random.random())
-        for y in ys:
-            orig_x = ts[0]
-            orig_y = y[0]
-            width  = ts[1] - ts[0]
-            height = y[-1] - y[0] + 1
-
-            ax.add_patch(mpl.patches.Rectangle((orig_x, orig_y), width, height,
-                         facecolor=c, edgecolor='black', fill=True, lw=0.2))
-
-            part += width * height
-
-        ts    = thing.timestamps(event=region_use)
-        c     = c_use(random.random())
-        for y in ys:
-            orig_x = ts[0]
-            orig_y = y[0]
-            width  = ts[1] - ts[0]
-            height = y[-1] - y[0] + 1
-
-            ax.add_patch(mpl.patches.Rectangle((orig_x, orig_y), width, height,
-                         facecolor=c, edgecolor='black', fill=True, lw=0.2))
-
-            part += width * height
-
-    print 'utilization: %.2f%%' % (100 * part / full)
-
-    plt.xlim([tmin, tmax])
-    plt.ylim([ymin, ymax])
+    plt.xlim([x_min, x_max])
+    plt.ylim([y_min, y_max])
 
     fig.savefig('09_core_allocation.png')
+    fig.savefig('09_core_allocation.pdf')
     plt.show()
 
 
