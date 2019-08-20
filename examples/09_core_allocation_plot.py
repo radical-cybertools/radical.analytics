@@ -73,9 +73,14 @@ if __name__ == '__main__':
     fig  = plt.figure(figsize=(20,14))
     ax   = fig.add_subplot(111)
 
-    colors = {'alloc': mpl.cm.get_cmap('Wistia')(0.15),
-              'block': mpl.cm.get_cmap('Wistia')(0.50),
-              'use'  : mpl.cm.get_cmap('Wistia')(0.85)}
+    colors = {'alloc': '#99DD99',
+              'block': '#DDDD99',
+              'use'  : '#DD9999'}
+
+    from matplotlib.lines import Line2D
+    custom_lines = [Line2D([0], [0], color=colors['alloc'], lw=4),
+                    Line2D([0], [0], color=colors['block'], lw=4),
+                    Line2D([0], [0], color=colors['use'],   lw=4)]
 
     x_min = 0.0
     x_max = 0.0
@@ -100,12 +105,20 @@ if __name__ == '__main__':
                 patch = mpl.patches.Rectangle((orig_x, orig_y), width, height,
                                               facecolor=color,
                                               edgecolor='black',
-                                              fill=True, lw=0.05)
+                                              fill=True, lw=0.1)
                 ax.add_patch(patch)
+
+  # fig, ax = plt.subplots()
+  # lines = ax.plot(data)
+  # ax.legend(custom_lines, ['Cold', 'Medium', 'Hot'])
+    ax.legend(custom_lines, ['allocated', 'blocked', 'used'], ncol=3,
+               loc='upper center', bbox_to_anchor=(0.5,1.11))
+    plt.xlabel('runtime [s]')
+    plt.ylabel('resource slot (index)')
+
 
     plt.xlim([x_min, x_max])
     plt.ylim([y_min, y_max])
-
     fig.savefig('09_core_allocation.png')
     fig.savefig('09_core_allocation.pdf')
     plt.show()
