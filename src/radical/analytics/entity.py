@@ -394,6 +394,32 @@ class Entity(object):
             else:
                 conds_init.append(e)
 
+        t_start = sys.float_info.max
+        for e in e_init:
+            e_infos = self._events.get(e, [])
+            for e_info in e_infos:
+                t_stop = min(t_start, e_info['time'])
+
+        t_stop  = sys.float_info.min
+        for e in e_final:
+            e_infos = self._events.get(e, [])
+            for e_info in e_infos:
+                t_stop = max(t_stop, e_info['time'])
+
+
+        if t_start == sys.float_info.max:
+            return []
+          # raise ValueError('initial condition did not apply')
+
+        if t_stop == sys.float_info.min:
+            return []
+          # raise ValueError('final condition did not apply')
+
+        if t_stop < t_start:
+          # return []
+            raise ValueError('duration uncovered time inconsistency')
+
+
         for e in e_final:
             if isinstance(e,dict):
                 et = ru.PROF_KEY_MAX * [None]
@@ -432,11 +458,11 @@ class Entity(object):
             this_range[1] is not None     :
             ranges.append(this_range)
 
+
         # apply time filter, if specified
         # For all ranges, check if they fall completely or partially within any
         # of the given time filters.  If not, drop that range, if yes, include
         # the overlapping part.
-        #
         if not time or not len(time):
             ret = ranges
 

@@ -549,8 +549,7 @@ class Session(object):
         ranges = list()
         for uid,entity in self._entities.iteritems():
             try:
-                tmp = entity.ranges(state, event, time, collapse=False)
-                ranges += tmp
+                ranges += entity.ranges(state, event, time, collapse=False)
             except ValueError:
                 print 'no ranges for %s' % uid
                 # ignore entities for which the conditions did not apply
