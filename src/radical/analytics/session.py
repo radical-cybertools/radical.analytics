@@ -5,7 +5,8 @@ import copy
 import glob
 import tarfile
 
-import radical.utils as ru
+import more_itertools as mit
+import radical.utils  as ru
 
 from .entity import Entity
 
@@ -36,6 +37,8 @@ class Session(object):
 
         elif os.path.isfile(src):
 
+            ext = None
+
             # src is afile - we assume its a tarball and extract it
             if  src.endswith('.prof'):
                 # use as is
@@ -44,10 +47,12 @@ class Session(object):
             elif src.endswith('.tgz') or \
                  src.endswith('.tbz')    :
                 tgt = src[:-4]
+                ext = src[-3:]
 
             elif src.endswith('.tar.gz') or \
                  src.endswith('.tar.bz')    :
                 tgt = src[:-7]
+                ext = src[-6:]
 
             elif src.endswith('.prof'):
                 tgt = None
@@ -61,8 +66,15 @@ class Session(object):
                 # need to extract
                 print 'extract tarball to %s' % tgt
                 try:
-                    tf = tarfile.open(name=src, mode='r:bz2')
-                    tf.extractall(path=os.path.dirname(tgt))
+                    if ext in ['tbz', 'tar.bz']:
+                        tf = tarfile.open(name=src, mode='r:bz2')
+                        tf.extractall(path=os.path.dirname(tgt))
+                    elif ext in ['tgz, tar.gz']:
+                        tf = tarfile.open(name=src, mode='r:gz')
+                        tf.extractall(path=os.path.dirname(tgt))
+                    else:
+                        # 'no tarball'
+                        pass
 
                 except Exception as e:
                     raise RuntimeError('Cannot extract tarball: %s' % repr(e))
@@ -214,6 +226,10 @@ class Session(object):
     @property
     def uid(self):
         return self._sid
+
+    @property
+    def stype(self):
+        return self._stype
 
 
     # --------------------------------------------------------------------------
@@ -622,12 +638,12 @@ class Session(object):
             assert(not state)
             assert(not event)
             assert(not time)
-            
+
             # make sure the ranges are collapsed (although they likely are
             # already...)
             ranges = ru.collapse_ranges(ranges)
 
-        return sum(r[1] - r[0] for r in ranges) 
+        return sum(r[1] - r[0] for r in ranges)
 
 
     # --------------------------------------------------------------------------
@@ -721,7 +737,7 @@ class Session(object):
         The additional parameter `sampling` determines the exact points in time
         for which the rate is computed, and thus determines the sampling rate
         for the returned time series.  If not specified, the time series will
-        contain all points at which and event occured, and thevrate value will
+        contain all points at which and event occured, and the rate value will
         only be determined by the time passed between two consequtuve events.
         If specified, it is interpreted as second (float) interval at which,
         after the starting point (begin of first event matching the filters) the
@@ -827,27 +843,20 @@ class Session(object):
                                                      consumer_events=None):
         '''
         This method accepts as parameters :
-        owner           : The entity name of the owner of the resources
-        consumer        : The ename of the entity that consumes the resources
-                          owned by owner
-        resource        : The type of resources whose utilization is requested,
-                          eg. Cores, Memory, GPUS etc.
-        owner_events    : A list of owner's/owners' events that will be used as
-                          starting and ending points for the utilization. The
-                          selected events should be meaningful for resource
-                          consumption. This method does not do any check on that
-                          sense.
-        consumer_events : A list of owner's/owners' events that will be used as
-                          starting and ending points for the utilization. The
-                          selected events should be meaningful for resource
-                          consumption. This method does not do any check on that
-                          sense.
+        owner          : The entity name of the owner of the resources
+        consumer       : The ename of the entity that consumes the resources
+                         owned by owner
+        resource       : The type of resources whose utilization is requested,
+                         eg. Cores, Memory, GPUS etc.
+        owner_events   : A list of owner's/owners' events that will be used as
+                         starting and ending points for the resource ownership.
+        consumer_events: A list of owner's/owners' events that will be used as
+                         starting and ending points for resource consumption.
 
         Based on these parameters the resources of the owners are collected, as
         well as, the times when the consumer(s) used those resources.
 
         Returned is a dictionary of the form:
-
 
             { 'owner_0': {'range'      : owner_range,
                           'resources'  : resource_size,
@@ -862,7 +871,7 @@ class Session(object):
                                           [time_1, resource_utilization_1],
                                           ...
                                           [time_n, resource_utilization_n]]},
-              ...      
+              ...
               'owner_n': {'range'      : owner_range,
                           'resources'  : resource_size,
                           'utilization': [[time_0, resource_utilization_0],
@@ -876,11 +885,13 @@ class Session(object):
 
         Example:
 
-            session.utilization(owner='pilot',
-                                consumer='unit', 
-                                resource='cores',
-                                events=[{ru.EVENT: 'exec_start'},
-                                        {ru.EVENT: 'exec_stop' }])
+            s.utilization(owner          = 'pilot',
+                          consumer       = 'unit',
+                          resource       = 'cores',
+                          owner_events   = [{ru.EVENT: 'bootstrap_0_start'},
+                                            {ru.EVENT: 'bootstrap_0_stop' }])
+                          consumer_events= [{ru.EVENT: 'exec_start'},
+                                            {ru.EVENT: 'exec_stop' }])
         '''
         ret = dict()
 
@@ -901,10 +912,10 @@ class Session(object):
         # FIXME: this should return an dict with zero utilization over the full
         #        time range the resource exist.
         #
-        for owner_entity in owners.get():
-            owner_id        = owner_entity.uid
-            owner_resources = owner_entity.description.get(resource)
-            owner_range     = owner_entity.ranges(event=owner_events)
+        for o in owners.get():
+            owner_id        = o.uid
+            owner_resources = o.description.get(resource)
+            owner_range     = o.ranges(event=owner_events)
 
             consumers = self.filter(etype=consumer, uid=relations[owner_id],
                                     inplace=False)
@@ -918,21 +929,19 @@ class Session(object):
                 consumer_resources = dict()
                 consumer_ranges    = dict()
 
-                for consumer_entity in consumers.get():
+                for c in consumers.get():
 
-                    ranges  = consumer_entity.ranges(event=consumer_events)
-                    cons_id = consumer_entity.uid
+                    ranges  = c.ranges(event=consumer_events)
+                    cons_id = c.uid
 
-                    consumer_nodes = consumer_entity.cfg.get('slots').get('nodes')
                     resources_acquired = 0
                     if resource == 'cores':
-                        for node in consumer_nodes:
-                            for cores_map in node[2]:
-                                resources_acquired += len(cores_map)
+                        cores   = c.description['cpu_processes'] * \
+                                  c.description['cpu_threads']
+                        resources_acquired += cores
                     elif resource == 'gpus':
-                        for node in consumer_nodes:
-                            for gpu_map in node[3]:
-                                resources_acquired += len(gpu_map)
+                        gpus    = c.description['gpu_processes']
+                        resources_acquired += len(gpus)
                     else:
                         raise ValueError('unsupported utilization resource')
 
@@ -1032,6 +1041,187 @@ class Session(object):
             ret.extend(self._consistency_state_model())
 
         return list(set(ret))  # make list unique
+
+
+    # --------------------------------------------------------------------------
+    #
+    def usage(self, alloc_entity, alloc_events,
+                    block_entity, block_events,
+                    use_entity,   use_events):
+        '''
+        Parameters:
+            alloc_entity: entity  which allocates resources
+            alloc_events: list of event tuples which specify allocation time
+            block_entity: entity  which blocks resources
+            block_events: list of event tuples which specify blocking time
+            use_entity:   entity  which uses resources
+            use_events:   list of event tuples which specify usage time
+
+        Semantics:
+
+            This method creates a dict with three entries: `alloc`, `block`,
+            `use`.  Those three dict entries in turn have a a dict of entity IDs
+            for all entities which have blocks in the respective category, and
+            foreach of those entity IDs the dict values will be a list of
+            rectangles.
+
+            The semantics is as follows:
+
+              - a resource is considered
+                - `alloc`ated when it is owned by the RCT application;
+                - `block`ed when it is reserveed for a specific task;
+                - `use`d when it is utilized by that task.
+
+              - each of the rectangles represents a continuous block of
+                resources which is alloced / blocked / used:
+                - x_0 time when alloc/block/usage begins
+                - x_1 time when alloc/block/usage ends
+                - y_0 lowest index of a continuous block of resource IDs
+                - y_1 highest index of a continuous block of resource IDs
+
+              - any specific entity (pilot, task) can have a *set* of such
+                resource blocks, for example, a task might be placed over
+                multiple, non-consecutive nodes
+
+              - gpu and cpu resources are rendered as separate blocks
+                (rectangles).
+
+        Example (RP):
+
+            usage('pilot',[{ru.STATE: None, ru.EVENT: 'bootstrap_0_start'},
+                           {ru.STATE: None, ru.EVENT: 'bootstrap_0_stop' }],
+                  'unit', [{ru.STATE: None, ru.EVENT: 'schedule_ok'      },
+                           {ru.STATE: None, ru.EVENT: 'unschedule_stop'  }],
+                  'unit', [{ru.STATE: None, ru.EVENT: 'exec_start'       },
+                           {ru.STATE: None, ru.EVENT: 'exec_stop'        }])
+        '''
+
+        # this is currently only supported for RP sessions, as we only know for
+        # pilots and units how to dig resource information out of session and
+        # entity metadata.
+        assert(self.stype == 'radical.pilot'), \
+               'stype %s unsupported' % self._stype
+
+        # for RP sessions, create resource indices which can be used to
+        # determine the y-axis values for the rectangles.  This is basically
+        # a dict of node_names for each alloc_entity which points to two indexes
+        # for each node: one starting index for GPUs, and one for CPU cores
+        res_idx = dict()
+
+        idx = 0
+        for ae in self.get(etype=alloc_entity):
+            uid   = ae.uid
+            nodes = ae.cfg['resource_details']['rm_info']['node_list']
+            cpn   = ae.cfg['resource_details']['rm_info']['cores_per_node']
+            gpn   = ae.cfg['resource_details']['rm_info']['gpus_per_node']
+
+            if ae.uid not in res_idx:
+                res_idx[ae.uid] = dict()
+
+            res_idx[ae.uid]['_min'] = idx
+
+            for n in nodes:
+                res_idx[ae.uid][n[1]] = [[idx      , idx + cpn       - 1],
+                                         [idx + cpn, idx + cpn + gpn - 1]]
+                idx += cpn
+                idx += gpn
+
+            res_idx[ae.uid]['_max'] = idx - 1
+
+        # ----------------------------------------------------------------------
+        # RP specific helper method to convert given entity information into
+        # a set of y-value ranges.  This returns a tuple of lists where each
+        # list contains tuples of resource indexes (y-values)
+        def get_res_idx(entity):
+
+            if entity.etype == 'pilot':
+
+              # print '----'
+              # print entity.uid
+              # import pprint
+              # pprint.pprint(res_idx[entity.uid])
+
+                # we assume min/max to cover CPU and GPU
+                return [[[res_idx[entity.uid]['_min'],
+                          res_idx[entity.uid]['_max']]], []]
+
+            elif entity.etype == 'unit':
+
+                # find owning pilot
+                pid = entity.cfg.get('pilot')
+                if not pid:
+                    # no resources used
+                    return [[],[]]
+
+                cpu_idx = list()
+                gpu_idx = list()
+                for slot in entity.cfg['slots']['nodes']:
+                    node_id = slot['uid']
+                    for cslot in slot['core_map']:
+                        for c in cslot:
+                            cpu_idx.append(res_idx[pid][node_id][0][0] + c)
+                    for gslot in slot['gpu_map']:
+                        for g in gslot:
+                            gpu_idx.append(res_idx[pid][node_id][1][0] + g)
+
+                # identify continuous groups of y-values and return
+                return [
+                        [list(g) for g in mit.consecutive_groups(cpu_idx)],
+                        [list(g) for g in mit.consecutive_groups(gpu_idx)]
+                       ]
+        # ----------------------------------------------------------------------
+
+        ret = {'alloc': dict(),
+               'block': dict(),
+               'use'  : dict()}
+
+        etypes = {'alloc': {'etype' : alloc_entity,
+                            'events': alloc_events},
+                  'block': {'etype' : block_entity,
+                            'events': block_events},
+                  'use'  : {'etype' : use_entity,
+                            'events': use_events}}
+
+        for entity in self.get():
+
+            for mode in ['alloc', 'block', 'use']:
+
+                if etypes[mode]['etype'] == entity.etype:
+
+                    event_list = etypes[mode]['events']
+                    if not event_list:
+                        continue
+
+                    if not isinstance(event_list[0], list):
+                        event_list = [event_list]
+
+                    uid = entity.uid
+                    if uid not in ret[mode]:
+                        ret[mode][uid] = list()
+
+                    for events in event_list:
+                        assert len(events) == 2
+
+                        y_values = get_res_idx(entity)
+                        t_values = entity.ranges(event=events)
+
+                      # print
+                      # print uid
+                      # print events
+                      #
+                      # import pprint
+                      # pprint.pprint(t_values)
+                      # pprint.pprint(y_values)
+
+                        for t_range in t_values:
+                            for y_range in y_values[0]:
+                                ret[mode][uid].append([t_range[0], t_range[-1],
+                                                       y_range[0], y_range[-1]])
+                            for y_range in y_values[1]:
+                                ret[mode][uid].append([t_range[0], t_range[-1],
+                                                       y_range[0], y_range[-1]])
+
+        return ret
 
 
     # --------------------------------------------------------------------------
