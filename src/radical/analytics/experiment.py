@@ -119,6 +119,9 @@ class Experiment(object):
         specific session (offset over multiple pilots, if needed).
         '''
 
+        # FIXME: the data structure documented above is not yet implemented
+        # FIXME: the method should not print to stdout during normal operation
+
         data        = dict()  # dict of contributions to utilization
         utilization = dict()  # final utilization
 
