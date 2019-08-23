@@ -4,9 +4,9 @@ import radical.pilot as rp
 
 from .session import Session
 
-# TODO: an RP agent is just another consumer of resources, as ist the pilot
-#       itself.  Oncethis is properly abstracted, we don't need to know
-#       ORDERED_KEYS anymore
+# TODO: an RP agent is just another consumer of resources, as is the pilot
+#       itself.  Once this is properly abstracted, we don't need to know
+#       ORDERED_KEYS anymore.
 
 
 # ------------------------------------------------------------------------------
