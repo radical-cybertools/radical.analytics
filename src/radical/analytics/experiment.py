@@ -33,11 +33,9 @@ class Experiment(object):
         This class represents an RCT experiment, i.e., a series of RA sessions
         which are collectively analyzed.
 
-        `sources` is expected to be a list of tuples of session label and
-        session source paths, the latter pointing to tarballs or session
-        directories.  The session labels must be unique.  The order of tuples
-        (and thus labels and sessions) in the list determines the default order
-        used in plots etc.
+        `sources` is expected to be a list of tuples of session source paths
+        pointing to tarballs or session directories.  The order of tuples in the
+        list determines the default order used in plots etc.
 
         The session type `stype` will be uniformely applied to all sessions.
         '''
