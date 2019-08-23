@@ -38,9 +38,9 @@ class Entity(object):
 
         self._states      = dict()
         self._events      = list()
-        self._consistency = {'log'         : list(), 
-                             'state_model' : None, 
-                             'event_model' : None, 
+        self._consistency = {'log'         : list(),
+                             'state_model' : None,
+                             'event_model' : None,
                              'timestamps'  : None}
 
         self._t_start     = None
@@ -48,6 +48,48 @@ class Entity(object):
         self._ttc         = None
 
         self._initialize(_profile)
+
+
+    # --------------------------------------------------------------------------
+    #
+    def __getstate__(self):
+
+        state = {
+                 'uid'         : self._uid,
+                 'etype'       : self._etype,
+                 'details'     : self._details,
+                 'description' : self._description,
+                 'cfg'         : self._cfg,
+
+                 'states'      : self._states,
+                 'events'      : self._events,
+                 'consistency' : self._consistency,
+
+                 't_start'     : self._t_start,
+                 't_stop'      : self._t_stop,
+                 'ttc'         : self._ttc,
+                }
+
+        return state
+
+
+    # --------------------------------------------------------------------------
+    #
+    def __setstate__(self, state):
+
+        self._uid          = state['uid']
+        self._etype        = state['etype']
+        self._details      = state['details']
+        self._description  = state['description']
+        self._cfg          = state['cfg']
+
+        self._states       = state['states']
+        self._events       = state['events']
+        self._consistency  = state['consistency']
+
+        self._t_start      = state['t_start']
+        self._t_stop       = state['t_stop']
+        self._ttc          = state['ttc']
 
 
     # --------------------------------------------------------------------------
@@ -228,7 +270,7 @@ class Entity(object):
         if not ranges:
             raise ValueError('no duration defined for given constraints')
 
-        return sum(r[1] - r[0] for r in ranges) 
+        return sum(r[1] - r[0] for r in ranges)
 
 
     # --------------------------------------------------------------------------
@@ -256,7 +298,7 @@ class Entity(object):
             state = []
         elif not isinstance(state, list):
             state = [state]
-        
+
         ret = []
 
         for e in event:
@@ -294,7 +336,7 @@ class Entity(object):
 
     # --------------------------------------------------------------------------
     #
-    def ranges(self, state=None, event=None, time=None, 
+    def ranges(self, state=None, event=None, time=None,
                      expand=False, collapse=True):
         """
         This method accepts a set of initial and final conditions, in the form
@@ -311,9 +353,9 @@ class Entity(object):
         second element defines the final condition.  The `time` parameter is
         expected to be a single tuple, or a list of tuples, each defining a pair
         of start and end time which are used to constrain the resulting ranges.
-        States are expected as strings, events as full event tuples 
+        States are expected as strings, events as full event tuples
 
-            [ru.TIME,  ru.NAME, ru.UID,  ru.STATE, 
+            [ru.TIME,  ru.NAME, ru.UID,  ru.STATE,
              ru.EVENT, ru.MSG,  ru.ENTITY]
 
         where empty fields are not applied in the filtering - all other fields

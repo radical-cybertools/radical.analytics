@@ -5,6 +5,8 @@ import copy
 import glob
 import tarfile
 
+import cPickle as pickle
+
 import more_itertools as mit
 import radical.utils  as ru
 
@@ -15,6 +17,8 @@ from .entity import Entity
 #
 class Session(object):
 
+    # --------------------------------------------------------------------------
+    #
     def __init__(self, src, stype, sid=None, _entities=None, _init=True):
         '''
         Create a radical.analytics session for analysis.
@@ -29,66 +33,26 @@ class Session(object):
         directory name.
         '''
 
-        if not os.path.exists(src):
-            raise ValueError('src [%s] does not exist' % src)
+        # if no sid is given, derive it from the src path
+        sid, src, tgt = self._get_sid(sid, src)
 
-        if os.path.isdir(src):
-            pass
+        if tgt and not os.path.exists(tgt):
 
-        elif os.path.isfile(src):
+            # need to extract
+            print 'extract tarball to %s' % tgt
+            try:
+                if ext in ['tbz', 'tar.bz']:
+                    tf = tarfile.open(name=src, mode='r:bz2')
+                    tf.extractall(path=os.path.dirname(tgt))
+                elif ext in ['tgz, tar.gz']:
+                    tf = tarfile.open(name=src, mode='r:gz')
+                    tf.extractall(path=os.path.dirname(tgt))
+                else:
+                    # 'no tarball'
+                    pass
 
-            ext = None
-
-            # src is afile - we assume its a tarball and extract it
-            if  src.endswith('.prof'):
-                # use as is
-                tgt = src
-
-            elif src.endswith('.tgz') or \
-                 src.endswith('.tbz')    :
-                tgt = src[:-4]
-                ext = src[-3:]
-
-            elif src.endswith('.tar.gz') or \
-                 src.endswith('.tar.bz')    :
-                tgt = src[:-7]
-                ext = src[-6:]
-
-            elif src.endswith('.prof'):
-                tgt = None
-
-            else:
-                raise ValueError('src does not look like a tarball or profile')
-
-
-            if tgt and not os.path.exists(tgt):
-
-                # need to extract
-                print 'extract tarball to %s' % tgt
-                try:
-                    if ext in ['tbz', 'tar.bz']:
-                        tf = tarfile.open(name=src, mode='r:bz2')
-                        tf.extractall(path=os.path.dirname(tgt))
-                    elif ext in ['tgz, tar.gz']:
-                        tf = tarfile.open(name=src, mode='r:gz')
-                        tf.extractall(path=os.path.dirname(tgt))
-                    else:
-                        # 'no tarball'
-                        pass
-
-                except Exception as e:
-                    raise RuntimeError('Cannot extract tarball: %s' % repr(e))
-
-            # switch to the extracted data dir
-            if tgt:
-                src = tgt
-
-
-        # if no sid is given, we assume its the directory name
-        if not sid:
-            if src.endswith('/'):
-                src = src[:-1]
-            sid = os.path.basename(src)
+            except Exception as e:
+                raise RuntimeError('Cannot extract tarball: %s' % repr(e))
 
         self._sid   = sid
         self._src   = src
@@ -171,6 +135,125 @@ class Session(object):
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
       # self.consistency()
+
+
+    # --------------------------------------------------------------------------
+    #
+    @staticmethod
+    def _get_sid(sid, src):
+
+        tgt = None
+
+        if not os.path.exists(src):
+            raise ValueError('src [%s] does not exist' % src)
+
+        if os.path.isdir(src):
+            pass
+
+        elif os.path.isfile(src):
+
+            ext = None
+
+            # src is afile - we assume its a tarball and extract it
+            if  src.endswith('.prof'):
+                # use as is
+                tgt = src
+
+            elif src.endswith('.tgz') or \
+                 src.endswith('.tbz')    :
+                tgt = src[:-4]
+                ext = src[-3:]
+
+            elif src.endswith('.tar.gz') or \
+                 src.endswith('.tar.bz')    :
+                tgt = src[:-7]
+                ext = src[-6:]
+
+            elif src.endswith('.prof'):
+                tgt = None
+
+            else:
+                raise ValueError('src does not look like a tarball or profile')
+
+            # switch to the extracted data dir
+            if tgt:
+                src = tgt
+
+        if not sid:
+            if src.endswith('/'):
+                src = src[:-1]
+            sid = os.path.basename(src)
+
+        return sid, src, tgt
+
+
+    # --------------------------------------------------------------------------
+    #
+    def __getstate__(self):
+
+        state = {
+                 'sid'         : self._sid,
+                 'src'         : self._src,
+                 'stype'       : self._stype,
+                 'profile'     : self._profile,
+                 'description' : self._description,
+
+                 't_start'     : self._t_start,
+                 't_stop'      : self._t_stop,
+                 'ttc'         : self._ttc,
+
+                 'entities'    : self._entities,
+                 'properties'  : self._properties,
+                }
+
+        return state
+
+
+    # --------------------------------------------------------------------------
+    #
+    def __setstate__(self, state):
+
+        self._sid         = state['sid']
+        self._src         = state['src']
+        self._stype       = state['stype']
+        self._profile     = state['profile']
+        self._description = state['description']
+
+        self._t_start     = state['t_start']
+        self._t_stop      = state['t_stop']
+        self._ttc         = state['ttc']
+
+        self._entities    = state['entities']
+        self._properties  = state['properties']
+
+        self._log         = ru.Logger('radical.analytics')
+        self._rep         = ru.Reporter('radical.analytics')
+
+
+    # --------------------------------------------------------------------------
+    #
+    @staticmethod
+    def create(src, stype, sid=None, _entities=None, _init=True, cache=True):
+
+        sid, src, tgt = Session._get_sid(sid, src)
+        base  = ru.get_radical_base('radical.analytics.cache')
+        cache = '%s/%s.pickle' % (base, sid)
+
+        if _entities or not cache:
+            # no caching
+            session = Session(src, stype, sid, _entities, _init)
+
+        if os.path.isfile(cache):
+            with open(cache, 'r') as fin:
+                data = fin.read()
+                session = pickle.loads(data)
+
+        else:
+            with open(cache, 'w') as fout:
+                session = Session(src, stype, sid, _entities, _init)
+                fout.write(pickle.dumps(session, protocol=pickle.HIGHEST_PROTOCOL))
+
+        return session
 
 
     # --------------------------------------------------------------------------
