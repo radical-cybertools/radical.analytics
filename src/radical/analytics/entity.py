@@ -221,10 +221,12 @@ class Entity(object):
     def as_dict(self):
 
         return {
-                'uid'    : self._uid,
-                'etype'  : self._etype,
-                'states' : self._states,
-                'events' : self._events
+                'uid'        : self._uid,
+                'etype'      : self._etype,
+                'states'     : self._states,
+                'events'     : self._events,
+                'cfg'        : self._cfg,
+                'description': self._description,
                }
 
 

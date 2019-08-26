@@ -1,5 +1,6 @@
 
 import os
+import bz2
 import sys
 import copy
 import glob
@@ -237,19 +238,19 @@ class Session(object):
 
         sid, src, tgt = Session._get_sid(sid, src)
         base  = ru.get_radical_base('radical.analytics.cache')
-        cache = '%s/%s.pickle' % (base, sid)
+        cache = '%s/%s.pickle.bz2' % (base, sid)
 
         if _entities or not cache:
             # no caching
             session = Session(src, stype, sid, _entities, _init)
 
         if os.path.isfile(cache):
-            with open(cache, 'r') as fin:
+            with bz2.BZ2File(cache, 'r') as fin:
                 data = fin.read()
                 session = pickle.loads(data)
 
         else:
-            with open(cache, 'w') as fout:
+            with bz2.BZ2File(cache, 'w') as fout:
                 session = Session(src, stype, sid, _entities, _init)
                 fout.write(pickle.dumps(session, protocol=pickle.HIGHEST_PROTOCOL))
 
@@ -857,8 +858,8 @@ class Session(object):
 
         times = list()
         if sampling:
-            # get min and max timestamp, and add create sampling points at regular
-            # intervals
+            # get min and max timestamp, and create sampling points at
+            # regular intervals
             r_min = timestamps[0]
             r_max = timestamps[-1]
 
@@ -866,7 +867,6 @@ class Session(object):
             while t < r_max:
                 times.append(t)
                 t += sampling
-          # times.append(t)
             times.append(r_max)
 
         else:
