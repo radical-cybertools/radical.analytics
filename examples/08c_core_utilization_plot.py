@@ -60,7 +60,7 @@ import radical.analytics as ra
 # NOTE: we actually use core-seconds instead of core-hours.  So what?!
 #
 
-metrics = [
+metrics_prte = [
 
         # pilot overheads (global)
         ['Pilot Startup',     ['boot', 'setup_1']],
@@ -80,6 +80,27 @@ metrics = [
         ['Unschedule',        ['unschedule']],
 ]
 
+
+metrics_jsrun = [
+
+        # pilot overheads (global)
+        ['Pilot Startup',     ['boot', 'setup_1']],
+        ['Pilot Termination', ['term' ]],
+
+        # derived pilot durations
+        ['Agent Nodes',       ['agent']],
+        ['Warmup',            ['cold' ]],
+        ['Draining',          ['drain']],
+        ['Idle',              ['idle' ]],
+
+        # unit durations (PRTE)
+        ['Prepare Execution', ['exec_queue', 'exec_prep']],
+        ['Execution RP',      ['exec_rp', 'exec_sh', 'term_sh', 'term_rp']],
+        ['Execution Cmd',     ['exec_cmd']],
+        ['Unschedule',        ['unschedule']],
+]
+
+metrics = metrics_jsrun
 
 # ------------------------------------------------------------------------------
 #
