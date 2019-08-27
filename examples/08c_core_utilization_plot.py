@@ -141,10 +141,10 @@ if __name__ == '__main__':
         this   = step / 1.0
         legend = list()
 
-        x_min = 0.0
-        x_max = 0.0
-        y_min = 0.0
-        y_max = 0.0
+        x_min = None
+        x_max = None
+        y_min = None
+        y_max = None
 
         for metric in metrics:
 
@@ -168,6 +168,11 @@ if __name__ == '__main__':
                         width  = block[1] - block[0]
                         height = block[3] - block[2] + 1.0
 
+                        if x_min is None: x_min = orig_x
+                        if x_max is None: x_min = orig_x + width
+                        if y_min is None: y_min = orig_x
+                        if y_max is None: y_min = orig_x + height
+
                         x_min = min(x_min, orig_x)
                         y_min = min(y_min, orig_y)
                         x_max = max(x_max, orig_x + width)
@@ -177,7 +182,7 @@ if __name__ == '__main__':
                                                       width, height,
                                                       facecolor=color,
                                                       edgecolor='black',
-                                                      fill=True, lw=0.1)
+                                                      fill=True, lw=0.0)
                         ax.add_patch(patch)
 
         ax.legend(legend, [m[0] for m in metrics], ncol=6,
