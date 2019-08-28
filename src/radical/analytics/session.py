@@ -45,9 +45,11 @@ class Session(object):
                 if ext in ['tbz', 'tar.bz']:
                     tf = tarfile.open(name=src, mode='r:bz2')
                     tf.extractall(path=os.path.dirname(tgt))
+
                 elif ext in ['tgz, tar.gz']:
                     tf = tarfile.open(name=src, mode='r:gz')
                     tf.extractall(path=os.path.dirname(tgt))
+
                 else:
                     # 'no tarball'
                     pass
@@ -55,30 +57,39 @@ class Session(object):
             except Exception as e:
                 raise RuntimeError('Cannot extract tarball: %s' % repr(e))
 
+        # ensure that the src tree now exists
+        assert(os.path.exists(src))
+
         self._sid   = sid
         self._src   = src
         self._stype = stype
+        self._init  = _init
 
       # print 'sid: %s [%s]' % (sid, stype)
       # print 'src: %s'      % src
 
-        if stype == 'radical':
+        self._loaded = False
 
-            # src is expected to point either to a single profile, or to
-            # a directory tree containing profiles
-            if not src:
-                raise ValueError('RA session types need `src` specified')
+
+    # --------------------------------------------------------------------------
+    #
+    def _load(self):
+
+        if self._loaded:
+            return
+
+        if self._stype == 'radical':
 
             profiles = list()
-            if os.path.isfile(src):
-                profiles.append(src)
+            if os.path.isfile(self._src):
+                profiles.append(self._src)
             else:
-                for root, dirs, files in os.walk(src):
+                for root, dirs, files in os.walk(self._src):
                     for f in files:
                         if f.endswith('.prof'):
                             profiles.append('%s/%s' % (root, f))
 
-            profiles                = ru.read_profiles(profiles, sid=sid)
+            profiles                = ru.read_profiles(profiles, sid=self._sid)
             self._profile, accuracy = ru.combine_profiles(profiles)
             self._description       = {'tree'     : dict(),
                                        'entities' : list(),
@@ -86,31 +97,36 @@ class Session(object):
                                        'accuracy' : 0.0}
 
 
-        elif stype == 'radical.pilot':
+        elif self._stype == 'radical.pilot':
 
             import radical.pilot.utils as rpu
+
             self._profile, accuracy, hostmap \
-                              = rpu.get_session_profile    (sid=sid, src=self._src)
-            self._description = rpu.get_session_description(sid=sid, src=self._src)
+                              = rpu.get_session_profile    (sid=self._sid,
+                                                            src=self._src)
+            self._description = rpu.get_session_description(sid=self._sid,
+                                                            src=self._src)
 
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
 
 
-        elif stype == 'radical.entk':
+        elif self._stype == 'radical.entk':
 
             import radical.entk.utils as reu
 
             self._profile, accuracy, hostmap \
-                              = reu.get_session_profile    (sid=sid, src=self._src)
-            self._description = reu.get_session_description(sid=sid, src=self._src)
+                              = reu.get_session_profile    (sid=self._sid,
+                                                            src=self._src)
+            self._description = reu.get_session_description(sid=self._sid,
+                                                            src=self._src)
 
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
 
 
         else:
-            raise ValueError('unsupported session type [%s]' % stype)
+            raise ValueError('unsupported session type [%s]' % self._stype)
 
 
         self._t_start = None
@@ -119,25 +135,26 @@ class Session(object):
         self._log     = ru.Logger('radical.analytics')
         self._rep     = ru.Reporter('radical.analytics')
 
-
         # internal state is represented by a dict of entities:
         # dict keys are entity uids (which are assumed to be unique per
         # session), dict values are ra.Entity instances.
         self._entities = dict()
-        if _init:
+        if self._init:
             self._initialize_entities(self._profile)
 
         # we do some bookkeeping in self._properties where we keep a list of
         # property values around which we encountered in self._entities.
         self._properties = dict()
-        if _init:
+        if self._init:
             self._initialize_properties()
 
-        print 'session loaded'
+        print 'session loaded: %s' % self._sid
 
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
       # self.consistency()
+
+        self._loaded = True
 
 
     # --------------------------------------------------------------------------
@@ -172,6 +189,10 @@ class Session(object):
                 tgt = src[:-7]
                 ext = src[-6:]
 
+            elif src.endswith('.tar.bz2')    :
+                tgt = src[:-8]
+                ext = src[-7:]
+
             elif src.endswith('.prof'):
                 tgt = None
 
@@ -193,6 +214,8 @@ class Session(object):
     # --------------------------------------------------------------------------
     #
     def __getstate__(self):
+
+        self._load()
 
         state = {
                  'sid'         : self._sid,
@@ -298,18 +321,22 @@ class Session(object):
     #
     @property
     def t_start(self):
+        self._load()
         return self._t_start
 
     @property
     def t_stop(self):
+        self._load()
         return self._t_stop
 
     @property
     def ttc(self):
+        self._load()
         return self._ttc
 
     @property
     def t_range(self):
+        self._load()
         return [self._t_start, self._t_stop]
 
     @property
@@ -331,6 +358,8 @@ class Session(object):
         NOTE: We derive entity types via some heuristics for now: we assume the
         first part of any dot-separated uid to signify an entity type.
         '''
+
+        self._load()
 
         # create entities from the profile events:
         entity_events = dict()
@@ -382,6 +411,8 @@ class Session(object):
           - state (state identifiers)
         '''
 
+        self._load()
+
         # FIXME: initializing properties can be expensive, and we might not
         #        always need them anyway.  So we can lazily defer this
         #        initialization stop until the first query which requires them.
@@ -432,6 +463,8 @@ class Session(object):
     #
     def _apply_filter(self, etype=None, uid=None, state=None,
                             event=None, time=None):
+
+        self._load()
 
         # iterate through all self._entities and collect UIDs of all entities
         # which match the given set of filters (after removing all events which
@@ -487,6 +520,8 @@ class Session(object):
     #
     def _dump(self):
 
+        self._load()
+
         for uid,entity in self._entities.iteritems():
             print '\n\n === %s' % uid
             entity.dump()
@@ -499,6 +534,8 @@ class Session(object):
     # --------------------------------------------------------------------------
     #
     def list(self, pname=None):
+
+        self._load()
 
         if not pname:
             # return the name of all known properties
@@ -526,6 +563,8 @@ class Session(object):
     #
     def get(self, etype=None, uid=None, state=None, event=None, time=None):
 
+        self._load()
+
         uids = self._apply_filter(etype=etype, uid=uid, state=state,
                                   event=event, time=time)
         return [self._entities[uid] for uid in uids]
@@ -535,6 +574,8 @@ class Session(object):
     #
     def filter(self, etype=None, uid=None, state=None, event=None, time=None,
                inplace=True):
+
+        self._load()
 
         uids = self._apply_filter(etype=etype, uid=uid, state=state,
                                   event=event, time=time)
@@ -559,6 +600,8 @@ class Session(object):
     # --------------------------------------------------------------------------
     #
     def describe(self, mode=None, etype=None):
+
+        self._load()
 
         if mode not in [None, 'state_model', 'state_values',
                               'event_model', 'relations',
@@ -651,6 +694,8 @@ class Session(object):
         collapse the resulting set of ranges.
         '''
 
+        self._load()
+
         ranges = list()
         for uid,entity in self._entities.iteritems():
             try:
@@ -694,6 +739,8 @@ class Session(object):
         The returned list will be sorted.
         '''
 
+        self._load()
+
         ret = list()
         for uid,entity in self._entities.iteritems():
             tmp = entity.timestamps(state=state, event=event, time=time)
@@ -719,6 +766,8 @@ class Session(object):
 
         where `rp.FINAL` is a list of final unit states.
         '''
+
+        self._load()
 
         if not ranges:
             ranges = self.ranges(state, event, time)
@@ -766,6 +815,8 @@ class Session(object):
            session.filter(etype='unit').concurrency(state=[rp.AGENT_EXECUTING,
                                         rp.AGENT_STAGING_OUTPUT_PENDING])
         '''
+
+        self._load()
 
         ranges = list()
         for uid,e in self._entities.iteritems():
@@ -852,6 +903,8 @@ class Session(object):
 
            session.filter(etype='unit').rate(state=[rp.AGENT_EXECUTING])
         '''
+
+        self._load()
 
         timestamps = self.timestamps(event=event, state=state, time=time,
                                      first=first)
@@ -981,11 +1034,12 @@ class Session(object):
                           consumer_events= [{ru.EVENT: 'exec_start'},
                                             {ru.EVENT: 'exec_stop' }])
         '''
-        ret = dict()
+
+        self._load()
 
         # Filter the session to get a session of the owners. If that is empty
         # return an empty dict
-
+        ret       = dict()
         relations = self .describe('relations', [owner, consumer])
         if not relations:
             return dict()
@@ -1107,6 +1161,8 @@ class Session(object):
         violations.
         '''
 
+        self._load()
+
         # FIXME: we could move the method to the entity, so that we can check
         #        consistency for each entity individually.
 
@@ -1183,6 +1239,8 @@ class Session(object):
                   'unit', [{ru.STATE: None, ru.EVENT: 'exec_start'       },
                            {ru.STATE: None, ru.EVENT: 'exec_stop'        }])
         '''
+
+        self._load()
 
         # this is currently only supported for RP sessions, as we only know for
         # pilots and units how to dig resource information out of session and
@@ -1315,6 +1373,8 @@ class Session(object):
     # --------------------------------------------------------------------------
     #
     def _consistency_state_model(self):
+
+        self._load()
 
         ret = list()  # list of inconsistent entity IDs
 

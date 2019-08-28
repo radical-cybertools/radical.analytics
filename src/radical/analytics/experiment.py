@@ -152,7 +152,7 @@ class Experiment(object):
                 else         : glyph = ''
                 rel = 100.0 * val / total
                 stats_rel[sid][name] = rel
-                print '    %-20s: %14.3f  %6.1f%%  %2s  %s' \
+                print '    %-20s: %14.3f  %8.3f%%  %2s  %s' \
                     % (name, val, rel, glyph, parts)
 
             have = 0.0
@@ -177,10 +177,10 @@ class Experiment(object):
             stats_rel[sid]['Other'] = rel_miss
 
             print
-            print '    %-20s: %14.3f  %6.1f%%' % ('total', have, 100.0)
-            print '    %-20s: %14.3f  %6.1f%%' % ('over',  over, rel_over)
-            print '    %-20s: %14.3f  %6.1f%%' % ('work',  work, rel_work)
-            print '    %-20s: %14.3f  %6.1f%%' % ('miss',  miss, rel_miss)
+            print '    %-20s: %14.3f  %8.3f%%' % ('total', have, 100.0)
+            print '    %-20s: %14.3f  %8.3f%%' % ('over',  over, rel_over)
+            print '    %-20s: %14.3f  %8.3f%%' % ('work',  work, rel_work)
+            print '    %-20s: %14.3f  %8.3f%%' % ('miss',  miss, rel_miss)
 
         return provided, consumed, stats_abs, stats_rel
 
