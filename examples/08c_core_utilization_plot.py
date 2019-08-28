@@ -68,7 +68,7 @@ metrics_prte = [
 
         # derived pilot durations
         ['Agent Nodes',       ['agent']],
-        ['Warmup',            ['cold' ]],
+        ['Warmup',            ['warm' ]],
         ['Draining',          ['drain']],
         ['Idle',              ['idle' ]],
 
@@ -81,7 +81,7 @@ metrics_prte = [
 ]
 
 
-metrics_jsrun = [
+metrics_default = [
 
         # pilot overheads (global)
         ['Pilot Startup',     ['boot', 'setup_1']],
@@ -89,7 +89,7 @@ metrics_jsrun = [
 
         # derived pilot durations
         ['Agent Nodes',       ['agent']],
-        ['Warmup',            ['cold' ]],
+        ['Warmup',            ['warm' ]],
         ['Draining',          ['drain']],
         ['Idle',              ['idle' ]],
 
@@ -193,6 +193,7 @@ if __name__ == '__main__':
 
         plt.xlim([x_min, x_max])
         plt.ylim([y_min, y_max])
+      # plt.xticks(list(range(int(x_min)-1, int(x_max)+1)))
         fig.savefig('%s_core_allocation.png' % sid)
         fig.savefig('%s_core_allocation.pdf' % sid)
         plt.show()

@@ -116,7 +116,8 @@ class Experiment(object):
 
             for pid in provided[sid]['total']:
                 for box in provided[sid]['total'][pid]:
-                    stats_abs[sid]['total'] += (box[1] - box[0]) * (box[3] - box[2])
+                    stats_abs[sid]['total'] += (box[1] - box[0]) * \
+                                               (box[3] - box[2]  + 1)
             total = stats_abs[sid]['total']
 
             for metric in metrics:
@@ -129,10 +130,12 @@ class Experiment(object):
 
                 if name not in stats_abs[sid]:
                     stats_abs[sid][name] = 0.0
+
                 for part in parts:
                     for uid in consumed[sid][part]:
                         for box in consumed[sid][part][uid]:
-                            stats_abs[sid][name] += (box[1] - box[0]) * (box[3] - box[2])
+                            stats_abs[sid][name] += (box[1] - box[0]) * \
+                                                    (box[3] - box[2]  + 1)
 
             print
             print '%s [%d]' % (sid, len(session.get(etype='unit')))
