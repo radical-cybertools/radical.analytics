@@ -133,6 +133,8 @@ class Session(object):
         if _init:
             self._initialize_properties()
 
+        print 'session loaded'
+
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
       # self.consistency()
@@ -238,6 +240,7 @@ class Session(object):
 
         sid, src, tgt = Session._get_sid(sid, src)
         base  = ru.get_radical_base('radical.analytics.cache')
+      # cache = '%s/%s.pickle.bz2' % (base, sid)
         cache = '%s/%s.pickle.bz2' % (base, sid)
 
         if _entities or not cache:
@@ -245,12 +248,14 @@ class Session(object):
             session = Session(src, stype, sid, _entities, _init)
 
         if os.path.isfile(cache):
-            with bz2.BZ2File(cache, 'r') as fin:
+          # with bz2.BZ2File(cache, 'r') as fin:
+            with open(cache, 'r') as fin:
                 data = fin.read()
                 session = pickle.loads(data)
 
         else:
-            with bz2.BZ2File(cache, 'w') as fout:
+          # with bz2.BZ2File(cache, 'w') as fout:
+            with open(cache, 'w') as fout:
                 session = Session(src, stype, sid, _entities, _init)
                 fout.write(pickle.dumps(session, protocol=pickle.HIGHEST_PROTOCOL))
 

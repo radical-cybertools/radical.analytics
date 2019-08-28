@@ -100,7 +100,7 @@ metrics_jsrun = [
         ['Unschedule',        ['unschedule']],
 ]
 
-metrics = metrics_jsrun
+metrics = metrics_prte
 
 # ------------------------------------------------------------------------------
 #
@@ -122,12 +122,13 @@ if __name__ == '__main__':
         xkeys.append('%s\n%s' % (n_units, p_size))
 
     # get utilization information
-    provided, consumed, stats = exp.utilization(metrics=metrics)
-  # provided, consumed, stats = exp.utilization(metrics='/path/metrics.json')
+    provided, consumed, stats_abs, stats_rel = exp.utilization(metrics=metrics)
+  # provided, consumed, stats_abs, stats_rel = exp.utilization(metrics='/path/metrics.json')
 
   # pprint.pprint(provided)
   # pprint.pprint(consumed)
-  # pprint.pprint(stats)
+  # pprint.pprint(stats_abs)
+  # pprint.pprint(stats_rel)
 
 
     # --------------------------------------------------------------------------
@@ -210,10 +211,6 @@ if __name__ == '__main__':
     ind    = np.arange(len(xkeys))  # locations for the bars on the x-axis
     width  = 0.35                      # width of the bars
 
-    totals = dict()
-    for sid in stats:
-        totals[sid] = stats[sid]['total']
-
     for metric in metrics + ['Other']:
 
         color = cmap(this)
@@ -228,7 +225,7 @@ if __name__ == '__main__':
             name  = metric
             parts = [metric]
 
-        values = [100.0 * stats[sid][name] / totals[sid] for sid in stats]
+        values = [stats_rel[sid][name] for sid in stats_rel]
         plots.append(plt.bar(ind, values, width, bottom=bottom))
         bottom += values
         labels.append(name)

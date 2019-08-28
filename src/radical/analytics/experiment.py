@@ -98,9 +98,10 @@ class Experiment(object):
 
         # FIXME: the data structure documented above is not yet implemented
 
-        provided = dict()
-        consumed = dict()
-        stats    = dict()
+        provided  = dict()
+        consumed  = dict()
+        stats_abs = dict()
+        stats_rel = dict()
 
         # obtain resources provisions and consumptions for all sessions
         for session in self._sessions:
@@ -110,12 +111,13 @@ class Experiment(object):
             consumed[sid] = rp.utils.get_consumed_resources(session)
 
             total = 0.0
-            stats[sid] = {'total': 0.0}
+            stats_abs[sid] = {'total':   0.0}
+            stats_rel[sid] = {'total': 100.0}
 
             for pid in provided[sid]['total']:
                 for box in provided[sid]['total'][pid]:
-                    stats[sid]['total'] += (box[1] - box[0]) * (box[3] - box[2])
-            total = stats[sid]['total']
+                    stats_abs[sid]['total'] += (box[1] - box[0]) * (box[3] - box[2])
+            total = stats_abs[sid]['total']
 
             for metric in metrics:
                 if isinstance(metric, list):
@@ -125,12 +127,12 @@ class Experiment(object):
                     name  = metric
                     parts = [metric]
 
-                if name not in stats[sid]:
-                    stats[sid][name] = 0.0
+                if name not in stats_abs[sid]:
+                    stats_abs[sid][name] = 0.0
                 for part in parts:
                     for uid in consumed[sid][part]:
                         for box in consumed[sid][part][uid]:
-                            stats[sid][name] += (box[1] - box[0]) * (box[3] - box[2])
+                            stats_abs[sid][name] += (box[1] - box[0]) * (box[3] - box[2])
 
             print
             print '%s [%d]' % (sid, len(session.get(etype='unit')))
@@ -142,30 +144,34 @@ class Experiment(object):
                     name  = metric
                     parts = ''
 
-                val = stats[sid][name]
+                val = stats_abs[sid][name]
                 if val == 0.0: glyph = '!'
                 else         : glyph = ''
                 rel = 100.0 * val / total
+                stats_rel[sid][name] = rel
                 print '    %-20s: %14.3f  %6.1f%%  %2s  %s' \
                     % (name, val, rel, glyph, parts)
 
             have = 0.0
             over = 0.0
             work = 0.0
-            for metric in sorted(stats[sid].keys()):
+            for metric in sorted(stats_abs[sid].keys()):
                 if metric == 'total':
-                    have  += stats[sid][metric]
+                    have  += stats_abs[sid][metric]
                 else:
                     if metric == 'Execution Cmd':
-                        work  += stats[sid][metric]
+                        work  += stats_abs[sid][metric]
                     else:
-                        over  += stats[sid][metric]
+                        over  += stats_abs[sid][metric]
 
-                miss = have - over - work
+            miss = have - over - work
 
-                rel_over = 100.0 * over / total
-                rel_work = 100.0 * work / total
-                rel_miss = 100.0 * miss / total
+            rel_over = 100.0 * over / total
+            rel_work = 100.0 * work / total
+            rel_miss = 100.0 * miss / total
+
+            stats_abs[sid]['Other'] = miss
+            stats_rel[sid]['Other'] = rel_miss
 
             print
             print '    %-20s: %14.3f  %6.1f%%' % ('total', have, 100.0)
@@ -173,9 +179,7 @@ class Experiment(object):
             print '    %-20s: %14.3f  %6.1f%%' % ('work',  work, rel_work)
             print '    %-20s: %14.3f  %6.1f%%' % ('miss',  miss, rel_miss)
 
-            stats[sid]['Other'] = miss
-
-        return provided, consumed, stats
+        return provided, consumed, stats_abs, stats_rel
 
 
     # --------------------------------------------------------------------------
