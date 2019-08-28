@@ -62,42 +62,32 @@ import radical.analytics as ra
 
 metrics_prte = [
 
-        # pilot overheads (global)
-        ['Pilot Startup',     ['boot', 'setup_1']],
-        ['Pilot Termination', ['term' ]],
-
-        # derived pilot durations
         ['Agent Nodes',       ['agent']],
+        ['Pilot Startup',     ['boot', 'setup_1']],
         ['Warmup',            ['warm' ]],
-        ['Draining',          ['drain']],
-        ['Idle',              ['idle' ]],
-
-        # unit durations (PRTE)
         ['Prepare Execution', ['exec_queue', 'exec_prep']],
         ['Execution RP',      ['exec_rp', 'exec_sh', 'term_sh', 'term_rp']],
         ['Execution PRTE',    ['prte_phase_1', 'prte_phase_2', 'prte_phase_3']],
         ['Execution Cmd',     ['exec_cmd']],
         ['Unschedule',        ['unschedule']],
+        ['Draining',          ['drain']],
+        ['Pilot Termination', ['term' ]],
+        ['Idle',              ['idle' ]],
 ]
 
 
 metrics_default = [
 
-        # pilot overheads (global)
-        ['Pilot Startup',     ['boot', 'setup_1']],
-        ['Pilot Termination', ['term' ]],
-
-        # derived pilot durations
         ['Agent Nodes',       ['agent']],
+        ['Pilot Startup',     ['boot', 'setup_1']],
         ['Warmup',            ['warm' ]],
-        ['Draining',          ['drain']],
-        ['Idle',              ['idle' ]],
-
-        # unit durations (PRTE)
         ['Prepare Execution', ['exec_queue', 'exec_prep']],
+        ['Pilot Termination', ['term' ]],
         ['Execution RP',      ['exec_rp', 'exec_sh', 'term_sh', 'term_rp']],
         ['Execution Cmd',     ['exec_cmd']],
         ['Unschedule',        ['unschedule']],
+        ['Draining',          ['drain']],
+        ['Idle',              ['idle' ]],
 ]
 
 metrics = metrics_prte
