@@ -107,19 +107,26 @@ metrics = metrics_prte
 if __name__ == '__main__':
 
     sources = sys.argv[1:]
-    xkeys   = list()  # x-axis labels
+    xkeys   = dict()  # x-axis labels
+    sids    = list()  # need to sort SIDs
 
     exp = ra.Experiment(sources, stype='radical.pilot')
 
     # get the numbers we actually want to plot
     for session in exp.sessions:
 
+        sid = session.uid
         n_units = len(session.get(etype='unit'))
         p_size  = 0
         for pilot in session.get(etype='pilot'):
             p_size += pilot.description['cores']
 
-        xkeys.append('%s\n%s' % (n_units, p_size))
+        xkeys[sid] = [n_units, p_size]
+        sids.append(sid)
+
+    # sort sessions by pilot size
+    sids = sorted(sids, key=lambda sid: xkeys[sid][1])
+
 
     # get utilization information
     provided, consumed, stats_abs, stats_rel = exp.utilization(metrics=metrics)
@@ -130,13 +137,13 @@ if __name__ == '__main__':
   # pprint.pprint(stats_abs)
   # pprint.pprint(stats_rel)
 
+    cmap = mpl.cm.get_cmap('tab20c')
 
     # --------------------------------------------------------------------------
     # core utilization over time (box plot)
-    for sid in consumed:
+    for sid in sids:
         fig  = plt.figure(figsize=(20,14))
         ax   = fig.add_subplot(111)
-        cmap = mpl.cm.get_cmap('tab20c')
 
         step   = 1.0  / (len(metrics) + 1)
         this   = step / 1.0
@@ -206,11 +213,12 @@ if __name__ == '__main__':
     # http://matplotlib.org/examples/pylab_examples/bar_stacked.html
     #
     plt.figure(figsize=(20,14))
-    bottom = np.zeros(len(xkeys))
+    bottom = np.zeros(len(exp.sessions))
+    ind    = np.arange(len(exp.sessions))  # locations of bars on x-axis
+    width  = 0.35                          # width of bars
+
     labels = list()
     plots  = list()
-    ind    = np.arange(len(xkeys))  # locations for the bars on the x-axis
-    width  = 0.35                      # width of the bars
 
     for metric in metrics + ['Other']:
 
@@ -226,7 +234,7 @@ if __name__ == '__main__':
             name  = metric
             parts = [metric]
 
-        values = [stats_rel[sid][name] for sid in stats_rel]
+        values = [stats_rel[sid][name] for sid in sids]
         plots.append(plt.bar(ind, values, width, bottom=bottom))
         bottom += values
         labels.append(name)
@@ -237,7 +245,7 @@ if __name__ == '__main__':
     plt.xlabel('#CU / #cores')
     plt.ylabel('utilization (% of total resources)')
     plt.title ('pilot utilization over workload size (#units)')
-    plt.xticks(ind, xkeys)
+    plt.xticks(ind, ['%s / %s' % (xkeys[sid][0], xkeys[sid][1]) for sid in sids])
 
     plt.legend([p[0] for p in plots], labels, ncol=5, loc='upper left',
                bbox_to_anchor=(0,1.13))
