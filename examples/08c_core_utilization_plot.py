@@ -120,8 +120,11 @@ if __name__ == '__main__':
 
 
     # get utilization information
-    provided, consumed, stats_abs, stats_rel = exp.utilization(metrics=metrics)
+    provided, consumed, stats_abs, stats_rel, info = exp.utilization(metrics=metrics)
   # provided, consumed, stats_abs, stats_rel = exp.utilization(metrics='/path/metrics.json')
+
+    with open('%s.stats' % sid, 'w') as fout:
+        fout.write('\n%s\n\n' % info)
 
   # pprint.pprint(provided)
   # pprint.pprint(consumed)

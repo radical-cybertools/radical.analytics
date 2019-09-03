@@ -260,7 +260,7 @@ class Session(object):
          #      fout.write(pickle.dumps(session, protocol=pickle.HIGHEST_PROTOCOL))
 
         except Exception as e:
-            print 'cache failed: %s' % e
+            print 'cache read failed: %s' % e
             with open(cache, 'wb') as fout:
                 session = Session(src, stype, sid, _entities, _init)
                 fout.write(pickle.dumps(session, protocol=pickle.HIGHEST_PROTOCOL))

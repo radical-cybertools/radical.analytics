@@ -137,8 +137,8 @@ class Experiment(object):
                             stats_abs[sid][name] += (box[1] - box[0]) * \
                                                     (box[3] - box[2]  + 1)
 
-            print
-            print '%s [%d]' % (sid, len(session.get(etype='unit')))
+            info  = ''
+            info += '%s [%d]\n' % (sid, len(session.get(etype='unit')))
             for metric in metrics + ['total']:
                 if isinstance(metric, list):
                     name  = metric[0]
@@ -152,8 +152,8 @@ class Experiment(object):
                 else         : glyph = ''
                 rel = 100.0 * val / total
                 stats_rel[sid][name] = rel
-                print '    %-20s: %14.3f  %8.3f%%  %2s  %s' \
-                    % (name, val, rel, glyph, parts)
+                info += '    %-20s: %14.3f  %8.3f%%  %2s  %s\n' \
+                      % (name, val, rel, glyph, parts)
 
             have = 0.0
             over = 0.0
@@ -176,13 +176,13 @@ class Experiment(object):
             stats_abs[sid]['Other'] = miss
             stats_rel[sid]['Other'] = rel_miss
 
-            print
-            print '    %-20s: %14.3f  %8.3f%%' % ('total', have, 100.0)
-            print '    %-20s: %14.3f  %8.3f%%' % ('over',  over, rel_over)
-            print '    %-20s: %14.3f  %8.3f%%' % ('work',  work, rel_work)
-            print '    %-20s: %14.3f  %8.3f%%' % ('miss',  miss, rel_miss)
+            info += '\n'
+            info += '    %-20s: %14.3f  %8.3f%%\n' % ('total', have, 100.0)
+            info += '    %-20s: %14.3f  %8.3f%%\n' % ('over',  over, rel_over)
+            info += '    %-20s: %14.3f  %8.3f%%\n' % ('work',  work, rel_work)
+            info += '    %-20s: %14.3f  %8.3f%%\n' % ('miss',  miss, rel_miss)
 
-        return provided, consumed, stats_abs, stats_rel
+        return provided, consumed, stats_abs, stats_rel, info
 
 
     # --------------------------------------------------------------------------
