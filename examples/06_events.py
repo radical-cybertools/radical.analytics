@@ -29,7 +29,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 2: stype = 'radical.pilot'
     else                 : stype = sys.argv[2]
 
-    session = ra.Session(src, stype)
+    session = ra.Session.create(src, stype)
 
     # A formatting helper before starting...
     def ppheader(message):
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     #
     # We first get the respective time ranges for all units, just to have a look
     # at them, and then compute the overall duration
-    ppheader("Time spent by the units in exec-preparation") 
+    ppheader("Time spent by the units in exec-preparation")
     units = session.filter(etype='unit', inplace=False)
     print '#units   : %d' % len(units.get())
 

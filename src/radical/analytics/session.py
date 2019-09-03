@@ -240,19 +240,28 @@ class Session(object):
 
         sid, src, tgt = Session._get_sid(sid, src)
         base  = ru.get_radical_base('radical.analytics.cache')
-        cache = '%s/%s.pickle.bz2' % (base, sid)
+        cache = '%s/%s.pickle' % (base, sid)
 
         if _entities or not cache:
             # no caching
             session = Session(src, stype, sid, _entities, _init)
 
-        if os.path.isfile(cache):
-            with bz2.BZ2File(cache, 'r') as fin:
+        try:
+            with open(cache, 'rb') as fin:
                 data = fin.read()
                 session = pickle.loads(data)
+         #      import pprint
+         #      j = ru.read_json("%s/%s.json" % (src, sid))
+         #      rd = j['pilot'][0]['resource_details']
+         #      session.get(etype='pilot')[0].cfg['resource_details'] = rd
+         #      pprint.pprint(session.get(etype='pilot')[0].cfg)
+         #  with open(cache, 'wb') as fout:
+         #    # session = Session(src, stype, sid, _entities, _init)
+         #      fout.write(pickle.dumps(session, protocol=pickle.HIGHEST_PROTOCOL))
 
-        else:
-            with bz2.BZ2File(cache, 'w') as fout:
+        except Exception as e:
+            print 'cache failed: %s' % e
+            with open(cache, 'wb') as fout:
                 session = Session(src, stype, sid, _entities, _init)
                 fout.write(pickle.dumps(session, protocol=pickle.HIGHEST_PROTOCOL))
 
@@ -419,7 +428,6 @@ class Session(object):
                 if name not in self._properties['event']:
                     self._properties['event'][name] = 0
                 self._properties['event'][name] += 1
-
 
         if self._entities:
             self._ttc = self._t_stop - self._t_start
@@ -804,6 +812,10 @@ class Session(object):
             for r in ranges:
                 if t >= r[0] and t <= r[1]:
                     cnt += 1
+
+            if ret and [t,cnt] == ret[-1]:
+                # avoid repetition of values
+                continue
 
             ret.append([t, cnt])
 

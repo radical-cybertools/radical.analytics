@@ -90,7 +90,8 @@ metrics_default = [
         ['Idle',              ['idle' ]],
 ]
 
-metrics = metrics_prte
+metrics = metrics_default
+
 
 # ------------------------------------------------------------------------------
 #
@@ -159,7 +160,7 @@ if __name__ == '__main__':
                 parts = [metric]
 
             for part in parts:
-                for uid in consumed[sid][part]:
+                for uid in sorted(consumed[sid][part]):
                     for block in consumed[sid][part][uid]:
                         orig_x = block[0]
                         orig_y = block[2] - 0.5
@@ -192,7 +193,6 @@ if __name__ == '__main__':
         plt.ylim([y_min, y_max])
       # plt.xticks(list(range(int(x_min)-1, int(x_max)+1)))
         fig.savefig('%s_core_allocation.png' % sid)
-        fig.savefig('%s_core_allocation.pdf' % sid)
         plt.show()
 
 
@@ -240,7 +240,6 @@ if __name__ == '__main__':
     plt.legend([p[0] for p in plots], labels, ncol=5, loc='upper left',
                bbox_to_anchor=(0,1.13))
     plt.savefig('08c_core_utilization.png')
-    plt.savefig('08c_core_utilization.pdf')
     plt.show()
 
 
