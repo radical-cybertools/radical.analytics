@@ -119,7 +119,7 @@ def plot_rates(session):
     plt.xlabel('time [s]')
     plt.ylabel('rate (#tasks / sec)')
 
-    fig.savefig('%s_concurrency.png' % session.uid)
+    fig.savefig('%s_rates.png' % session.uid)
   # plt.show()
 
 
@@ -159,9 +159,9 @@ if __name__ == '__main__':
     src = sys.argv[1]
     session = ra.Session.create(src, 'radical.pilot')
 
-    plot_states(session)
+  # plot_states(session)
     plot_rates(session)
-    plot_concurrency(session)
+  # plot_concurrency(session)
 
 
 # ------------------------------------------------------------------------------
