@@ -68,14 +68,18 @@ class Session(object):
             if not src:
                 raise ValueError('RA session types need `src` specified')
 
-            profiles = list()
             if os.path.isfile(src):
                 profiles.append(src)
             else:
-                for root, dirs, files in os.walk(src):
-                    for f in files:
-                        if f.endswith('.prof'):
-                            profiles.append('%s/%s' % (root, f))
+                def _walkdir(path, profiles=[]):
+                    for root, dirs, files in os.walk(path):
+                        for f in files:
+                            if f.endswith('.prof'):
+                                profiles.append('%s/%s' % (root, f))
+                        for d in dirs:
+                            _walkdir('%s/%s' % (path, d), profiles)
+                        return profiles
+                profiles = _walkdir(src)
 
             profiles                = ru.read_profiles(profiles, sid=sid)
             self._profile, accuracy = ru.combine_profiles(profiles)
@@ -83,7 +87,6 @@ class Session(object):
                                        'entities' : list(),
                                        'hostmap'  : dict(),
                                        'accuracy' : 0.0}
-
 
         elif stype == 'radical.pilot':
 
