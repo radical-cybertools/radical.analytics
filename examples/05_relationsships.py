@@ -25,7 +25,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 2: stype = 'radical.pilot'
     else                 : stype = sys.argv[2]
 
-    session = ra.Session(src, stype)
+    session = ra.Session.create(src, stype)
 
     # A formatting helper before starting...
     def ppheader(message):
@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
     ppheader("show pilot-to-resource mapping")
     for pilot in session.get(etype=['pilot']):
-        print '%s : %-35s : %s' % (pilot.uid, 
+        print '%s : %-35s : %s' % (pilot.uid,
                                    pilot.description['resource'],
                                    pilot.cfg['hostid'])
 

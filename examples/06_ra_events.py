@@ -26,7 +26,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     src     = sys.argv[1]
-    session = ra.Session(src, 'radical')
+    session = ra.Session.create(src, 'radical')
 
     units = session.filter(etype='unit', inplace=False)
     print '#units   : %d' % len(units.get())

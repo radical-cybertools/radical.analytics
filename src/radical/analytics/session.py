@@ -1,5 +1,6 @@
 
 import os
+import bz2
 import sys
 import copy
 import glob
@@ -131,6 +132,8 @@ class Session(object):
         if _init:
             self._initialize_properties()
 
+        print 'session loaded'
+
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
       # self.consistency()
@@ -251,13 +254,22 @@ class Session(object):
             # no caching
             session = Session(src, stype, sid, _entities, _init)
 
-        if os.path.isfile(cache):
-            with open(cache, 'r') as fin:
+        try:
+            with open(cache, 'rb') as fin:
                 data = fin.read()
                 session = pickle.loads(data)
+         #      import pprint
+         #      j = ru.read_json("%s/%s.json" % (src, sid))
+         #      rd = j['pilot'][0]['resource_details']
+         #      session.get(etype='pilot')[0].cfg['resource_details'] = rd
+         #      pprint.pprint(session.get(etype='pilot')[0].cfg)
+         #  with open(cache, 'wb') as fout:
+         #    # session = Session(src, stype, sid, _entities, _init)
+         #      fout.write(pickle.dumps(session, protocol=pickle.HIGHEST_PROTOCOL))
 
-        else:
-            with open(cache, 'w') as fout:
+        except Exception as e:
+            print 'cache read failed: %s' % e
+            with open(cache, 'wb') as fout:
                 session = Session(src, stype, sid, _entities, _init)
                 fout.write(pickle.dumps(session, protocol=pickle.HIGHEST_PROTOCOL))
 
@@ -424,7 +436,6 @@ class Session(object):
                 if name not in self._properties['event']:
                     self._properties['event'][name] = 0
                 self._properties['event'][name] += 1
-
 
         if self._entities:
             self._ttc = self._t_stop - self._t_start
@@ -810,6 +821,10 @@ class Session(object):
                 if t >= r[0] and t <= r[1]:
                     cnt += 1
 
+            if ret and [t,cnt] == ret[-1]:
+                # avoid repetition of values
+                continue
+
             ret.append([t, cnt])
 
         return ret
@@ -865,8 +880,8 @@ class Session(object):
 
         times = list()
         if sampling:
-            # get min and max timestamp, and add create sampling points at regular
-            # intervals
+            # get min and max timestamp, and create sampling points at
+            # regular intervals
             r_min = timestamps[0]
             r_max = timestamps[-1]
 
@@ -874,7 +889,6 @@ class Session(object):
             while t < r_max:
                 times.append(t)
                 t += sampling
-          # times.append(t)
             times.append(r_max)
 
         else:
