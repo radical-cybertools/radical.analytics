@@ -61,19 +61,16 @@ if __name__ == '__main__':
     if len(sys.argv) == 2: stype = 'radical.pilot'
     else                 : stype = sys.argv[2]
 
-    session = ra.Session(src, stype)
+    session = ra.Session.create(src, stype)
 
     # A formatting helper before starting...
     def ppheader(message):
         separator = '\n' + 78 * '-' + '\n'
         print separator + message + separator
 
-    session.filter(etype=event_entity, inplace=True)
-    print '#entities: %d' % len(session.get())
-
     data = dict()
     work = dict()
-    for thing in session.get():
+    for thing in session.get(etype=event_entity):
 
         tstamps = list()
 

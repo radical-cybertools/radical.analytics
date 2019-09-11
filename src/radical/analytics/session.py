@@ -1,5 +1,6 @@
 
 import os
+import bz2
 import sys
 import copy
 import glob
@@ -34,45 +35,24 @@ class Session(object):
         '''
 
         # if no sid is given, derive it from the src path
-        sid, src, tgt = self._get_sid(sid, src)
+        sid, src, tgt, ext = self._get_sid(sid, src)
 
         if tgt and not os.path.exists(tgt):
 
-            # src is afile - we assume its a tarball and extract it
-            if  src.endswith('.prof'):
-                # use as is
-                tgt = src
-
-            elif src.endswith('.tgz') or \
-                 src.endswith('.tbz')    :
-                tgt = src[:-4]
-                ext = src[-2:]
-
-            elif src.endswith('.tar.gz') or \
-                 src.endswith('.tar.bz')    :
-                tgt = src[:-7]
-                ext = src[-2:]
-
-            elif src.endswith('.prof'):
-                tgt = None
-
-            else:
-                raise ValueError('src does not look like a tarball or profile')
-
-
-            if tgt and not os.path.exists(tgt):
-
-                # need to extract
-                print 'extract tarball to %s' % tgt
-                try:
-                    if   ext == 'bz': mode = 'r:bz2'
-                    elif ext == 'gz': mode = 'r:gz'
-                    else            : mode = 'r'
-                    tf = tarfile.open(name=src, mode=mode)
+            # need to extract
+            print 'extract tarball to %s' % tgt
+            try:
+                if ext in ['tbz', 'tar.bz', 'tbz2', 'tar.bz2']:
+                    tf = tarfile.open(name=src, mode='r:bz2')
                     tf.extractall(path=os.path.dirname(tgt))
+                elif ext in ['tgz, tar.gz']:
+                    tf = tarfile.open(name=src, mode='r:gz')
+                    tf.extractall(path=os.path.dirname(tgt))
+                else:
+                    raise ValueError('cannot handle extension %s' % ext)
 
-                except Exception as e:
-                    raise RuntimeError('Cannot extract tarball: %s' % repr(e))
+            except Exception as e:
+                raise RuntimeError('Cannot extract tarball: %s' % repr(e))
 
         self._sid   = sid
         self._src   = src
@@ -155,6 +135,8 @@ class Session(object):
         if _init:
             self._initialize_properties()
 
+        print 'session loaded'
+
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
       # self.consistency()
@@ -187,27 +169,36 @@ class Session(object):
                 tgt = src[:-4]
                 ext = src[-3:]
 
+            elif src.endswith('.tbz2'):
+                tgt = src[:-5]
+                ext = src[-4:]
+
             elif src.endswith('.tar.gz') or \
                  src.endswith('.tar.bz')    :
                 tgt = src[:-7]
                 ext = src[-6:]
 
+            elif src.endswith('.tar.bz2'):
+                tgt = src[:-8]
+                ext = src[-7:]
+
             elif src.endswith('.prof'):
                 tgt = None
+                ext = None
 
             else:
                 raise ValueError('src does not look like a tarball or profile')
 
-            # switch to the extracted data dir
-            if tgt:
-                src = tgt
-
         if not sid:
-            if src.endswith('/'):
-                src = src[:-1]
-            sid = os.path.basename(src)
 
-        return sid, src, tgt
+            if tgt: to_check = tgt
+            else  : to_check = src
+
+            if to_check.endswith('/'):
+                to_check = src[:-1]
+            sid = os.path.basename(to_check)
+
+        return sid, src, tgt, ext
 
 
     # --------------------------------------------------------------------------
@@ -258,7 +249,7 @@ class Session(object):
     @staticmethod
     def create(src, stype, sid=None, _entities=None, _init=True, cache=True):
 
-        sid, src, tgt = Session._get_sid(sid, src)
+        sid, src, tgt, ext = Session._get_sid(sid, src)
         base  = ru.get_radical_base('radical.analytics.cache')
         cache = '%s/%s.pickle' % (base, sid)
 
@@ -266,13 +257,22 @@ class Session(object):
             # no caching
             session = Session(src, stype, sid, _entities, _init)
 
-        if os.path.isfile(cache):
-            with open(cache, 'r') as fin:
+        try:
+            with open(cache, 'rb') as fin:
                 data = fin.read()
                 session = pickle.loads(data)
+         #      import pprint
+         #      j = ru.read_json("%s/%s.json" % (src, sid))
+         #      rd = j['pilot'][0]['resource_details']
+         #      session.get(etype='pilot')[0].cfg['resource_details'] = rd
+         #      pprint.pprint(session.get(etype='pilot')[0].cfg)
+         #  with open(cache, 'wb') as fout:
+         #    # session = Session(src, stype, sid, _entities, _init)
+         #      fout.write(pickle.dumps(session, protocol=pickle.HIGHEST_PROTOCOL))
 
-        else:
-            with open(cache, 'w') as fout:
+        except Exception as e:
+            print 'cache read failed: %s' % e
+            with open(cache, 'wb') as fout:
                 session = Session(src, stype, sid, _entities, _init)
                 fout.write(pickle.dumps(session, protocol=pickle.HIGHEST_PROTOCOL))
 
@@ -439,7 +439,6 @@ class Session(object):
                 if name not in self._properties['event']:
                     self._properties['event'][name] = 0
                 self._properties['event'][name] += 1
-
 
         if self._entities:
             self._ttc = self._t_stop - self._t_start
@@ -825,6 +824,10 @@ class Session(object):
                 if t >= r[0] and t <= r[1]:
                     cnt += 1
 
+            if ret and [t,cnt] == ret[-1]:
+                # avoid repetition of values
+                continue
+
             ret.append([t, cnt])
 
         return ret
@@ -880,8 +883,8 @@ class Session(object):
 
         times = list()
         if sampling:
-            # get min and max timestamp, and add create sampling points at regular
-            # intervals
+            # get min and max timestamp, and create sampling points at
+            # regular intervals
             r_min = timestamps[0]
             r_max = timestamps[-1]
 
@@ -889,7 +892,6 @@ class Session(object):
             while t < r_max:
                 times.append(t)
                 t += sampling
-          # times.append(t)
             times.append(r_max)
 
         else:
