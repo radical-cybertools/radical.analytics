@@ -111,6 +111,8 @@ if __name__ == '__main__':
     plt.figure(figsize=(20,14))
     for e_idx in range(len(event_list)):
         plt.plot(np_data[:,0], np_data[:,(1 + e_idx)], label=event_list[e_idx])
+    plt.xlabel('task ID')
+    plt.ylabel('time [sec]')
 
     plt.xlabel('unit (sortd by %s)' % order)
     plt.ylabel('event timestamp')
