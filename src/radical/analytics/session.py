@@ -34,22 +34,21 @@ class Session(object):
         '''
 
         # if no sid is given, derive it from the src path
-        sid, src, tgt = self._get_sid(sid, src)
+        sid, src, tgt, ext = self._get_sid(sid, src)
 
         if tgt and not os.path.exists(tgt):
 
             # need to extract
             print 'extract tarball to %s' % tgt
             try:
-                if ext in ['tbz', 'tar.bz']:
+                if ext in ['tbz', 'tar.bz', 'tbz2', 'tar.bz2']:
                     tf = tarfile.open(name=src, mode='r:bz2')
                     tf.extractall(path=os.path.dirname(tgt))
                 elif ext in ['tgz, tar.gz']:
                     tf = tarfile.open(name=src, mode='r:gz')
                     tf.extractall(path=os.path.dirname(tgt))
                 else:
-                    # 'no tarball'
-                    pass
+                    raise ValueError('cannot handle extension %s' % ext)
 
             except Exception as e:
                 raise RuntimeError('Cannot extract tarball: %s' % repr(e))
@@ -164,27 +163,36 @@ class Session(object):
                 tgt = src[:-4]
                 ext = src[-3:]
 
+            elif src.endswith('.tbz2'):
+                tgt = src[:-5]
+                ext = src[-4:]
+
             elif src.endswith('.tar.gz') or \
                  src.endswith('.tar.bz')    :
                 tgt = src[:-7]
                 ext = src[-6:]
 
+            elif src.endswith('.tar.bz2'):
+                tgt = src[:-8]
+                ext = src[-7:]
+
             elif src.endswith('.prof'):
                 tgt = None
+                ext = None
 
             else:
                 raise ValueError('src does not look like a tarball or profile')
 
-            # switch to the extracted data dir
-            if tgt:
-                src = tgt
-
         if not sid:
-            if src.endswith('/'):
-                src = src[:-1]
-            sid = os.path.basename(src)
 
-        return sid, src, tgt
+            if tgt: to_check = tgt
+            else  : to_check = src
+
+            if to_check.endswith('/'):
+                to_check = src[:-1]
+            sid = os.path.basename(to_check)
+
+        return sid, src, tgt, ext
 
 
     # --------------------------------------------------------------------------
@@ -235,7 +243,7 @@ class Session(object):
     @staticmethod
     def create(src, stype, sid=None, _entities=None, _init=True, cache=True):
 
-        sid, src, tgt = Session._get_sid(sid, src)
+        sid, src, tgt, ext = Session._get_sid(sid, src)
         base  = ru.get_radical_base('radical.analytics.cache')
         cache = '%s/%s.pickle' % (base, sid)
 
@@ -968,6 +976,13 @@ class Session(object):
 
         Example:
 
+<<<<<<< HEAD
+            session.utilization(owner='pilot',
+                                consumer='unit',
+                                resource='cores',
+                                events=[{ru.EVENT: 'exec_start'},
+                                        {ru.EVENT: 'exec_stop' }])
+=======
             s.utilization(owner          = 'pilot',
                           consumer       = 'unit',
                           resource       = 'cores',
@@ -975,6 +990,7 @@ class Session(object):
                                             {ru.EVENT: 'bootstrap_0_stop' }])
                           consumer_events= [{ru.EVENT: 'exec_start'},
                                             {ru.EVENT: 'exec_stop' }])
+>>>>>>> devel
         '''
         ret = dict()
 
