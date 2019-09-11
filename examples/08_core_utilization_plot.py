@@ -74,7 +74,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     src     = sys.argv[1]
-    session = ra.Session(src, 'radical')
+    session = ra.Session.create(src, 'radical.pilot')
 
     # A formatting helper before starting...
     def ppheader(message):

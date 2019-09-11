@@ -5,8 +5,9 @@ __license__   = "GPL.v2"
 
 # ------------------------------------------------------------------------------
 
-from .session import Session
-from .plotter import Plotter
+from .experiment import Experiment
+from .session    import Session
+from .plotter    import Plotter
 
 
 # ------------------------------------------------------------------------------

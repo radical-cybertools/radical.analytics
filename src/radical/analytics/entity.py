@@ -221,10 +221,12 @@ class Entity(object):
     def as_dict(self):
 
         return {
-                'uid'    : self._uid,
-                'etype'  : self._etype,
-                'states' : self._states,
-                'events' : self._events
+                'uid'        : self._uid,
+                'etype'      : self._etype,
+                'states'     : self._states,
+                'events'     : self._events,
+                'cfg'        : self._cfg,
+                'description': self._description,
                }
 
 
@@ -268,7 +270,8 @@ class Entity(object):
             ranges = ru.collapse_ranges(ranges)
 
         if not ranges:
-            raise ValueError('no duration defined for given constraints')
+            raise ValueError('no duration defined for given constraints '
+                  '(%s) (%s) (%s) (%s)' % (state, event, time, ranges))
 
         return sum(r[1] - r[0] for r in ranges)
 
@@ -399,6 +402,8 @@ class Entity(object):
         if not state and not event:
             raise ValueError('duration needs state and/or event arguments')
 
+        event = self._ensure_tuplelist(event)
+
         if not state: state = [[], []]
         if not event: event = [[], []]
 
@@ -438,16 +443,15 @@ class Entity(object):
 
         t_start = sys.float_info.max
         for e in e_init:
-            e_infos = self._events.get(e, [])
-            for e_info in e_infos:
-                t_stop = min(t_start, e_info['time'])
+            for e_info in self._events:
+                if self._match_event(e, e_info):
+                    t_start = min(t_start, e_info[ru.TIME])
 
         t_stop  = sys.float_info.min
         for e in e_final:
-            e_infos = self._events.get(e, [])
-            for e_info in e_infos:
-                t_stop = max(t_stop, e_info['time'])
-
+            for e_info in self._events:
+                if self._match_event(e, e_info):
+                    t_stop = max(t_stop, e_info[ru.TIME])
 
         if t_start == sys.float_info.max:
             return []

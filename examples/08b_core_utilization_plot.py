@@ -59,7 +59,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     src     = sys.argv[1]
-    session = ra.Session(src, 'radical')
+    session = ra.Session.create(src, 'radical.pilot')
 
     # A formatting helper before starting...
     def ppheader(message):
@@ -106,7 +106,7 @@ if __name__ == '__main__':
 
     plt.figure(figsize=(20,14))
     for e_idx in range(len(event_list)):
-        plt.plot(np_data[:,0], np_data[:,(1 + e_idx)], 
+        plt.plot(np_data[:,0], np_data[:,(1 + e_idx)],
                 label='%s - %s' % (event_list[e_idx - 1], event_list[e_idx]))
 
     plt.yscale('log')
