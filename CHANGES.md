@@ -5,6 +5,26 @@
     https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen+
 
 
+0.72.0 Release                                                        2019-09-11
+--------------------------------------------------------------------------------
+
+  - introduce analytics.Experiment class and move utilization method to it
+  - sessions are now cached
+  - Expand upon modeling TTX
+  - TTC diagrams
+  - add jsrun version of metrics
+  - add quick plotter script
+  - documentation
+  - entity.ranges() *always* returns a list
+  - experiment level utilization plots
+  - fix off-by-one error
+  - increase timer precision
+  - re-align utilization plot with pilot runtime
+  - recursive profiles for RA sessions
+  - support bz2
+  - support global session time shift (session.tzero)
+
+
 0.70.0 Release                                                        2019-07-07
 --------------------------------------------------------------------------------
 
