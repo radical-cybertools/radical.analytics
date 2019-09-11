@@ -122,6 +122,9 @@ class Session(object):
         self._rep     = ru.Reporter('radical.analytics')
 
 
+        # user defined time offset
+        self._tzero   = 0.0
+
         # internal state is represented by a dict of entities:
         # dict keys are entity uids (which are assumed to be unique per
         # session), dict values are ra.Entity instances.
@@ -544,7 +547,7 @@ class Session(object):
 
         uids = self._apply_filter(etype=etype, uid=uid, state=state,
                                   event=event, time=time)
-        return [self._entities[uid] for uid in uids]
+        return [self._entities[_uid] for _uid in uids]
 
 
     # --------------------------------------------------------------------------
@@ -993,13 +996,6 @@ class Session(object):
 
         Example:
 
-<<<<<<< HEAD
-            session.utilization(owner='pilot',
-                                consumer='unit',
-                                resource='cores',
-                                events=[{ru.EVENT: 'exec_start'},
-                                        {ru.EVENT: 'exec_stop' }])
-=======
             s.utilization(owner          = 'pilot',
                           consumer       = 'unit',
                           resource       = 'cores',
@@ -1007,7 +1003,6 @@ class Session(object):
                                             {ru.EVENT: 'bootstrap_0_stop' }])
                           consumer_events= [{ru.EVENT: 'exec_start'},
                                             {ru.EVENT: 'exec_stop' }])
->>>>>>> devel
         '''
         ret = dict()
 
@@ -1428,6 +1423,26 @@ class Session(object):
                 self._rep.plain('\n')
 
         return ret
+
+
+    # --------------------------------------------------------------------------
+    #
+    def tzero(self, t):
+        '''
+        Setting a `tzero` timestamp will shift all timestamps for all entities
+        in this session by that amount.  This simplifies the alignment of
+        multiple sessions, or the focus on specific events.
+        '''
+
+        old_tzero   = self._tzero
+        self._tzero = t
+
+        for entity in self._entities.values():
+
+            # entity.states are shallow copies of the events
+            for event in entity.events:
+                event[ru.TIME] += old_tzero
+                event[ru.TIME] -= self._tzero
 
 
 # ------------------------------------------------------------------------------
