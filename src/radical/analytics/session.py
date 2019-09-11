@@ -68,6 +68,7 @@ class Session(object):
             if not src:
                 raise ValueError('RA session types need `src` specified')
 
+            profiles = list()
             if os.path.isfile(src):
                 profiles.append(src)
             else:
@@ -287,7 +288,7 @@ class Session(object):
     def __deepcopy___(self, memo):
 
         cls = self.__class__
-        ret = cls(sid=self._sid, stype=self._stype, _init=False)
+        ret = cls(sid=self._sid, src=None, stype=self._stype, _init=False)
 
         memo[id(self)] = ret
 
