@@ -152,6 +152,7 @@ class Session(object):
     def _get_sid(sid, src):
 
         tgt = None
+        ext = None
 
         if not os.path.exists(src):
             raise ValueError('src [%s] does not exist' % src)
@@ -160,8 +161,6 @@ class Session(object):
             pass
 
         elif os.path.isfile(src):
-
-            ext = None
 
             # src is afile - we assume its a tarball and extract it
             if  src.endswith('.prof'):
