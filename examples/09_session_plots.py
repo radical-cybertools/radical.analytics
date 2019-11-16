@@ -115,7 +115,8 @@ def plot_rates(session):
         plt.step(x, y, color=colors[metric], label=metric, where='post',
                 linewidth=2, alpha=0.8)
 
-    ax.legend(list(data.keys()), ncol=3, loc='upper center', bbox_to_anchor=(0.5,1.11))
+    ax.legend(list(data.keys()), ncol=3, loc='upper center',
+                                 bbox_to_anchor=(0.5,1.11))
     plt.xlabel('time [s]')
     plt.ylabel('rate (#tasks / sec)')
 
@@ -140,7 +141,8 @@ def plot_concurrency(session):
         y = [e[1] for e in data[metric]]
         plt.step(x, y, color=colors[metric], label=metric, where='post')
 
-    ax.legend(list(data.keys()), ncol=3, loc='upper center', bbox_to_anchor=(0.5,1.11))
+    ax.legend(list(data.keys()), ncol=3, loc='upper center',
+                                 bbox_to_anchor=(0.5,1.11))
     plt.xlabel('time [s]')
     plt.ylabel('concurrency (#tasks)')
 

@@ -171,9 +171,9 @@ if __name__ == '__main__':
                         height = block[3] - block[2] + 1.0
 
                         if x_min is None: x_min = orig_x
-                        if x_max is None: x_min = orig_x + width
+                        if x_max is None: x_max = orig_x + width
                         if y_min is None: y_min = orig_x
-                        if y_max is None: y_min = orig_x + height
+                        if y_max is None: y_max = orig_x + height
 
                         x_min = min(x_min, orig_x)
                         y_min = min(y_min, orig_y)
