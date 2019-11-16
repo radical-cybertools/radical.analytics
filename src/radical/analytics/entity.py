@@ -144,7 +144,7 @@ class Entity(object):
     def __str__(self):
 
         return "ra.Entity [%s]: %s\n    states: %s" \
-                % (self.etype, self.uid, self._states.keys())
+                % (self.etype, self.uid, list(self._states.keys()))
 
 
     # --------------------------------------------------------------------------
@@ -168,7 +168,7 @@ class Entity(object):
 
         # we expect each event tuple to have `time` and `event`, and expect
         # 'advance' events to signify a state transition.
-        for event in sorted(profile, key=lambda (x): (x[ru.TIME])):
+        for event in sorted(profile, key=lambda x: (x[ru.TIME])):
 
             t = event[ru.TIME]
 
@@ -207,7 +207,7 @@ class Entity(object):
         for e in events:
             if isinstance(e,dict):
                 et = ru.PROF_KEY_MAX * [None]
-                for k,v in e.iteritems():
+                for k,v in list(e.items()):
                     et[k] = v
                 ret.append(tuple(et))
             else:
@@ -241,7 +241,7 @@ class Entity(object):
     #
     def list_states(self):
 
-        return self._states.keys()
+        return list(self._states.keys())
 
 
     # --------------------------------------------------------------------------
@@ -435,7 +435,7 @@ class Entity(object):
         for e in e_init:
             if isinstance(e,dict):
                 et = ru.PROF_KEY_MAX * [None]
-                for k,v in e.iteritems():
+                for k,v in list(e.items()):
                     et[k] = v
                 conds_init.append(tuple(et))
             else:
@@ -469,7 +469,7 @@ class Entity(object):
         for e in e_final:
             if isinstance(e,dict):
                 et = ru.PROF_KEY_MAX * [None]
-                for k,v in e.iteritems():
+                for k,v in list(e.items()):
                     et[k] = v
                 conds_final.append(tuple(et))
             else:

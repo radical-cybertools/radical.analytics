@@ -46,7 +46,7 @@ def sort_events(events=None):
     """Sort a list of tuples of events"""
     ret_events = list()
     if events is not None:
-        for event in sorted(events, key=lambda (x): (x[ru.TIME])):
+        for event in sorted(events, key=lambda x: (x[ru.TIME])):
             ret_events.append(event)
     return ret_events
 

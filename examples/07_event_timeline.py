@@ -53,7 +53,7 @@ event_list   = \
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
-        print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
+        print("\n\tusage: %s <dir|tarball>\n" % sys.argv[0])
         sys.exit(1)
 
     src = sys.argv[1]
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     # A formatting helper before starting...
     def ppheader(message):
         separator = '\n' + 78 * '-' + '\n'
-        print separator + message + separator
+        print(separator + message + separator)
 
     data = dict()
     work = dict()
@@ -96,9 +96,9 @@ if __name__ == '__main__':
     if order == 'uid':
         sorted_uids = sorted(work.keys())
     elif order == 'work':
-        sorted_uids = [x[0] for x in sorted(work.items(), key=lambda v: v[1])]
+        sorted_uids = [x[0] for x in sorted(list(work.items()), key=lambda v: v[1])]
     elif order == 'time':
-        sorted_uids = [x[0] for x in sorted(data.items(), key=lambda v: v[1][2])]
+        sorted_uids = [x[0] for x in sorted(list(data.items()), key=lambda v: v[1][2])]
 
     sorted_data   = list()
     index         = 0

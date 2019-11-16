@@ -17,7 +17,7 @@ This example illustrates the use of the method ra.Session.filter()
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
-        print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
+        print("\n\tusage: %s <dir|tarball>\n" % sys.argv[0])
         sys.exit(1)
 
     src = sys.argv[1]
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     # A formatting helper before starting...
     def ppheader(message):
         separator = '\n' + 78 * '-' + '\n'
-        print separator + message + separator
+        print(separator + message + separator)
 
     # we want to focus on pilots and units
     ppheader("Filter 'unit' and 'pilot' entities")
@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
     ppheader("show pilot-to-resource mapping")
     for pilot in session.get(etype=['pilot']):
-        print '%s : %-35s : %s' % (pilot.uid,
+        print('%s : %-35s : %s' % (pilot.uid,
                                    pilot.description['resource'],
-                                   pilot.cfg['hostid'])
+                                   pilot.cfg['hostid']))
 

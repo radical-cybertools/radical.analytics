@@ -50,7 +50,7 @@ class Plotter(object):
                                                       figsize=fig_size)
 
             # Iterate over the owners and add a line for every owner.
-            for key, util in util_data.iteritems():
+            for key, util in list(util_data.items()):
 
                 # Getting the time moments where the utilization changes
                 x_axis = [point[0] for point in util['utilization']]
@@ -91,8 +91,8 @@ class Plotter(object):
 
             # FIXME: this code is too obscure
             for (key, util),i \
-                in zip(util_data.iteritems(), 
-                   range(self._plot_grid[0] * self._plot_grid[1])):
+                in zip(iter(list(util_data.items())), 
+                   list(range(self._plot_grid[0] * self._plot_grid[1]))):
 
                 # Getting the time moments where the utilization changes
                 x_axis = [point[0] for point in util['utilization']]

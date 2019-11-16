@@ -112,14 +112,14 @@ def write_data(data, proc_path):
 # In[51]:
 
 
-print 'EnTK analysis'
+print('EnTK analysis')
 for s in stages:
     for t in range(1,trials+1):
         path = os.path.join(src,resource,'trial-%s'%t,'stages-%s'%s)
         for sess in glob(path + '/' + 're.session.*'):  
-            print 'Processing: ', sess
+            print('Processing: ', sess)
             out_path = process_entk_profiles(sess)
-            print 'Output written to ', out_path
+            print('Output written to ', out_path)
 
 
 # In[55]:
@@ -146,12 +146,12 @@ def process_rp_profiles(src):
 # In[56]:
 
 
-print 'RP analysis'
+print('RP analysis')
 for s in stages:
     for t in range(1,trials+1):
         path = os.path.join(src,resource,'trial-%s'%t,'stages-%s'%s)
         for sess in glob(path + '/' + 'rp.session.*/'):  
-            print 'Processing: ', sess
+            print('Processing: ', sess)
             out_path = process_rp_profiles(sess)
-            print 'Output written to ', out_path
+            print('Output written to ', out_path)
 

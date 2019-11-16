@@ -19,7 +19,7 @@ This example illustrates the use of the method ra.Session.get()
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
-        print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
+        print("\n\tusage: %s <dir|tarball>\n" % sys.argv[0])
         sys.exit(1)
 
     src = sys.argv[1]
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     # A formatting helper before starting...
     def ppheader(message):
         separator = '\n' + 78 * '-' + '\n'
-        print separator + message + separator
+        print(separator + message + separator)
 
     # and here we go. As seen in example 01, we use ra.Session.list() to get the
     # name of all the types of entity of the session.

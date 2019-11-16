@@ -111,7 +111,7 @@ def test_duration_method_with_data_from_run_with_no_execution_barriers():
 
     data_loc = '{0}/no_barrier_data'.format(os.path.dirname(os.path.realpath(__file__)))
     json_files = glob.glob('{0}/*.json'.format(data_loc))
-    print json_files
+    print(json_files)
     json_file = json_files[0]
     json      = ru.read_json(json_file)
     sid       = os.path.basename(json_file)[:-5]

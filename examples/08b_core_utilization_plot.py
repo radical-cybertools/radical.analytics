@@ -55,7 +55,7 @@ event_list   = \
 if __name__ == '__main__':
 
     if len(sys.argv) != 2:
-        print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
+        print("\n\tusage: %s <dir|tarball>\n" % sys.argv[0])
         sys.exit(1)
 
     src     = sys.argv[1]
@@ -64,10 +64,10 @@ if __name__ == '__main__':
     # A formatting helper before starting...
     def ppheader(message):
         separator = '\n' + 78 * '-' + '\n'
-        print separator + message + separator
+        print(separator + message + separator)
 
     session.filter(etype=event_entity, inplace=True)
-    print '#entities: %d' % len(session.get())
+    print('#entities: %d' % len(session.get()))
 
     data = dict()
     for thing in session.get():
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     # We also derive the durations, first the individual contributions, then the
     # overall duration.
     # timestamp in the list
-    sorted_things = sorted(data.items(), key=lambda e: e[1][0])
+    sorted_things = sorted(list(data.items()), key=lambda e: e[1][0])
     sorted_data   = list()
     index         = 0
     for uid,tstamps in sorted_things:
