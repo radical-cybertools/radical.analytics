@@ -358,8 +358,7 @@ class Entity(object):
         of start and end time which are used to constrain the resulting ranges.
         States are expected as strings, events as full event tuples
 
-            [ru.TIME,  ru.NAME, ru.UID,  ru.STATE,
-             ru.EVENT, ru.MSG,  ru.ENTITY]
+            [ru.TIME,  ru.NAME, ru.UID,  ru.STATE, ru.EVENT, ru.MSG,  ru.ENTITY]
 
         where empty fields are not applied in the filtering - all other fields
         must match exactly.  The events can also be specified as dictionaries,
@@ -387,6 +386,8 @@ class Entity(object):
 
         Setting 'collapse' to 'True' (default) will prompt the method to
         collapse the resulting set of ranges.
+
+        The returned ranges are time-sorted
 
         Example:
 
@@ -441,29 +442,29 @@ class Entity(object):
             else:
                 conds_init.append(e)
 
-        t_start = sys.float_info.max
-        for e in e_init:
-            for e_info in self._events:
-                if self._match_event(e, e_info):
-                    t_start = min(t_start, e_info[ru.TIME])
-
-        t_stop  = sys.float_info.min
-        for e in e_final:
-            for e_info in self._events:
-                if self._match_event(e, e_info):
-                    t_stop = max(t_stop, e_info[ru.TIME])
-
-        if t_start == sys.float_info.max:
-            return []
-          # raise ValueError('initial condition did not apply')
-
-        if t_stop == sys.float_info.min:
-            return []
-          # raise ValueError('final condition did not apply')
-
-        if t_stop < t_start:
-          # return []
-            raise ValueError('duration uncovered time inconsistency')
+      # t_start = sys.float_info.max
+      # for e in e_init:
+      #     for e_info in self._events:
+      #         if self._match_event(e, e_info):
+      #             t_start = min(t_start, e_info[ru.TIME])
+      #
+      # t_stop  = sys.float_info.min
+      # for e in e_final:
+      #     for e_info in self._events:
+      #         if self._match_event(e, e_info):
+      #             t_stop = max(t_stop, e_info[ru.TIME])
+      #
+      # if t_start == sys.float_info.max:
+      #   # return []
+      #     raise ValueError('initial condition did not apply')
+      #
+      # if t_stop == sys.float_info.min:
+      #   # return []
+      #     raise ValueError('final condition did not apply')
+      #
+      # if t_stop < t_start:
+      #   # return []
+      #     raise ValueError('duration uncovered time inconsistency')
 
 
         for e in e_final:
@@ -504,7 +505,6 @@ class Entity(object):
             this_range[1] is not None     :
             ranges.append(this_range)
 
-
         # apply time filter, if specified
         # For all ranges, check if they fall completely or partially within any
         # of the given time filters.  If not, drop that range, if yes, include
@@ -527,9 +527,9 @@ class Entity(object):
                         ret.append([new_start, new_stop])
 
         if collapse:
-            return ru.collapse_ranges(ret)
-        else:
-            return ret
+            ret = ru.collapse_ranges(ret)
+
+        return sorted(ret)
 
 
 # ------------------------------------------------------------------------------
