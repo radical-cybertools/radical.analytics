@@ -1,3 +1,4 @@
+
 import os
 import json
 import pytest
@@ -6,53 +7,66 @@ from radical.analytics.entity import Entity
 
 
 # Test Directory use to load example json files
-directory = "{}/example-data".format(
-    os.path.dirname(os.path.abspath(__file__)))
+directory = "%s/example-data" % os.path.dirname(__file__)
 
 
+# ------------------------------------------------------------------------------
+#
 @pytest.fixture
 def pilot_entity():
     """Fixture to get the example Pilot entity from example data"""
-    with open(
-            "{}/pilot-entity-example.json".format(directory),
-            'r') as f:
+
+    with open("%s/pilot-entity-example.json" % directory, 'r') as f:
         entity = json.load(f)
         entity['events'] = [tuple(l) for l in entity['events']]
         return entity
 
 
+# ------------------------------------------------------------------------------
+#
 @pytest.fixture
 def range_entity():
     """Fixture to get the example range-testing entity from example data"""
-    with open(
-            "{}/range-testing-entity-example.json".format(directory),
-            'r') as f:
+
+    with open("%s/range-testing-entity-example.json" % directory, 'r') as f:
         entity = json.load(f)
         entity['events'] = [tuple(l) for l in entity['events']]
         return entity
 
 
+# ------------------------------------------------------------------------------
+#
 def get_states(events=None):
     """Get a dictionary of states from a list of event tuples"""
+
     ret_states = dict()
     if events is not None:
         for event in events:
             if event[ru.EVENT] == 'state':
                 ret_states[event[ru.STATE]] = event
+
     return ret_states
 
 
+# ------------------------------------------------------------------------------
+#
 def sort_events(events=None):
     """Sort a list of tuples of events"""
+
     ret_events = list()
     if events is not None:
         for event in sorted(events, key=lambda x: (x[ru.TIME])):
             ret_events.append(event)
+
     return ret_events
 
 
+# ------------------------------------------------------------------------------
+#
 class TestEntity(object):
 
+    # --------------------------------------------------------------------------
+    #
     def test_t_start(self, pilot_entity):
         """Test a valid t_start"""
         e = Entity(_uid=pilot_entity['uid'],
@@ -65,6 +79,9 @@ class TestEntity(object):
         # Should match the time in the first element after sorting
         assert (e.t_start == events[0][ru.TIME])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_t_stop(self, pilot_entity):
         """Test a valid t_stop"""
         e = Entity(_uid=pilot_entity['uid'],
@@ -77,6 +94,9 @@ class TestEntity(object):
         # Should match the time in the last element after sorting
         assert events[-1][ru.TIME] == e.t_stop
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_ttc(self, pilot_entity):
         """Test a valid ttc"""
         e = Entity(_uid=pilot_entity['uid'],
@@ -90,6 +110,9 @@ class TestEntity(object):
         # first and last elements after sorting
         assert (e.ttc == float(events[-1][ru.TIME] - events[0][ru.TIME]))
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_t_range(self, pilot_entity):
         """Test a valid t_range"""
         e = Entity(_uid=pilot_entity['uid'],
@@ -102,6 +125,9 @@ class TestEntity(object):
         # Should match exactly what was passed in...
         assert [events[0][ru.TIME], events[-1][ru.TIME]] == e.t_range
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_uid(self, pilot_entity):
         """Test a valid uid"""
         e = Entity(_uid=pilot_entity['uid'],
@@ -113,6 +139,9 @@ class TestEntity(object):
         # Should match exactly what was passed in...
         assert (e.uid == pilot_entity['uid'])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_etype(self, pilot_entity):
         """Test a valid etype"""
         e = Entity(_uid=pilot_entity['uid'],
@@ -124,6 +153,9 @@ class TestEntity(object):
         # Should match exactly what was passed in...
         assert (e.etype == pilot_entity['etype'])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_states(self, pilot_entity):
         """Test a valid states"""
         e = Entity(_uid=pilot_entity['uid'],
@@ -138,6 +170,9 @@ class TestEntity(object):
         # extracted from the events passed in
         assert (e.states == states)
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_events(self, pilot_entity):
         """Test a valid events"""
         e = Entity(_uid=pilot_entity['uid'],
@@ -152,6 +187,9 @@ class TestEntity(object):
         # generated from the list of events passed in
         assert (e.events == events)
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_description(self, pilot_entity):
         """Test a valid description"""
         e = Entity(_uid=pilot_entity['uid'],
@@ -164,6 +202,9 @@ class TestEntity(object):
         assert (type(e.description) is dict)
         assert (e.description == pilot_entity['details']['description'])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_cfg(self, pilot_entity):
         """Test a valid cfg"""
         e = Entity(_uid=pilot_entity['uid'],
@@ -176,6 +217,9 @@ class TestEntity(object):
         assert (type(e.cfg) is dict)
         assert (e.cfg == pilot_entity['details']['cfg'])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_consistency(self, pilot_entity):
         """Test a valid consistency"""
         e = Entity(_uid=pilot_entity['uid'],
@@ -187,6 +231,9 @@ class TestEntity(object):
         # TODO: Better matching, for now we match just a dict()
         assert (type(e.consistency) is dict)
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_as_dict(self, pilot_entity):
         """Test a valid as_dict"""
         e = Entity(_uid=pilot_entity['uid'],
@@ -206,13 +253,15 @@ class TestEntity(object):
         assert (e.as_dict() == expected)
 
 
-##############################################################
-# Test Ranges Method: expand=False, collapse=True
-#
-# We match range values form the example data at:
-#   ./example-data/range-testing-entity-example.json
-##############################################################
+    ##############################################################
+    # Test Ranges Method: expand=False, collapse=True
+    #
+    # We match range values form the example data at:
+    #   ./example-data/range-testing-entity-example.json
+    ##############################################################
 
+    # --------------------------------------------------------------------------
+    #
     def test_ranges_one_state(self, range_entity):
         """Test a valid ranges result with one state start/finish"""
         e = Entity(_uid=range_entity['uid'],
@@ -230,6 +279,9 @@ class TestEntity(object):
             [21.668299913406372, 50.227399826049805]
         ])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_ranges_two_consecutive_state(self, range_entity):
         """Test a valid ranges result with two states start/finish"""
         e = Entity(_uid=range_entity['uid'],
@@ -241,13 +293,16 @@ class TestEntity(object):
         # Two consecutive ranges
         ranges = e.ranges(state=[
             ('PMGR_ACTIVE', 'PMGR_LAUNCHING'),
-            ('NEW', 'PMGR_ACTIVE_PENDING')
+            ('NEW',         'PMGR_ACTIVE_PENDING')
         ])
         assert (ranges == [
-            [0.0, 4.433599948883057],
+            [0.0,                4.433599948883057],
             [4.449499845504761, 21.668299913406372]
         ])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_ranges_time_filter_exact_match(self, range_entity):
         """Test a valid ranges with time filter, exact matches"""
         e = Entity(_uid=range_entity['uid'],
@@ -278,6 +333,9 @@ class TestEntity(object):
             [4.446699857711792, 29.150099992752075]
         ])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_ranges_time_filter_no_match(self, range_entity):
         """Test a valid ranges with time filter, exact matches"""
         e = Entity(_uid=range_entity['uid'],
@@ -304,6 +362,9 @@ class TestEntity(object):
         ])
         assert (ranges == [])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_ranges_time_filter_intersection_match(self, range_entity):
         """Test a valid ranges with time filter, one intersection match each"""
         e = Entity(_uid=range_entity['uid'],
@@ -401,6 +462,9 @@ class TestEntity(object):
             [4.446699857711792, 25.0]
         ])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_ranges_multi_time_filter_exact_match(self, range_entity):
         """Test a valid ranges with multiple time filters,
         exact matches only"""
@@ -463,6 +527,9 @@ class TestEntity(object):
             [4.446699857711792, 29.150099992752075]
         ])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_ranges_multi_time_filter_intersection_match(
             self, range_entity):
         """Test a valid ranges with multiple time filters,
@@ -591,6 +658,9 @@ class TestEntity(object):
             [4.446699857711792, 29.150099992752075]
         ])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_ranges_two_overlaping_state(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
                    _etype=range_entity['etype'],
@@ -600,13 +670,16 @@ class TestEntity(object):
 
         # Two overlaping ranges
         ranges = e.ranges(state=[
-            ('PMGR_ACTIVE', 'NEW'),
+            ('PMGR_ACTIVE',    'NEW'),
             ('PMGR_LAUNCHING', 'PMGR_ACTIVE_PENDING')
         ])
         assert (ranges == [
             [0.0, 4.433599948883057]
         ])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_ranges_one_event(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
                    _etype=range_entity['etype'],
@@ -623,6 +696,9 @@ class TestEntity(object):
             [4.446699857711792, 50.507999897003174]
         ])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_ranges_one_event_multi_match(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
                    _etype=range_entity['etype'],
@@ -636,14 +712,17 @@ class TestEntity(object):
             ({ru.EVENT: 'update_pushed'})
         ])
         assert (ranges == [
-            [4.447200059890747, 4.457900047302246],
-            [4.458099842071533, 5.236199855804443],
+            [ 4.447200059890747,  4.457900047302246],
+            [ 4.458099842071533,  5.236199855804443],
             [21.666899919509888, 21.685499906539917],
             [29.752099990844727, 29.939599990844727],
-            [30.722899913787842, 32.28690004348755],
-            [50.22889995574951, 50.240999937057495]
+            [30.722899913787842, 32.28690004348755 ],
+            [50.22889995574951,  50.240999937057495]
         ])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_ranges_two_consecutive_event(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
                    _etype=range_entity['etype'],
@@ -653,14 +732,17 @@ class TestEntity(object):
 
         # Two consecutive ranges
         ranges = e.ranges(event=[
-            ({ru.EVENT: 'put'}, {ru.EVENT: 'hostname'}),
-            ({ru.EVENT: 'sync_rel'}, {ru.EVENT: 'cmd'})
+            ({ru.EVENT: 'put'     }, {ru.EVENT: 'hostname'}),
+            ({ru.EVENT: 'sync_rel'}, {ru.EVENT: 'cmd'     })
         ])
         assert (ranges == [
             [4.446699857711792, 29.150099992752075],
             [29.760799884796143, 50.507999897003174]
         ])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_ranges_two_overlaping_event(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
                    _etype=range_entity['etype'],
@@ -668,31 +750,39 @@ class TestEntity(object):
                    _details=range_entity['details']
                    )
 
+        # FIXME: this is the same test as above
+
         # Two overlaping ranges
         ranges = e.ranges(event=[
-            ({ru.EVENT: 'put'}, {ru.EVENT: 'hostname'}),
-            ({ru.EVENT: 'sync_rel'}, {ru.EVENT: 'cmd'})
+            ({ru.EVENT: 'put'     }, {ru.EVENT: 'hostname'}),
+            ({ru.EVENT: 'sync_rel'}, {ru.EVENT: 'cmd'     })
         ])
         assert (ranges == [
             [4.446699857711792, 29.150099992752075],
             [29.760799884796143, 50.507999897003174]
         ])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_empty_profile(self, pilot_entity):
         e = Entity(_uid=pilot_entity['uid'],
                    _etype=pilot_entity['etype'],
                    _profile=list(),
                    _details=pilot_entity['details']
                    )
-        assert (e.t_start == 0)
-        assert (e.t_stop == 0)
-        assert (e.ttc == 0)
-        assert (e.t_range == [0, 0])
-        assert (e.states == dict())
-        assert (e.events == list())
+        assert (e.t_start       == 0)
+        assert (e.t_stop        == 0)
+        assert (e.ttc           == 0)
+        assert (e.t_range       == [0, 0])
+        assert (e.states        == dict())
+        assert (e.events        == list())
         assert (e.list_states() == list())
-        # TODO: Add more assetions as needed
+        # TODO: Add more assertions as needed
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_empty_details(self, pilot_entity):
         e = Entity(_uid=pilot_entity['uid'],
                    _etype=pilot_entity['etype'],
@@ -700,14 +790,17 @@ class TestEntity(object):
                    _details=dict()
                    )
 
-        assert (e.cfg == dict())
+        assert (e.cfg         == dict())
         assert (e.description == dict())
         # TODO: Add more assetions as needed / fix assertions
 
 
-##############################################################
-# Test invalid scenarios
-##############################################################
+    ##############################################################
+    # Test invalid scenarios
+    ##############################################################
+
+    # --------------------------------------------------------------------------
+    #
     def test_none_uid(self, pilot_entity):
         with pytest.raises(Exception):
             Entity(_uid=None,
@@ -716,6 +809,9 @@ class TestEntity(object):
                    _details=pilot_entity['details']
                    )
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_none_etype(self, pilot_entity):
         with pytest.raises(Exception):
             Entity(_uid=pilot_entity['uid'],
@@ -724,6 +820,9 @@ class TestEntity(object):
                    _details=pilot_entity['details']
                    )
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_none_profile(self, pilot_entity):
         with pytest.raises(Exception):
             Entity(_uid=None,
@@ -732,6 +831,9 @@ class TestEntity(object):
                    _details=pilot_entity['details']
                    )
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_none_details(self, pilot_entity):
         with pytest.raises(Exception):
             Entity(_uid=pilot_entity['uid'],
@@ -740,6 +842,9 @@ class TestEntity(object):
                    _details=None
                    )
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_invalid_ranges_no_end_matched_state(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
                    _etype=range_entity['etype'],
@@ -748,12 +853,13 @@ class TestEntity(object):
                    )
 
         # Only one range of one start/end
-        ranges = e.ranges(event=[
-            ({ru.EVENT: 'put'}),
-            ({ru.EVENT: 'aaa'})
+        ranges = e.ranges(event=[({ru.EVENT: 'put'}), ({ru.EVENT: 'aaa'})
         ])
         assert (ranges == [])
 
+
+    # --------------------------------------------------------------------------
+    #
     def test_invalid_ranges_no_end_matched_event(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
                    _etype=range_entity['etype'],
@@ -762,26 +868,12 @@ class TestEntity(object):
                    )
 
         # Only one range of one start/end
-        ranges = e.ranges(event=[
-            ('NEW'),
-            ('AAA')
-        ])
+        ranges = e.ranges(event=[('NEW'), ('AAA') ])
         assert (ranges == [])
 
-    def test_invalid_ranges_no_start_matched_state(self, range_entity):
-        e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
-                   _profile=range_entity['events'],
-                   _details=range_entity['details']
-                   )
 
-        # Only one range of one start/end
-        ranges = e.ranges(event=[
-            ({ru.EVENT: 'aaa'}),
-            ({ru.EVENT: 'put'})
-        ])
-        assert (ranges == [])
-
+    # --------------------------------------------------------------------------
+    #
     def test_invalid_ranges_no_start_matched_event(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
                    _etype=range_entity['etype'],
@@ -790,8 +882,24 @@ class TestEntity(object):
                    )
 
         # Only one range of one start/end
-        ranges = e.ranges(event=[
-            ('AAA'),
-            ('NEW')
+        ranges = e.ranges(event=[({ru.EVENT: 'aaa'}), ({ru.EVENT: 'put'})
         ])
         assert (ranges == [])
+
+
+    # --------------------------------------------------------------------------
+    #
+    def test_invalid_ranges_no_start_matched_state(self, range_entity):
+        e = Entity(_uid=range_entity['uid'],
+                   _etype=range_entity['etype'],
+                   _profile=range_entity['events'],
+                   _details=range_entity['details']
+                   )
+
+        # Only one range of one start/end
+        ranges = e.ranges(event=[('AAA'), ('NEW')])
+        assert (ranges == [])
+
+
+# ------------------------------------------------------------------------------
+
