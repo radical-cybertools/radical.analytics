@@ -1,9 +1,7 @@
 
 import os
-import bz2
 import sys
 import copy
-import glob
 import tarfile
 
 import pickle as pickle
