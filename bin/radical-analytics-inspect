@@ -88,7 +88,7 @@ EOT
                       A second plot is written for this analysis, containing
                       a histogramm of the observed rates per metric (TODO).
 
-         utilization: (\$sid.util.png) (TODO)
+         utilization: (\$sid.util.png)
                       Plot the utilization of the pilot's resources over time.
                       The x-axis is time, the y-axis is an integer index over
                       resource elements (cpus and gpus).  The coloring of the
@@ -96,6 +96,13 @@ EOT
                       used at that point in time, and also shows in many cases
                       why a specific resource element has *not* been used for
                       task execution at that point in time (overhead).
+
+                      An additional utilization plot (util.png) is provided to
+                      compare utilization across all given sessions (sorted by
+                      pilot size and number of units).  This plot is only
+                      produced when this script is called with multiple
+                      sessions.
+                      (TODO)
 
 EOT
 }
