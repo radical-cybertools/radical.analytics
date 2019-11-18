@@ -7,6 +7,7 @@ __license__   = 'MIT'
 import sys
 
 import radical.utils     as ru
+import radical.pilot     as rp
 import radical.analytics as ra
 
 import matplotlib.pyplot as plt
@@ -18,34 +19,33 @@ import numpy             as np
 # timestamp of the first event in the event list
 
 event_entity = 'unit'
-event_list   = \
-    [
-      # {ru.STATE: 'NEW'                         , ru.EVENT: 'state'          },
-      # {ru.STATE: 'UMGR_SCHEDULING_PENDING'     , ru.EVENT: 'state'          },
-      # {ru.STATE: 'UMGR_SCHEDULING'             , ru.EVENT: 'state'          },
-      # {ru.STATE: 'UMGR_STAGING_INPUT_PENDING'  , ru.EVENT: 'state'          },
-      # {ru.STATE: 'UMGR_STAGING_INPUT'          , ru.EVENT: 'state'          },
-      # {ru.STATE: 'AGENT_STAGING_INPUT_PENDING' , ru.EVENT: 'state'          },
-      # {ru.COMP : 'agent_0'                     , ru.EVENT: 'get'            },
-        {ru.STATE: 'AGENT_STAGING_INPUT'         , ru.EVENT: 'state'          },
-        {ru.STATE: 'AGENT_SCHEDULING_PENDING'    , ru.EVENT: 'state'          },
-        {ru.STATE: 'AGENT_SCHEDULING'            , ru.EVENT: 'state'          },
-      # {ru.STATE: None                          , ru.EVENT: 'schedule_ok'    },
-        {ru.STATE: 'AGENT_EXECUTING_PENDING'     , ru.EVENT: 'state'          },
-        {ru.STATE: 'AGENT_EXECUTING'             , ru.EVENT: 'state'          },
-      # {ru.STATE: None                          , ru.EVENT: 'exec_mkdir'     },
-      # {ru.STATE: None                          , ru.EVENT: 'exec_mkdir_done'},
-      # {ru.STATE: None                          , ru.EVENT: 'exec_start'     },
-      # {ru.STATE: None                          , ru.EVENT: 'app_start'      },
-      # {ru.STATE: None                          , ru.EVENT: 'app_stop'       },
-      # {ru.STATE: None                          , ru.EVENT: 'exec_ok'        },
-      # {ru.STATE: None                          , ru.EVENT: 'exec_stop'      },
-        {ru.STATE: 'AGENT_STAGING_OUTPUT_PENDING', ru.EVENT: 'state'          },
-        {ru.STATE: 'AGENT_STAGING_OUTPUT'        , ru.EVENT: 'state'          },
-      # {ru.STATE: 'UMGR_STAGING_OUTPUT_PENDING' , ru.EVENT: 'state'          },
-      # {ru.STATE: 'UMGR_STAGING_OUTPUT'         , ru.EVENT: 'state'          },
-      # {ru.STATE: 'DONE'                        , ru.EVENT: 'state'          },
-    ]
+event_list   = [
+    # {ru.STATE: rp.NEW                         , ru.EVENT: 'state'          },
+    # {ru.STATE: rp.UMGR_SCHEDULING_PENDING     , ru.EVENT: 'state'          },
+    # {ru.STATE: rp.UMGR_SCHEDULING             , ru.EVENT: 'state'          },
+    # {ru.STATE: rp.UMGR_STAGING_INPUT_PENDING  , ru.EVENT: 'state'          },
+    # {ru.STATE: rp.UMGR_STAGING_INPUT          , ru.EVENT: 'state'          },
+    # {ru.STATE: rp.AGENT_STAGING_INPUT_PENDING , ru.EVENT: 'state'          },
+    # {ru.COMP : 'agent_0'                      , ru.EVENT: 'get'            },
+      {ru.STATE: rp.AGENT_STAGING_INPUT         , ru.EVENT: 'state'          },
+      {ru.STATE: rp.AGENT_SCHEDULING_PENDING    , ru.EVENT: 'state'          },
+      {ru.STATE: rp.AGENT_SCHEDULING            , ru.EVENT: 'state'          },
+    # {ru.STATE: None                           , ru.EVENT: 'schedule_ok'    },
+      {ru.STATE: rp.AGENT_EXECUTING_PENDING     , ru.EVENT: 'state'          },
+      {ru.STATE: rp.AGENT_EXECUTING             , ru.EVENT: 'state'          },
+    # {ru.STATE: None                           , ru.EVENT: 'exec_mkdir'     },
+    # {ru.STATE: None                           , ru.EVENT: 'exec_mkdir_done'},
+    # {ru.STATE: None                           , ru.EVENT: 'exec_start'     },
+    # {ru.STATE: None                           , ru.EVENT: 'app_start'      },
+    # {ru.STATE: None                           , ru.EVENT: 'app_stop'       },
+    # {ru.STATE: None                           , ru.EVENT: 'exec_ok'        },
+    # {ru.STATE: None                           , ru.EVENT: 'exec_stop'      },
+      {ru.STATE: rp.AGENT_STAGING_OUTPUT_PENDING, ru.EVENT: 'state'          },
+      {ru.STATE: rp.AGENT_STAGING_OUTPUT        , ru.EVENT: 'state'          },
+    # {ru.STATE: rp.UMGR_STAGING_OUTPUT_PENDING , ru.EVENT: 'state'          },
+    # {ru.STATE: rp.UMGR_STAGING_OUTPUT         , ru.EVENT: 'state'          },
+    # {ru.STATE: rp.DONE                        , ru.EVENT: 'state'          },
+]
 
 
 # ------------------------------------------------------------------------------
@@ -56,17 +56,9 @@ if __name__ == '__main__':
         print("\n\tusage: %s <dir|tarball>\n" % sys.argv[0])
         sys.exit(1)
 
-    src = sys.argv[1]
-
-    if len(sys.argv) == 2: stype = 'radical.pilot'
-    else                 : stype = sys.argv[2]
-
+    src     = sys.argv[1]
+    stype   = 'radical.pilot'
     session = ra.Session.create(src, stype)
-
-    # A formatting helper before starting...
-    def ppheader(message):
-        separator = '\n' + 78 * '-' + '\n'
-        print(separator + message + separator)
 
     data = dict()
     pipe = dict()
@@ -123,7 +115,7 @@ if __name__ == '__main__':
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),
                ncol=2, fancybox=True, shadow=True)
     plt.savefig('%s.state.png' % session.uid)
-    plt.show()
+  # plt.show()
 
 
 # ------------------------------------------------------------------------------

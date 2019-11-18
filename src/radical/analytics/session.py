@@ -32,8 +32,13 @@ class Session(object):
         directory name.
         '''
 
-        # if no sid is given, derive it from the src path
-        sid, src, tgt, ext = self._get_sid(sid, src)
+        if _init:
+            # if no sid is given, derive it from the src path
+            sid, src, tgt, ext = self._get_sid(sid, src)
+        else:
+            assert sid
+            assert src
+            tgt = None
 
         if tgt and not os.path.exists(tgt):
 
@@ -948,8 +953,93 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def utilization(self, owner, consumer, resource, owner_events=None,
-                                                     consumer_events=None):
+    def utilization(self, metrics):
+
+        assert(self._stype == 'radical.pilot')
+        import radical.pilot as rp
+
+        provided  = rp.utils.get_provided_resources(self)
+        consumed  = rp.utils.get_consumed_resources(self)
+        stats_abs = {'total':   0.0}
+        stats_rel = {'total': 100.0}
+        total     = 0.0
+
+        for pid in provided['total']:
+            for box in provided['total'][pid]:
+                stats_abs['total'] += (box[1] - box[0]) * \
+                                      (box[3] - box[2]  + 1)
+        total = stats_abs['total']
+
+        for metric in metrics:
+            if isinstance(metric, list):
+                name  = metric[0]
+                parts = metric[1]
+            else:
+                name  = metric
+                parts = [metric]
+
+            if name not in stats_abs:
+                stats_abs[name] = 0.0
+
+            for part in parts:
+                for uid in consumed[part]:
+                    for box in consumed[part][uid]:
+                        stats_abs[name] += (box[1] - box[0]) * \
+                                           (box[3] - box[2]  + 1)
+
+        info  = ''
+        info += '%s [%d]\n' % (self.uid, len(self.get(etype='unit')))
+
+        for metric in metrics + ['total']:
+            if isinstance(metric, list):
+                name  = metric[0]
+                parts = metric[1]
+            else:
+                name  = metric
+                parts = ''
+
+            val = stats_abs[name]
+            if val == 0.0: glyph = '!'
+            else         : glyph = ''
+            rel = 100.0 * val / total
+            stats_rel[name] = rel
+            info += '    %-20s: %14.3f  %8.3f%%  %2s  %s\n' \
+                  % (name, val, rel, glyph, parts)
+
+        have = 0.0
+        over = 0.0
+        work = 0.0
+        for metric in sorted(stats_abs.keys()):
+            if metric == 'total':
+                have  += stats_abs[metric]
+            else:
+                if metric == 'Execution Cmd':
+                    work  += stats_abs[metric]
+                else:
+                    over  += stats_abs[metric]
+
+        miss = have - over - work
+
+        rel_over = 100.0 * over / total
+        rel_work = 100.0 * work / total
+        rel_miss = 100.0 * miss / total
+
+        stats_abs['Other'] = miss
+        stats_rel['Other'] = rel_miss
+
+        info += '\n'
+        info += '    %-20s: %14.3f  %8.3f%%\n' % ('total', have, 100.0)
+        info += '    %-20s: %14.3f  %8.3f%%\n' % ('over',  over, rel_over)
+        info += '    %-20s: %14.3f  %8.3f%%\n' % ('work',  work, rel_work)
+        info += '    %-20s: %14.3f  %8.3f%%\n' % ('miss',  miss, rel_miss)
+
+        return provided, consumed, stats_abs, stats_rel, info
+
+
+    # --------------------------------------------------------------------------
+    #
+    def utilization_bak(self, owner, consumer, resource, owner_events=None,
+                                                      consumer_events=None):
         '''
         This method accepts as parameters :
         owner          : The entity name of the owner of the resources

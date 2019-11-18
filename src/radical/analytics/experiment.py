@@ -102,85 +102,19 @@ class Experiment(object):
         consumed  = dict()
         stats_abs = dict()
         stats_rel = dict()
+        info      = dict()
 
         # obtain resources provisions and consumptions for all sessions
         for session in self._sessions:
 
             sid = session.uid
-            provided[sid] = rp.utils.get_provided_resources(session)
-            consumed[sid] = rp.utils.get_consumed_resources(session)
+            p, c, sa, sr, i = session.utilization(metrics)
 
-            total = 0.0
-            stats_abs[sid] = {'total':   0.0}
-            stats_rel[sid] = {'total': 100.0}
-
-            for pid in provided[sid]['total']:
-                for box in provided[sid]['total'][pid]:
-                    stats_abs[sid]['total'] += (box[1] - box[0]) * \
-                                               (box[3] - box[2]  + 1)
-            total = stats_abs[sid]['total']
-
-            for metric in metrics:
-                if isinstance(metric, list):
-                    name  = metric[0]
-                    parts = metric[1]
-                else:
-                    name  = metric
-                    parts = [metric]
-
-                if name not in stats_abs[sid]:
-                    stats_abs[sid][name] = 0.0
-
-                for part in parts:
-                    for uid in consumed[sid][part]:
-                        for box in consumed[sid][part][uid]:
-                            stats_abs[sid][name] += (box[1] - box[0]) * \
-                                                    (box[3] - box[2]  + 1)
-
-            info  = ''
-            info += '%s [%d]\n' % (sid, len(session.get(etype='unit')))
-            for metric in metrics + ['total']:
-                if isinstance(metric, list):
-                    name  = metric[0]
-                    parts = metric[1]
-                else:
-                    name  = metric
-                    parts = ''
-
-                val = stats_abs[sid][name]
-                if val == 0.0: glyph = '!'
-                else         : glyph = ''
-                rel = 100.0 * val / total
-                stats_rel[sid][name] = rel
-                info += '    %-20s: %14.3f  %8.3f%%  %2s  %s\n' \
-                      % (name, val, rel, glyph, parts)
-
-            have = 0.0
-            over = 0.0
-            work = 0.0
-            for metric in sorted(stats_abs[sid].keys()):
-                if metric == 'total':
-                    have  += stats_abs[sid][metric]
-                else:
-                    if metric == 'Execution Cmd':
-                        work  += stats_abs[sid][metric]
-                    else:
-                        over  += stats_abs[sid][metric]
-
-            miss = have - over - work
-
-            rel_over = 100.0 * over / total
-            rel_work = 100.0 * work / total
-            rel_miss = 100.0 * miss / total
-
-            stats_abs[sid]['Other'] = miss
-            stats_rel[sid]['Other'] = rel_miss
-
-            info += '\n'
-            info += '    %-20s: %14.3f  %8.3f%%\n' % ('total', have, 100.0)
-            info += '    %-20s: %14.3f  %8.3f%%\n' % ('over',  over, rel_over)
-            info += '    %-20s: %14.3f  %8.3f%%\n' % ('work',  work, rel_work)
-            info += '    %-20s: %14.3f  %8.3f%%\n' % ('miss',  miss, rel_miss)
+            provided [sid] = p
+            consumed [sid] = c
+            stats_abs[sid] = sa
+            stats_rel[sid] = sr
+            info     [sid] = i
 
         return provided, consumed, stats_abs, stats_rel, info
 

@@ -1,0 +1,109 @@
+#!/bin/sh
+
+# FIXME: use metric definitions from RP (include colors and labels)
+# FIXME: use common plotter in src/ra/plotter.py (move from bin/ra-plot)
+
+ARGS=$*
+
+usage(){
+    msg=$*
+    test -z "$msg" || cat << EOT
+
+    Error: $msg
+    Usage: $0 <sid> [<sid>] ...
+           $0 -h | help
+
+EOT
+    test -z "$msg" || exit 1
+
+    cat <<EOT
+
+    Usage: $0 <sid> [<sid>] ...
+           $0 -h | help
+
+    Synopis: run some canonical analysis and plots against all given sessions,
+             and run a utilization comparison across all of them.
+
+             The resulting plots are stored as "<sid>_<type>.png", where "<sid>"
+             is the respective RP session ID, and "<type>" is the plot type.
+             The utilization plot is stored as "utilization.png".  Note that
+             existing files will be overwritten.
+
+             Script also prints a short utilization analysis on stdout - that
+             data is also stored per session in "<sid>.stats".
+
+    Plots:
+
+         states:      (\$sid.state.png)
+                      Plot state transition events for tasks over.  The x-axis
+                      is a integer index over tasks, the y-axis the time of
+                      their respective state transitions.
+
+         durations:   (\$sid.dur.png / \$sid.dur_hist.png)
+                      Plot a selection of durations for all tasks (task index on
+                      x-axis).  Specifically we show
+                      - pending:    duration from when the task arrived at the
+                                    pilot to when the task was recognized by the
+                                    scheduler (includes input staging)
+                      - scheduling: duration from when the scheduler recognized
+                                    the task to when the scheduler was able to
+                                    place the task
+                      - wait:       duration from when the scheduler placed the
+                                    task until the executor begins preparing its
+                                    execution
+                      - prepare:    duration spent by the executor to prepare
+                                    task execution
+                      - execute:    duration during which the task was actually
+                                    executed by the resources' runtime system
+                      - unschedule: duration needed by the pilot to mark
+                                    resources as available after task completion
+                      - drain:      duration from when the task completed to
+                                    when the pilot relinguished control of the
+                                    task (includes output staging)
+
+                      A second plot is written for this analysis, containing
+                      a histogramm of the observed durations per metric (TODO).
+
+         concurrency: (\$sid.conc.png / \$sid.conc_hist.png)
+                      Plot a selection of concurrency measures to gauge the
+                      efficiency of execution.  Specifically, we plot the
+                      concurrency of units waiting to be scheduled (pending)
+                      and concurrency of execution (execute).  The x-axis shows
+                      time, the y-axis shows the number of tasks which were in
+                      a specific state (between two specific events) at that
+                      point in time.
+
+                      A second plot is written for this analysis, containing
+                      a histogramm of the observed durations per metric (TODO).
+
+         rates:       (\$sid.rate.png / \$sid.rate_hist.png)
+                      Plot a selection of task rates over time, to gauge the
+                      efficincy of the system.  Specifically, plot the rate of
+                      task schedule and unschedule operations, and the rate of
+                      task spawning and collection (execute start execute stop).
+                      The x-axis shows again time, the y-axis shows the task
+                      handling rate in tasks/sec for the specific component /
+                      event.  The rate is measured every 1/10 second.
+
+                      A second plot is written for this analysis, containing
+                      a histogramm of the observed rates per metric (TODO).
+
+EOT
+}
+
+test -z "$ARGS"          && usage "missing session ID(s)"
+test    "$ARGS" = "-h"   && usage
+test    "$ARGS" = "help" && usage
+
+for session in $ARGS
+do
+    sid=$(basename $session)
+    echo -n "$sid "
+    bin/rp_inspect/plot_state.py "$session" && echo -n .
+    bin/rp_inspect/plot_dur.py   "$session" && echo -n .
+    bin/rp_inspect/plot_conc.py  "$session" && echo -n .
+    bin/rp_inspect/plot_rate.py  "$session" && echo -n .
+    bin/rp_inspect/plot_util.py  "$session" && echo -n .
+    echo " done"
+done
+
