@@ -129,7 +129,7 @@ if __name__ == '__main__':
 
     # --------------------------------------------------------------------------
     # core utilization over time (box plot)
-    fig  = plt.figure(figsize=(20,14))
+    fig  = plt.figure(figsize=(10,7))
     ax   = fig.add_subplot(111)
 
     step   = 1.0  / (len(metrics) + 1)
@@ -180,7 +180,7 @@ if __name__ == '__main__':
                                                   fill=True, lw=0.0)
                     ax.add_patch(patch)
 
-    ax.legend(legend, [m[0] for m in metrics], ncol=6,
+    ax.legend(legend, [m[0] for m in metrics], ncol=5,
                loc='upper center', bbox_to_anchor=(0.5,1.11))
     plt.xlabel('runtime [s]')
     plt.ylabel('resource slot (index)')
