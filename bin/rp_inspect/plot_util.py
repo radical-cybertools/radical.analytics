@@ -188,7 +188,7 @@ if __name__ == '__main__':
     plt.xlim([x_min, x_max])
     plt.ylim([y_min, y_max])
   # plt.xticks(list(range(int(x_min)-1, int(x_max)+1)))
-    fig.savefig('%s_core_allocation.png' % sid)
+    fig.savefig('%s_util.png' % sid)
   # plt.show()
 
 
