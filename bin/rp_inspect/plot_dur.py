@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
     # create a numpyarray for plotting
     np_data = np.array(sorted_data)
-  # print np_data
+  # print(np_data)
 
     plt.figure(figsize=(10,7))
     for e_idx in range(len(event_list)):

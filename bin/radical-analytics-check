@@ -56,10 +56,10 @@ if __name__ == '__main__':
         n_events = 0
         n_types  = 0
 
-        print
-        print '-----------------------------------------------------------'
-        print '  source  : %s' % base
-        print '  session : %s' % sid
+        print()
+        print('-----------------------------------------------------------')
+        print('  source  : %s' % base)
+        print('  session : %s' % sid)
         setypes = dict()
         for p in session.get(etype=['rp', 'pmgr', 'umgr']):
             for e in p.events:
@@ -67,13 +67,13 @@ if __name__ == '__main__':
                 if t not in setypes: setypes[t]  = 1
                 else               : setypes[t] += 1
         for t in sorted(setypes.keys()):
-            print '            %9d : %s' % (setypes[t], t)
+            print('            %9d : %s' % (setypes[t], t))
             n_events += setypes[t]
         n_types += len(setypes.keys())
 
 
-        print
-        print '  pilots  : %9d' % len(session.get(etype='pilot'))
+        print()
+        print('  pilots  : %9d' % len(session.get(etype='pilot')))
         petypes = dict()
         for p in session.get(etype='pilot'):
             for e in p.events:
@@ -81,13 +81,13 @@ if __name__ == '__main__':
                 if t not in petypes: petypes[t]  = 1
                 else               : petypes[t] += 1
         for t in sorted(petypes.keys()):
-            print '            %9d : %s' % (petypes[t], t)
+            print('            %9d : %s' % (petypes[t], t))
             n_events += petypes[t]
         n_types += len(petypes.keys())
 
 
-        print
-        print '  units   : %9d' % len(session.get(etype='unit'))
+        print()
+        print('  units   : %9d' % len(session.get(etype='unit')))
         uetypes = dict()
         for u in session.get(etype='unit'):
             for e in u.events:
@@ -95,12 +95,12 @@ if __name__ == '__main__':
                 if t not in uetypes: uetypes[t]  = 1
                 else               : uetypes[t] += 1
         for t in sorted(uetypes.keys()):
-            print '            %9d : %s' % (uetypes[t], t)
+            print('            %9d : %s' % (uetypes[t], t))
             n_events += uetypes[t]
         n_types += len(uetypes.keys())
 
-        print
-        print '  total   : %9d  (%d types)' % (n_events, n_types)
+        print()
+        print('  total   : %9d  (%d types)' % (n_events, n_types))
 
         found   = setypes.keys() + petypes.keys() + uetypes.keys()
         missing = list()
@@ -109,8 +109,8 @@ if __name__ == '__main__':
             if e not in found:
                 missing.append(e)
 
-        print
-        print '  missing:  %9d' % len(missing)
+        print()
+        print('  missing:  %9d' % len(missing))
         for e in sorted(missing):
 
             if '[' in all_events[e]:
@@ -121,10 +121,10 @@ if __name__ == '__main__':
                 c    = '*'
                 ret += 1
 
-            print '                  %s  %-20s : %s' % (c, e, all_events[e])
-        print
-        print '-----------------------------------------------------------'
-        print
+            print('                  %s  %-20s : %s' % (c, e, all_events[e]))
+        print()
+        print('-----------------------------------------------------------')
+        print()
 
     sys.exit(ret)
 

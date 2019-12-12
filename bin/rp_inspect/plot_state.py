@@ -79,7 +79,7 @@ if __name__ == '__main__':
   # diffs = list()
   # for uid in data:
   #     diffs.append(data[uid][-1] - data[uid][0])
-  # print sorted(diffs)
+  # print(sorted(diffs))
 
 
   # sort x-axis (unit IDs) by
