@@ -296,13 +296,12 @@ class Entity(object):
         """
 
         event = self._ensure_tuplelist(event)
+        state = ru.as_list(state)
+        ret   = list()
 
-        if not state:
-            state = []
-        elif not isinstance(state, list):
-            state = [state]
-
-        ret = []
+        if not event and not state:
+            # no filters, consider all events
+            ret = self._events
 
         for e in event:
             for x in self._events:
