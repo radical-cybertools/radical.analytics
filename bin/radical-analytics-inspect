@@ -5,6 +5,8 @@
 
 ARGS=$*
 
+bin="$( cd "$(dirname "$0")" ; pwd -P )"
+
 usage(){
     msg=$*
     test -z "$msg" || cat << EOT
@@ -115,11 +117,11 @@ for session in $ARGS
 do
     sid=$(basename $session)
     echo -n "$sid "
-    bin/rp_inspect/plot_state.py "$session" && echo -n .
-    bin/rp_inspect/plot_dur.py   "$session" && echo -n .
-    bin/rp_inspect/plot_conc.py  "$session" && echo -n .
-    bin/rp_inspect/plot_rate.py  "$session" && echo -n .
-    bin/rp_inspect/plot_util.py  "$session" && echo -n .
+    $bin/rp_inspect/plot_state.py "$session" && echo -n .
+    $bin/rp_inspect/plot_dur.py   "$session" && echo -n .
+    $bin/rp_inspect/plot_conc.py  "$session" && echo -n .
+    $bin/rp_inspect/plot_rate.py  "$session" && echo -n .
+    $bin/rp_inspect/plot_util.py  "$session" && echo -n .
     echo " done"
 done
 
