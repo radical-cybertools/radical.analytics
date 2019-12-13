@@ -4,7 +4,6 @@
 # FIXME: use common plotter in src/ra/plotter.py (move from bin/ra-plot)
 
 ARGS=$*
-
 bin="$( cd "$(dirname "$0")" ; pwd -P )"
 
 usage(){

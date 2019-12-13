@@ -6,11 +6,9 @@ __license__   = 'MIT'
 
 import sys
 
-import numpy             as np
 import matplotlib        as mpl
 import matplotlib.pyplot as plt
 
-import radical.pilot     as rp
 import radical.analytics as ra
 
 
@@ -115,13 +113,13 @@ if __name__ == '__main__':
 
 
     # get utilization information
-    provided, consumed, stats_abs, stats_rel, info = session.utilization(metrics)
+    prov, cons, stats_abs, stats_rel, info = session.utilization(metrics)
 
     with open('%s.stats' % sid, 'w') as fout:
         fout.write('\n%s\n\n' % info)
 
-  # pprint.pprint(provided)
-  # pprint.pprint(consumed)
+  # pprint.pprint(prov)
+  # pprint.pprint(cons)
   # pprint.pprint(stats_abs)
   # pprint.pprint(stats_rel)
 
@@ -156,8 +154,8 @@ if __name__ == '__main__':
             parts = [metric]
 
         for part in parts:
-            for uid in sorted(consumed[part]):
-                for block in consumed[part][uid]:
+            for uid in sorted(cons[part]):
+                for block in cons[part][uid]:
                     orig_x = block[0]
                     orig_y = block[2] - 0.5
                     width  = block[1] - block[0]
@@ -180,8 +178,8 @@ if __name__ == '__main__':
                                                   fill=True, lw=0.0)
                     ax.add_patch(patch)
 
-    ax.legend(legend, [m[0] for m in metrics], ncol=5,
-               loc='upper center', bbox_to_anchor=(0.5,1.11))
+    ax.legend(legend, [m[0] for m in metrics], ncol=5, loc='upper center',
+                                               bbox_to_anchor=(0.5,1.11))
     plt.xlabel('runtime [s]')
     plt.ylabel('resource slot (index)')
 
