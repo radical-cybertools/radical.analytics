@@ -102,7 +102,9 @@ if __name__ == '__main__':
         print()
         print('  total   : %9d  (%d types)' % (n_events, n_types))
 
-        found   = setypes.keys() + petypes.keys() + uetypes.keys()
+        found   = list(setypes.keys()) \
+                + list(petypes.keys()) \
+                + list(uetypes.keys())
         missing = list()
         allkeys = sorted(all_events.keys())
         for e in allkeys:
