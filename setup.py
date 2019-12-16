@@ -16,8 +16,7 @@ import shutil
 
 import subprocess as sp
 
-from distutils.ccompiler import new_compiler
-from setuptools          import setup, Command, find_packages
+from setuptools import setup, Command, find_packages
 
 
 # ------------------------------------------------------------------------------
@@ -174,8 +173,10 @@ class RunTwine(Command):
 #
 # This copies the contents like examples/ dir under sys.prefix/share/$name
 # It needs the MANIFEST.in entries to work.
-base = 'share/%s' % name
-df   = [('%s/examples' % base, glob.glob('examples/[01]*.py')),
+share = 'share/%s' % name
+df    = [
+    ('%s/examples' % share, glob.glob('examples/[01]*.py')),
+    ('bin/rp_inspect/',     glob.glob('bin/rp_inspect/*')),
 ]
 
 
@@ -201,8 +202,8 @@ setup_args = {
         'Environment :: Console',
         'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Utilities',
         'Topic :: System :: Distributed Computing',
         'Topic :: Scientific/Engineering',
@@ -212,8 +213,11 @@ setup_args = {
     ],
     'packages'           : find_packages('src'),
     'package_dir'        : {'': 'src'},
-    'scripts'            : ['bin/radical-analytics-version',
+    'scripts'            : [
                             'bin/radical-analytics-check',
+                            'bin/radical-analytics-inspect',
+                            'bin/radical-analytics-plot.py',
+                            'bin/radical-analytics-version',
                             'bin/radical-analytics-wrangler.py',
                            ],
     'package_data'       : {'': ['*.txt', '*.sh', '*.json', '*.gz', '*.c',

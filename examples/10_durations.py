@@ -28,16 +28,13 @@ event_list   = \
     # {ru.STATE: 'UMGR_STAGING_INPUT_PENDING'   , ru.EVENT: 'state'           },
     # {ru.STATE: 'UMGR_STAGING_INPUT'           , ru.EVENT: 'state'           },
     # {ru.STATE: 'AGENT_STAGING_INPUT_PENDING'  , ru.EVENT: 'state'           },
-      {ru.STATE: None                           , ru.EVENT: 'schedule_ok'     },
-      {ru.COMP : 'agent_0'                      , ru.EVENT: 'get'             },
+    # {ru.STATE: None                           , ru.EVENT: 'get'             },
     # {ru.STATE: 'AGENT_STAGING_INPUT'          , ru.EVENT: 'state'           },
     # {ru.STATE: 'AGENT_SCHEDULING_PENDING'     , ru.EVENT: 'state'           },
-    # {ru.STATE: 'AGENT_SCHEDULING'             , ru.EVENT: 'state'           },
-  #   {ru.STATE: None                           , ru.EVENT: 'schedule_ok'     },
-    # {ru.STATE: 'AGENT_EXECUTING_PENDING'      , ru.EVENT: 'state'           },
+      {ru.STATE: 'AGENT_SCHEDULING'             , ru.EVENT: 'state'           },
+    # {ru.STATE: None                           , ru.EVENT: 'schedule_ok'     },
+      {ru.STATE: 'AGENT_EXECUTING_PENDING'      , ru.EVENT: 'state'           },
       {ru.STATE: 'AGENT_EXECUTING'              , ru.EVENT: 'state'           },
-      {ru.STATE: None                           , ru.EVENT: 'exec_mkdir'      },
-      {ru.STATE: None                           , ru.EVENT: 'exec_mkdir_done' },
       {ru.STATE: None                           , ru.EVENT: 'exec_start'      },
     # {ru.STATE: None                           , ru.EVENT: 'exec_ok'         },
       {ru.STATE: None                           , ru.EVENT: 'exec_stop'       },
@@ -99,15 +96,18 @@ if __name__ == '__main__':
         sorted_data.append([index] + durations)
         index += 1
 
-
     # create a numpyarray for plotting
     np_data = np.array(sorted_data)
   # print np_data
 
     plt.figure(figsize=(20,14))
     for e_idx in range(len(event_list)):
-        plt.plot(np_data[:,0], np_data[:,(1 + e_idx)],
-                label='%s - %s' % (event_list[e_idx - 1], event_list[e_idx]))
+        if e_idx == 0:
+            label = 'total'
+        else:
+            label = '%s - %s' % (ru.event_to_label(event_list[e_idx - 1]),
+                                 ru.event_to_label(event_list[e_idx]))
+        plt.plot(np_data[:,0], np_data[:,(1 + e_idx)], label=label)
 
     plt.yscale('log')
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),

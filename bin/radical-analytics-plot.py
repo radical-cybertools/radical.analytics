@@ -14,16 +14,18 @@ font = {'family' : 'normal',
 plt.rcParams['axes.titlesize']   = 14
 plt.rcParams['axes.labelsize']   = 14
 plt.rcParams['axes.linewidth']   =  2
-plt.rcParams['lines.linewidth']  =  2
-plt.rcParams['lines.color']  =  'r'
-plt.rcParams['lines.markersize'] = 14
 plt.rcParams['xtick.labelsize']  = 14
 plt.rcParams['ytick.labelsize']  = 14
+plt.rcParams['lines.markersize'] = 14
+plt.rcParams['lines.linewidth']  =  2
+plt.rcParams['lines.color']      = 'r'
+
 plt.rc('font', **font)
+
 
 # ------------------------------------------------------------------------------
 #
-TITLE     = None  # 'quick_plot'
+TITLE     = None
 DELIM     = ''
 COLUMN_X  =  0
 COLUMNS_Y = [1]
