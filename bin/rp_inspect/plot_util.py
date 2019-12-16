@@ -5,9 +5,7 @@ __license__   = 'MIT'
 
 
 import sys
-import pprint
 
-import numpy             as np
 import matplotlib        as mpl
 import matplotlib.pyplot as plt
 
@@ -97,37 +95,31 @@ metrics = metrics_default
 #
 if __name__ == '__main__':
 
-    sources = sys.argv[1:]
-    xkeys   = dict()  # x-axis labels
-    sids    = list()  # need to sort SIDs
+    if len(sys.argv) < 2:
+        print("\n\tusage: %s <dir|tarball>\n" % sys.argv[0])
+        sys.exit(1)
 
-    exp = ra.Experiment(sources, stype='radical.pilot')
+    src = sys.argv[1]
 
-    # get the numbers we actually want to plot
-    for session in exp.sessions:
+    if len(sys.argv) == 2: stype = 'radical.pilot'
+    else                 : stype = sys.argv[2]
 
-        sid = session.uid
-        n_units = len(session.get(etype='unit'))
-        p_size  = 0
-        for pilot in session.get(etype='pilot'):
-            p_size += pilot.description['cores']
-
-        xkeys[sid] = [n_units, p_size]
-        sids.append(sid)
-
-    # sort sessions by pilot size
-    sids = sorted(sids, key=lambda sid: xkeys[sid][1])
+    session = ra.Session.create(src, stype)
+    sid     = session.uid
+    n_units = len(session.get(etype='unit'))
+    p_size  = 0
+    for pilot in session.get(etype='pilot'):
+        p_size += pilot.description['cores']
 
 
     # get utilization information
-    provided, consumed, stats_abs, stats_rel, info = exp.utilization(metrics=metrics)
-  # provided, consumed, stats_abs, stats_rel = exp.utilization(metrics='/path/metrics.json')
+    prov, cons, stats_abs, stats_rel, info = session.utilization(metrics)
 
     with open('%s.stats' % sid, 'w') as fout:
         fout.write('\n%s\n\n' % info)
 
-  # pprint.pprint(provided)
-  # pprint.pprint(consumed)
+  # pprint.pprint(prov)
+  # pprint.pprint(cons)
   # pprint.pprint(stats_abs)
   # pprint.pprint(stats_rel)
 
@@ -135,85 +127,19 @@ if __name__ == '__main__':
 
     # --------------------------------------------------------------------------
     # core utilization over time (box plot)
-    for sid in sids:
-        fig  = plt.figure(figsize=(20,14))
-        ax   = fig.add_subplot(111)
+    fig  = plt.figure(figsize=(10,7))
+    ax   = fig.add_subplot(111)
 
-        step   = 1.0  / (len(metrics) + 1)
-        this   = step / 1.0
-        legend = list()
+    step   = 1.0  / (len(metrics) + 1)
+    this   = step / 1.0
+    legend = list()
 
-        x_min = None
-        x_max = None
-        y_min = None
-        y_max = None
+    x_min = None
+    x_max = None
+    y_min = None
+    y_max = None
 
-        for metric in metrics:
-
-            color = cmap(this)
-            this += step
-
-            legend.append(mpl.lines.Line2D([0], [0], color=color, lw=6))
-
-            if isinstance(metric, list):
-                name  = metric[0]
-                parts = metric[1]
-            else:
-                name  = metric
-                parts = [metric]
-
-            for part in parts:
-                for uid in sorted(consumed[sid][part]):
-                    for block in consumed[sid][part][uid]:
-                        orig_x = block[0]
-                        orig_y = block[2] - 0.5
-                        width  = block[1] - block[0]
-                        height = block[3] - block[2] + 1.0
-
-                        if x_min is None: x_min = orig_x
-                        if x_max is None: x_max = orig_x + width
-                        if y_min is None: y_min = orig_x
-                        if y_max is None: y_max = orig_x + height
-
-                        x_min = min(x_min, orig_x)
-                        y_min = min(y_min, orig_y)
-                        x_max = max(x_max, orig_x + width)
-                        y_max = max(y_max, orig_y + height)
-
-                        patch = mpl.patches.Rectangle((orig_x, orig_y),
-                                                      width, height,
-                                                      facecolor=color,
-                                                      edgecolor='black',
-                                                      fill=True, lw=0.0)
-                        ax.add_patch(patch)
-
-        ax.legend(legend, [m[0] for m in metrics], ncol=6,
-                   loc='upper center', bbox_to_anchor=(0.5,1.11))
-        plt.xlabel('runtime [s]')
-        plt.ylabel('resource slot (index)')
-
-        plt.xlim([x_min, x_max])
-        plt.ylim([y_min, y_max])
-      # plt.xticks(list(range(int(x_min)-1, int(x_max)+1)))
-        fig.savefig('%s_core_allocation.png' % sid)
-        plt.show()
-
-
-    # --------------------------------------------------------------------------
-    # utilization: contributions as stacked barplot
-    #
-    # yes, stacked barplot is this cumbersome:
-    # http://matplotlib.org/examples/pylab_examples/bar_stacked.html
-    #
-    plt.figure(figsize=(20,14))
-    bottom = np.zeros(len(exp.sessions))
-    ind    = np.arange(len(exp.sessions))  # locations of bars on x-axis
-    width  = 0.35                          # width of bars
-
-    labels = list()
-    plots  = list()
-
-    for metric in metrics + ['Other']:
+    for metric in metrics:
 
         color = cmap(this)
         this += step
@@ -227,24 +153,43 @@ if __name__ == '__main__':
             name  = metric
             parts = [metric]
 
-        values = [stats_rel[sid][name] for sid in sids]
-        plots.append(plt.bar(ind, values, width, bottom=bottom))
-        bottom += values
-        labels.append(name)
+        for part in parts:
+            for uid in sorted(cons[part]):
+                for block in cons[part][uid]:
+                    orig_x = block[0]
+                    orig_y = block[2] - 0.5
+                    width  = block[1] - block[0]
+                    height = block[3] - block[2] + 1.0
 
-    if False: plt.ylabel('utilization (% of total resources)')
-    else    : plt.ylabel('utilization (in core-seconds)')
+                    if x_min is None: x_min = orig_x
+                    if x_max is None: x_max = orig_x + width
+                    if y_min is None: y_min = orig_x
+                    if y_max is None: y_max = orig_x + height
 
-    plt.xlabel('#CU / #cores')
-    plt.ylabel('utilization (% of total resources)')
-    plt.title ('pilot utilization over workload size (#units)')
-    plt.xticks(ind, ['%s / %s' % (xkeys[sid][0], xkeys[sid][1]) for sid in sids])
+                    x_min = min(x_min, orig_x)
+                    y_min = min(y_min, orig_y)
+                    x_max = max(x_max, orig_x + width)
+                    y_max = max(y_max, orig_y + height)
 
-    plt.legend([p[0] for p in plots], labels, ncol=5, loc='upper left',
-               bbox_to_anchor=(0,1.13))
-    plt.savefig('08c_core_utilization.png')
-    plt.show()
+                    patch = mpl.patches.Rectangle((orig_x, orig_y),
+                                                  width, height,
+                                                  facecolor=color,
+                                                  edgecolor='black',
+                                                  fill=True, lw=0.0)
+                    ax.add_patch(patch)
+
+    ax.legend(legend, [m[0] for m in metrics], ncol=5, loc='upper center',
+                                               bbox_to_anchor=(0.5,1.11))
+    plt.xlabel('runtime [s]')
+    plt.ylabel('resource slot (index)')
+
+    plt.xlim([x_min, x_max])
+    plt.ylim([y_min, y_max])
+  # plt.xticks(list(range(int(x_min)-1, int(x_max)+1)))
+    fig.savefig('%s_util.png' % sid)
+  # plt.show()
 
 
 # ------------------------------------------------------------------------------
+
 

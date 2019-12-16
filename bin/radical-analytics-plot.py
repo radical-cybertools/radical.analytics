@@ -14,16 +14,18 @@ font = {'family' : 'normal',
 plt.rcParams['axes.titlesize']   = 14
 plt.rcParams['axes.labelsize']   = 14
 plt.rcParams['axes.linewidth']   =  2
-plt.rcParams['lines.linewidth']  =  2
-plt.rcParams['lines.color']  =  'r'
-plt.rcParams['lines.markersize'] = 14
 plt.rcParams['xtick.labelsize']  = 14
 plt.rcParams['ytick.labelsize']  = 14
+plt.rcParams['lines.markersize'] = 14
+plt.rcParams['lines.linewidth']  =  2
+plt.rcParams['lines.color']      = 'r'
+
 plt.rc('font', **font)
+
 
 # ------------------------------------------------------------------------------
 #
-TITLE     = None  # 'quick_plot'
+TITLE     = None
 DELIM     = ''
 COLUMN_X  =  0
 COLUMNS_Y = [1]
@@ -46,10 +48,10 @@ def usage(parser, msg=None):
 
     ret = 0
     if msg:
-        print '\n\n\t\tError: %s\n' % msg
+        print('\n\n\t\tError: %s\n' % msg)
         ret = 1
 
-    print '''
+    print('''
 
     usage  : quick_plot.py [<src>] [options]
     example: quick_plot.py experiment.dat -t 'title' --log 'x,y'
@@ -70,7 +72,7 @@ def usage(parser, msg=None):
         -l, --log        <x | y | x,y>         : log-scale for x and/or y axis
         -a, --save-as    <png | svg | x11>     : save fig in format (x11: show)
 
-'''
+''')
 
     sys.exit(ret)
 
@@ -145,7 +147,7 @@ def get_lines():
 def get_elems(line):
     if DELIM:
         elems = [e.strip() for e in line.split(DELIM)]
-        print elems
+        print(elems)
     else:
         elems = line.split()
 
@@ -210,9 +212,9 @@ try:
         elif STYLE == 'step' : plt.step   (data_x, data_y, 'b', label=label)
 
 except IndexError:
-    print 'index error'
+    print('index error')
     for i,e in enumerate(data[0]):
-        print '    %2d: %s' % (i, e)
+        print('    %2d: %s' % (i, e))
     raise
 
 plt.legend(ncol=2, fancybox=True, loc='lower right')

@@ -21,7 +21,7 @@ profile events.
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
-        print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
+        print("\n\tusage: %s <dir|tarball>\n" % sys.argv[0])
         sys.exit(1)
 
     src = sys.argv[1]
@@ -34,7 +34,7 @@ if __name__ == '__main__':
     # A formatting helper before starting...
     def ppheader(message):
         separator = '\n' + 78 * '-' + '\n'
-        print separator + message + separator
+        print(separator + message + separator)
 
     # First we look at the *event* model of our session.  The event model is
     # usually less stringent than the state model: not all events will always be
@@ -59,18 +59,18 @@ if __name__ == '__main__':
     # at them, and then compute the overall duration
     ppheader("Time spent by the units in exec-preparation")
     units = session.filter(etype='unit', inplace=False)
-    print '#units   : %d' % len(units.get())
+    print('#units   : %d' % len(units.get()))
 
     ranges = units.ranges(event=[{ru.EVENT: 'state',
                                   ru.STATE: rp.AGENT_EXECUTING},
                                  {ru.EVENT: 'exec_start'}],
                           collapse=False)
-    print 'ranges   :'
+    print('ranges   :')
     for r in ranges:
-        print '  [%7.2f, %7.2f] = %7.2f' % (r[0], r[1], r[1] - r[0])
+        print('  [%7.2f, %7.2f] = %7.2f' % (r[0], r[1], r[1] - r[0]))
 
     duration = units.duration(ranges=ranges)
-    print 'duration : %.2f' % duration
+    print('duration : %.2f' % duration)
 
 
     # now perform a sanity check: for each unit we check if the duration as
@@ -88,7 +88,7 @@ if __name__ == '__main__':
                                              {ru.EVENT: 'state',
                                               ru.STATE: rp.AGENT_STAGING_OUTPUT_PENDING}])
         diff = exec_duration - prep_duration
-        print '%7.2f > %7.2f : %s' % (exec_duration, prep_duration, diff > 0)
+        print('%7.2f > %7.2f : %s' % (exec_duration, prep_duration, diff > 0))
 
         # we could in principle check against session accuracy in this place,
         # but we do happen to know that both events are recorded in the same
@@ -104,11 +104,11 @@ if __name__ == '__main__':
     for unit in units.get():
         exec_duration = unit.duration(event=[{ru.EVENT: 'exec_start'},
                                              {ru.EVENT: 'exec_stop'}])
-        print '%s: %7.2f' % (unit.uid, exec_duration)
+        print('%s: %7.2f' % (unit.uid, exec_duration))
         durations.append(exec_duration)
 
-    print 'average    : %7.2f' % (sum(durations) / len(durations))
-    print
+    print('average    : %7.2f' % (sum(durations) / len(durations)))
+    print()
 
     ppheader("concurrent units in between exec_start and exec_stop events")
     concurrency = units.concurrency(event=[{ru.EVENT: 'exec_start'},

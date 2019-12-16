@@ -144,7 +144,7 @@ class Entity(object):
     def __str__(self):
 
         return "ra.Entity [%s]: %s\n    states: %s" \
-                % (self.etype, self.uid, self._states.keys())
+                % (self.etype, self.uid, list(self._states.keys()))
 
 
     # --------------------------------------------------------------------------
@@ -168,7 +168,7 @@ class Entity(object):
 
         # we expect each event tuple to have `time` and `event`, and expect
         # 'advance' events to signify a state transition.
-        for event in sorted(profile, key=lambda (x): (x[ru.TIME])):
+        for event in sorted(profile, key=lambda x: (x[ru.TIME])):
 
             t = event[ru.TIME]
 
@@ -207,7 +207,7 @@ class Entity(object):
         for e in events:
             if isinstance(e,dict):
                 et = ru.PROF_KEY_MAX * [None]
-                for k,v in e.iteritems():
+                for k,v in list(e.items()):
                     et[k] = v
                 ret.append(tuple(et))
             else:
@@ -241,7 +241,7 @@ class Entity(object):
     #
     def list_states(self):
 
-        return self._states.keys()
+        return list(self._states.keys())
 
 
     # --------------------------------------------------------------------------
@@ -296,13 +296,12 @@ class Entity(object):
         """
 
         event = self._ensure_tuplelist(event)
+        state = ru.as_list(state)
+        ret   = list()
 
-        if not state:
-            state = []
-        elif not isinstance(state, list):
-            state = [state]
-
-        ret = []
+        if not event and not state:
+            # no filters, consider all events
+            ret = self._events
 
         for e in event:
             for x in self._events:
@@ -358,8 +357,7 @@ class Entity(object):
         of start and end time which are used to constrain the resulting ranges.
         States are expected as strings, events as full event tuples
 
-            [ru.TIME,  ru.NAME, ru.UID,  ru.STATE,
-             ru.EVENT, ru.MSG,  ru.ENTITY]
+            [ru.TIME,  ru.NAME, ru.UID,  ru.STATE, ru.EVENT, ru.MSG,  ru.ENTITY]
 
         where empty fields are not applied in the filtering - all other fields
         must match exactly.  The events can also be specified as dictionaries,
@@ -387,6 +385,8 @@ class Entity(object):
 
         Setting 'collapse' to 'True' (default) will prompt the method to
         collapse the resulting set of ranges.
+
+        The returned ranges are time-sorted
 
         Example:
 
@@ -435,41 +435,41 @@ class Entity(object):
         for e in e_init:
             if isinstance(e,dict):
                 et = ru.PROF_KEY_MAX * [None]
-                for k,v in e.iteritems():
+                for k,v in list(e.items()):
                     et[k] = v
                 conds_init.append(tuple(et))
             else:
                 conds_init.append(e)
 
-        t_start = sys.float_info.max
-        for e in e_init:
-            for e_info in self._events:
-                if self._match_event(e, e_info):
-                    t_start = min(t_start, e_info[ru.TIME])
-
-        t_stop  = sys.float_info.min
-        for e in e_final:
-            for e_info in self._events:
-                if self._match_event(e, e_info):
-                    t_stop = max(t_stop, e_info[ru.TIME])
-
-        if t_start == sys.float_info.max:
-            return []
-          # raise ValueError('initial condition did not apply')
-
-        if t_stop == sys.float_info.min:
-            return []
-          # raise ValueError('final condition did not apply')
-
-        if t_stop < t_start:
-          # return []
-            raise ValueError('duration uncovered time inconsistency')
+      # t_start = sys.float_info.max
+      # for e in e_init:
+      #     for e_info in self._events:
+      #         if self._match_event(e, e_info):
+      #             t_start = min(t_start, e_info[ru.TIME])
+      #
+      # t_stop  = sys.float_info.min
+      # for e in e_final:
+      #     for e_info in self._events:
+      #         if self._match_event(e, e_info):
+      #             t_stop = max(t_stop, e_info[ru.TIME])
+      #
+      # if t_start == sys.float_info.max:
+      #   # return []
+      #     raise ValueError('initial condition did not apply')
+      #
+      # if t_stop == sys.float_info.min:
+      #   # return []
+      #     raise ValueError('final condition did not apply')
+      #
+      # if t_stop < t_start:
+      #   # return []
+      #     raise ValueError('duration uncovered time inconsistency')
 
 
         for e in e_final:
             if isinstance(e,dict):
                 et = ru.PROF_KEY_MAX * [None]
-                for k,v in e.iteritems():
+                for k,v in list(e.items()):
                     et[k] = v
                 conds_final.append(tuple(et))
             else:
@@ -504,7 +504,6 @@ class Entity(object):
             this_range[1] is not None     :
             ranges.append(this_range)
 
-
         # apply time filter, if specified
         # For all ranges, check if they fall completely or partially within any
         # of the given time filters.  If not, drop that range, if yes, include
@@ -527,9 +526,9 @@ class Entity(object):
                         ret.append([new_start, new_stop])
 
         if collapse:
-            return ru.collapse_ranges(ret)
-        else:
-            return ret
+            ret = ru.collapse_ranges(ret)
+
+        return sorted(ret)
 
 
 # ------------------------------------------------------------------------------

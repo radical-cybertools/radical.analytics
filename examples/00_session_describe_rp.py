@@ -17,7 +17,7 @@ This example illustrates the use of the method ra.Session.describe()
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
-        print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
+        print("\n\tusage: %s <dir|tarball>\n" % sys.argv[0])
         sys.exit(1)
 
     src     = sys.argv[1]
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     # A formatting helper before starting...
     def ppheader(message):
         separator = '\n' + 78 * '-' + '\n'
-        print separator + message + separator
+        print(separator + message + separator)
 
     # and here we go. Session.describe() can be used to print the entities state
     # models, the entities runtime event models, and the state values. The state

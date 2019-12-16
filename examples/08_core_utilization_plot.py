@@ -70,7 +70,7 @@ log = False  # use log scale for y axis
 if __name__ == '__main__':
 
     if len(sys.argv) != 2:
-        print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
+        print("\n\tusage: %s <dir|tarball>\n" % sys.argv[0])
         sys.exit(1)
 
     src     = sys.argv[1]
@@ -79,10 +79,10 @@ if __name__ == '__main__':
     # A formatting helper before starting...
     def ppheader(message):
         separator = '\n' + 78 * '-' + '\n'
-        print separator + message + separator
+        print(separator + message + separator)
 
     session.filter(etype=event_entity, inplace=True)
-    print '#entities: %d' % len(session.get())
+    print('#entities: %d' % len(session.get()))
 
     data = dict()
     for thing in session.get():
@@ -91,7 +91,7 @@ if __name__ == '__main__':
         for event in event_list:
             times = thing.timestamps(event=event)
             for e in thing.events:
-                print e
+                print(e)
             if times: tstamps.append(times[0])
             else    : tstamps.append(None)
 
@@ -100,7 +100,7 @@ if __name__ == '__main__':
     # We sort the entities by the timestamp of the first event
     # Also, for all timestamps, we move the baseline to the first
     # timestamp in the list
-    sorted_things = sorted(data.items(), key=lambda e: e[1][0])
+    sorted_things = sorted(list(data.items()), key=lambda e: e[1][0])
     sorted_data   = list()
     index         = 0
   # for uid,tstamps in sorted_things[15:25]:
@@ -108,12 +108,12 @@ if __name__ == '__main__':
 
         # rebase
         t_zero = tstamps[0]
-        print tstamps
+        print(tstamps)
         for i in range(len(tstamps)):
             if tstamps[i]:
                 tstamps[i] = tstamps[i] - t_zero
             else:
-                print 'pass', uid
+                print('pass', uid)
 
         # create plottable data
         sorted_data.append([index] + tstamps)

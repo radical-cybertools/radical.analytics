@@ -1,12 +1,10 @@
 
 import os
-import bz2
 import sys
 import copy
-import glob
 import tarfile
 
-import cPickle as pickle
+import pickle as pickle
 
 import more_itertools as mit
 import radical.utils  as ru
@@ -34,13 +32,18 @@ class Session(object):
         directory name.
         '''
 
-        # if no sid is given, derive it from the src path
-        sid, src, tgt, ext = self._get_sid(sid, src)
+        if _init:
+            # if no sid is given, derive it from the src path
+            sid, src, tgt, ext = self._get_sid(sid, src)
+        else:
+            assert sid
+            assert src
+            tgt = None
 
         if tgt and not os.path.exists(tgt):
 
             # need to extract
-            print 'extract tarball to %s' % tgt
+            print(('extract tarball to %s' % tgt))
             try:
                 if ext in ['tbz', 'tar.bz', 'tbz2', 'tar.bz2']:
                     tf = tarfile.open(name=src, mode='r:bz2')
@@ -139,7 +142,7 @@ class Session(object):
         if _init:
             self._initialize_properties()
 
-        print 'session loaded'
+        print('session loaded')
 
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
@@ -274,7 +277,7 @@ class Session(object):
          #      fout.write(pickle.dumps(session, protocol=pickle.HIGHEST_PROTOCOL))
 
         except Exception as e:
-            print 'cache read failed: %s' % e
+            print(('cache read failed: %s' % e))
             with open(cache, 'wb') as fout:
                 session = Session(src, stype, sid, _entities, _init)
                 fout.write(pickle.dumps(session, protocol=pickle.HIGHEST_PROTOCOL))
@@ -291,7 +294,7 @@ class Session(object):
 
         memo[id(self)] = ret
 
-        for k, v in self.__dict__.items():
+        for k, v in list(self.__dict__.items()):
             setattr(ret, k, copy.deepcopy(v, memo))
 
         return ret
@@ -365,7 +368,7 @@ class Session(object):
         # for all uids found,  create and store an entity.  We look up the
         # entity type in one of the events (and assume it is consistent over
         # all events for that uid)
-        for uid,events in entity_events.iteritems():
+        for uid,events in list(entity_events.items()):
             etype   = events[0][ru.ENTITY]
             details = self._description.get('tree', dict()).get(uid, dict())
             details['hostid'] = self._description.get('hostmap', dict()).get(uid)
@@ -419,7 +422,7 @@ class Session(object):
             self._t_start = sys.float_info.max
             self._t_stop  = sys.float_info.min
 
-        for euid,e in self._entities.iteritems():
+        for euid,e in list(self._entities.items()):
 
             self._t_start = min(self._t_start, e.t_start)
             self._t_stop  = max(self._t_stop,  e.t_stop )
@@ -469,14 +472,14 @@ class Session(object):
         if time and len(time) and not isinstance(time[0], list): time = [time]
 
         ret = list()
-        for eid,entity in self._entities.iteritems():
+        for eid,entity in list(self._entities.items()):
 
             if etype and entity.etype not in etype: continue
             if uid   and entity.uid   not in uid  : continue
 
             if state:
                 match = False
-                for s,stuple in entity.states.iteritems():
+                for s,stuple in list(entity.states.items()):
                     if time and not ru.in_range(stuple[ru.TIME], time):
                         continue
                     if s in state:
@@ -487,7 +490,7 @@ class Session(object):
 
             if event:
                 match = False
-                for e,etuple in entity.events.iteritems():
+                for e,etuple in list(entity.events.items()):
                     if time and not ru.in_range(etuple[ru.TIME], time):
                         continue
                     if e in event:
@@ -506,13 +509,13 @@ class Session(object):
     #
     def _dump(self):
 
-        for uid,entity in self._entities.iteritems():
-            print '\n\n === %s' % uid
+        for uid,entity in list(self._entities.items()):
+            print(('\n\n === %s' % uid))
             entity.dump()
             for event in entity.events:
-                print '  = %s' % event
+                print(('  = %s' % event))
                 for e in entity.events[event]:
-                    print '    %s' % e
+                    print(('    %s' % e))
 
 
     # --------------------------------------------------------------------------
@@ -521,7 +524,7 @@ class Session(object):
 
         if not pname:
             # return the name of all known properties
-            return self._properties.keys()
+            return list(self._properties.keys())
 
         if isinstance(pname, list):
             return_list = True
@@ -534,8 +537,8 @@ class Session(object):
         for _pname in pnames:
             if _pname not in self._properties:
                 raise KeyError('no such property known (%s) / %s'
-                        % (_pname, self._properties.keys()))
-            ret.append(self._properties[_pname].keys())
+                        % (_pname, list(self._properties.keys())))
+            ret.append(list(self._properties[_pname].keys()))
 
         if return_list: return ret
         else          : return ret[0]
@@ -561,7 +564,7 @@ class Session(object):
         if inplace:
             # filter our own entity list, and refresh the entity based on
             # the new list
-            if uids != self._entities.keys():
+            if uids != list(self._entities.keys()):
                 self._entities = {uid:self._entities[uid] for uid in uids}
                 self._initialize_properties()
             return self
@@ -644,7 +647,7 @@ class Session(object):
 
                 ret[p] = list()
                 if p not in rel:
-                    print 'inconsistent : no relations for %s' % p
+                    print(('inconsistent : no relations for %s' % p))
                     continue
 
                 for c in rel[p]['children']:
@@ -671,11 +674,11 @@ class Session(object):
         '''
 
         ranges = list()
-        for uid,entity in self._entities.iteritems():
+        for uid,entity in list(self._entities.items()):
             try:
                 ranges += entity.ranges(state, event, time, collapse=False)
             except ValueError:
-                print 'no ranges for %s' % uid
+                print(('no ranges for %s' % uid))
                 # ignore entities for which the conditions did not apply
                 pass
 
@@ -714,7 +717,7 @@ class Session(object):
         '''
 
         ret = list()
-        for uid,entity in self._entities.iteritems():
+        for uid,entity in list(self._entities.items()):
             tmp = entity.timestamps(state=state, event=event, time=time)
             if tmp and first:
                 ret.append(tmp[0])
@@ -787,7 +790,7 @@ class Session(object):
         '''
 
         ranges = list()
-        for uid,e in self._entities.iteritems():
+        for uid,e in list(self._entities.items()):
             ranges += e.ranges(state, event, time)
 
         if not ranges:
@@ -950,8 +953,93 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def utilization(self, owner, consumer, resource, owner_events=None,
-                                                     consumer_events=None):
+    def utilization(self, metrics):
+
+        assert(self._stype == 'radical.pilot')
+        import radical.pilot as rp
+
+        provided  = rp.utils.get_provided_resources(self)
+        consumed  = rp.utils.get_consumed_resources(self)
+        stats_abs = {'total':   0.0}
+        stats_rel = {'total': 100.0}
+        total     = 0.0
+
+        for pid in provided['total']:
+            for box in provided['total'][pid]:
+                stats_abs['total'] += (box[1] - box[0]) * \
+                                      (box[3] - box[2]  + 1)
+        total = stats_abs['total']
+
+        for metric in metrics:
+            if isinstance(metric, list):
+                name  = metric[0]
+                parts = metric[1]
+            else:
+                name  = metric
+                parts = [metric]
+
+            if name not in stats_abs:
+                stats_abs[name] = 0.0
+
+            for part in parts:
+                for uid in consumed[part]:
+                    for box in consumed[part][uid]:
+                        stats_abs[name] += (box[1] - box[0]) * \
+                                           (box[3] - box[2]  + 1)
+
+        info  = ''
+        info += '%s [%d]\n' % (self.uid, len(self.get(etype='unit')))
+
+        for metric in metrics + ['total']:
+            if isinstance(metric, list):
+                name  = metric[0]
+                parts = metric[1]
+            else:
+                name  = metric
+                parts = ''
+
+            val = stats_abs[name]
+            if val == 0.0: glyph = '!'
+            else         : glyph = ''
+            rel = 100.0 * val / total
+            stats_rel[name] = rel
+            info += '    %-20s: %14.3f  %8.3f%%  %2s  %s\n' \
+                  % (name, val, rel, glyph, parts)
+
+        have = 0.0
+        over = 0.0
+        work = 0.0
+        for metric in sorted(stats_abs.keys()):
+            if metric == 'total':
+                have  += stats_abs[metric]
+            else:
+                if metric == 'Execution Cmd':
+                    work  += stats_abs[metric]
+                else:
+                    over  += stats_abs[metric]
+
+        miss = have - over - work
+
+        rel_over = 100.0 * over / total
+        rel_work = 100.0 * work / total
+        rel_miss = 100.0 * miss / total
+
+        stats_abs['Other'] = miss
+        stats_rel['Other'] = rel_miss
+
+        info += '\n'
+        info += '    %-20s: %14.3f  %8.3f%%\n' % ('total', have, 100.0)
+        info += '    %-20s: %14.3f  %8.3f%%\n' % ('over',  over, rel_over)
+        info += '    %-20s: %14.3f  %8.3f%%\n' % ('work',  work, rel_work)
+        info += '    %-20s: %14.3f  %8.3f%%\n' % ('miss',  miss, rel_miss)
+
+        return provided, consumed, stats_abs, stats_rel, info
+
+
+    # --------------------------------------------------------------------------
+    #
+    def utilization_bak(self, owner, consumer, resource, owner_events=None,
+                                                      consumer_events=None):
         '''
         This method accepts as parameters :
         owner          : The entity name of the owner of the resources
@@ -1067,8 +1155,8 @@ class Session(object):
                 # returns a dictionary, which is sorted based on the first value
                 # of each entry. In the end the key, are out of order but the
                 # values are.
-                consumer_ranges = sorted(consumer_ranges.iteritems(),
-                                         key=lambda (k,v): (v[0],k))
+                consumer_ranges = sorted(iter(list(consumer_ranges.items())),
+                                         key=lambda k_v: (k_v[1][0],k_v[0]))
 
                 # Create a timeseries that contains all moments in consumer
                 # ranges and sort. This way we have a list that has time any
@@ -1353,7 +1441,7 @@ class Session(object):
 
                 if not sv:
                     if es:
-                        self._rep.warn('  %-30s : %s' % (et, es.keys()))
+                        self._rep.warn('  %-30s : %s' % (et, list(es.keys())))
                         e._consistency['state_model'] = None
                     continue
 
@@ -1369,7 +1457,7 @@ class Session(object):
                 sm_ok    = True
                 sm_log   = list()
                 miss_log = list()
-                for v,s in sv.iteritems():
+                for v,s in list(sv.items()):
 
                     if not s:
                         continue
@@ -1437,7 +1525,7 @@ class Session(object):
         old_tzero   = self._tzero
         self._tzero = t
 
-        for entity in self._entities.values():
+        for entity in list(self._entities.values()):
 
             # entity.states are shallow copies of the events
             for event in entity.events:

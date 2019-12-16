@@ -99,19 +99,19 @@ def clparse(argv):
         opts, args = getopt.getopt(argv, 'hud:t:e:s:o:',
             ['help','usage','ddir=','etag=','eid=','sid=','odir='])
         if not opts:
-            print 'No options supplied'
-            print usage()
+            print('No options supplied')
+            print(usage())
             sys.exit(1)
 
-    except getopt.GetoptError,e:
-        print e
+    except getopt.GetoptError as e:
+        print(e)
         usage()
         sys.exit(2)
 
     for opt, arg in opts:
 
         if opt in ['-h', '--help']:
-            print help()
+            print(help())
             sys.exit(0)
 
         if   opt in ('-d', '--edir'): clopts['ddir'] = arg
@@ -129,8 +129,8 @@ def clparse(argv):
 
     # Check for mandatory arguments
     if not clopts['ddir'] or not clopts['etag']:
-        print 'One or more mandatory option was not supplied'
-        print usage()
+        print('One or more mandatory option was not supplied')
+        print(usage())
         sys.exit(3)
 
     return clopts
@@ -175,7 +175,7 @@ def initialize_entity(etype=None):
         entities['unit'][duration]    = list()
 
     if etype not in ['session', 'pilot', 'unit']:
-        print 'Cannot itialize entity %s' % etype
+        print('Cannot itialize entity %s' % etype)
         sys.exit(1)
 
     # Return the empty data structure of the requested entity.
@@ -187,7 +187,7 @@ def initialize_entity(etype=None):
 def load_df(etype=None, sid=None):
 
     if etype not in ['session', 'pilot', 'unit']:
-        print 'Cannot itialize entity %s' % etype
+        print('Cannot itialize entity %s' % etype)
         sys.exit(1)
 
     # Initialize an empty DF with the entity's properties.
@@ -210,7 +210,7 @@ def store_df(new_df, stored=pd.DataFrame(), etype=None):
 
     # skip storing if no new data are passed.
     if new_df.empty:
-        print 'WARNING: attempting to store an empty DF (skip).'
+        print('WARNING: attempting to store an empty DF (skip).')
         return
 
     # Set header for csv file
@@ -227,7 +227,7 @@ def store_df(new_df, stored=pd.DataFrame(), etype=None):
         sessions.to_csv(csvs[etype])
 
     elif etype not in ['pilot', 'unit']:
-        print 'Cannot store DF to %s' % etype
+        print('Cannot store DF to %s' % etype)
         sys.exit(1)
 
     if stored.empty:
@@ -362,7 +362,7 @@ def load_pilots(sid, exp, sra_pilots, pdm, pu_rels, pts):
                 ps[state].append(pentity.timestamps(state=state)[0])
             except:
                 if state not in rp.FINAL:
-                    print 'WARNING: no timestamp for state %s' % state
+                    print('WARNING: no timestamp for state %s' % state)
                 ps[state].append(np.nan)
 
         # Pilot durations.
@@ -377,7 +377,7 @@ def load_pilots(sid, exp, sra_pilots, pdm, pu_rels, pts):
                 ps[duration].append(pentity.duration(event=pdm[duration]))
                 sys.stdout.write(' %s' % duration)
             except:
-                print ' WARNING: Failed to calculate duration %s' % duration
+                print(' WARNING: Failed to calculate duration %s' % duration)
                 ps[duration].append(np.nan)
 
     # Store pilots DF to csv and reload into memory to return the complete
@@ -389,7 +389,7 @@ def load_pilots(sid, exp, sra_pilots, pdm, pu_rels, pts):
         # just wrangled. This avoids using memory but needs cleanup.
         store_df(pilots, etype='pilot')
         stored_pilots = load_df(etype='pilot', sid=sid)
-        print '\nstored in %s.' % csvs['pilot']
+        print('\nstored in %s.' % csvs['pilot'])
 
     # Returns the DF of the stored pilots if no new pilots have been added;
     # the DF with the old and new pilots otherwise.
@@ -437,7 +437,7 @@ def load_units(sid, exp, sra_units, udm, pilots, sra, pu_rels, uts):
                 us[state].append(uentity.timestamps(state=state)[0])
             except:
                 if state not in ['CANCELED', 'FAILED']:
-                    print 'WARNING: Failed to get timestampe for %s' % state
+                    print('WARNING: Failed to get timestampe for %s' % state)
                 us[state].append(np.nan)
 
         # Durations.
@@ -457,18 +457,18 @@ def load_units(sid, exp, sra_units, udm, pilots, sra, pu_rels, uts):
                 sys.stdout.write(' %s' % duration)
 
             except:
-                print '\nWARNING: Failed to calculate duration %s' % \
-                    duration
+                print('\nWARNING: Failed to calculate duration %s' % \
+                    duration)
                 us[duration].append(np.nan)
 
         # pilot and host on which the unit has been executed.
-        punit = [key[0] for key in pu_rels.items()
+        punit = [key[0] for key in list(pu_rels.items())
                         if  uid in key[1]]
         if punit:
             punit = punit[0]
         else:
-            print '\nDEBUG: pu_rels.items():\n' % pu_rels.items()
-            print 'WARNING: empty pilot name for unit %s' % uid
+            print('\nDEBUG: pu_rels.items():\n' % list(pu_rels.items()))
+            print('WARNING: empty pilot name for unit %s' % uid)
             punit = None
 
         hid = pilots[(pilots['sid'] == sid) &
@@ -487,7 +487,7 @@ def load_units(sid, exp, sra_units, udm, pilots, sra, pu_rels, uts):
         #
         store_df(units, etype='unit')
         stored_units = load_df(etype='unit', sid=sid)
-        print '\nstored in %s.' % csvs['unit']
+        print('\nstored in %s.' % csvs['unit'])
 
     # Returns the DF of the stored pilots if no new pilots have been added;
     # the DF with the old and new pilots otherwise.
@@ -561,7 +561,7 @@ def load_session(sid, exp, sra_session, sra_pilots, sra_units,
     # FIXME: This is a workaround to load the full DF before saving it.
     stored_sessions = load_df(etype='session')
     store_df(session, stored=stored_sessions, etype='session')
-    print '\nstored in %s' % csvs['session']
+    print('\nstored in %s' % csvs['session'])
 
     return stored_sessions
 
@@ -574,7 +574,7 @@ def get_raw_sessions(ddir, etag, clopts):
     Assume: ddir/exp*/sessiondir/session.json.
     '''
 
-    print '\n\nGet raw sessions: '
+    print('\n\nGet raw sessions: ')
     sids = dict()
 
     for path in glob.glob('%s/%s*' % (ddir, etag)):
@@ -588,15 +588,15 @@ def get_raw_sessions(ddir, etag, clopts):
 
             # Skip session if not specified at command line.
             if clopts['sid'] and clopts['sid'] != sid:
-                print 'Ignore directory %s; waiting for %s' % (sdir,
-                    clopts['sid'])
+                print('Ignore directory %s; waiting for %s' % (sdir,
+                    clopts['sid']))
                 continue
 
             # Get session ID directory if json file exists.
             # sid = glob.glob('%s/*.json' % sdir)[0].split('/')[-2]
             if not os.path.isfile('%s/%s.json' % (sdir, sid)):
-                print "ERROR: no session json in %s" % sdir
-                print "Skip %s" % sdir
+                print("ERROR: no session json in %s" % sdir)
+                print("Skip %s" % sdir)
                 continue
 
             # Get experiment directory.
@@ -606,14 +606,14 @@ def get_raw_sessions(ddir, etag, clopts):
             # command line.
             # FIXME: AM: I don't understand the index notation below
             if clopts['eid'] and clopts['eid'] != exp[len(etag):]:
-                print 'Ignore %s; looking for directories in %s' % (
-                    exp[len(etag):], clopts['eid'])
+                print('Ignore %s; looking for directories in %s' % (
+                    exp[len(etag):], clopts['eid']))
                 continue
 
             # all tests passed - we want this session
             sids[sdir] = sid
 
-    print 'Done.'
+    print('Done.')
     return sids
 
 
@@ -625,7 +625,7 @@ def get_new_sessions(sids):
     those session IDs.
     '''
 
-    print '\n\nMarking sessions for wrangling: '
+    print('\n\nMarking sessions for wrangling: ')
     towrangle = dict()
 
     # Load current sessions, pilots, units DFs
@@ -640,23 +640,23 @@ def get_new_sessions(sids):
     # Add a session to wrangler when the sesison is not in the sessions DF or
     # when any of the session's units or pilots are not in the units or pilots
     # DFs.
-    for sdir, sid in sids.iteritems():
+    for sdir, sid in sids.items():
         nurequest = sessions[sessions.sid == sid].nunit.tolist()
         nprequest = sessions[sessions.sid == sid].npilot.tolist()
 
         # Duplicates in sessions need to be addressed manually by the user.
         # TODO: AM: ?
         if (len(nurequest) > 1) or (len(nprequest) > 1):
-            print 'ERROR: Duplicate entries for sid %s in sessions df' % sid
+            print('ERROR: Duplicate entries for sid %s in sessions df' % sid)
             sys.exit(1)
 
         if  sid not in sessions.sid.tolist()                  or \
             units[units.sid   == sid].shape[0] < nurequest[0] or \
             pilots[pilots.sid == sid].shape[0] < nprequest[0] :
-            print 'Mark session %s for wrangling' % sid
+            print('Mark session %s for wrangling' % sid)
             towrangle[sdir] = sid
 
-    print 'Done.'
+    print('Done.')
     return towrangle
 
 
@@ -687,18 +687,18 @@ def wrangle_session(sdir, sid):
     pu_rels = sra_session.describe('relations', ['pilot', 'unit'])
 
     # Pilots of sra: dervie properties and durations.
-    print '\n\n%s -- %s -- Loading pilots:' % (exp, sid)
+    print('\n\n%s -- %s -- Loading pilots:' % (exp, sid))
     sra_pilots = sra_session.filter(etype='pilot', inplace=False)
     pilots     = load_pilots(sid, exp, sra_pilots, pdm, pu_rels, pts)
 
     # Units of sra: dervie properties and durations.
-    print '\n\n%s -- %s -- Loading units:' % (exp, sid)
+    print('\n\n%s -- %s -- Loading units:' % (exp, sid))
     sra_units = sra_session.filter(etype='unit', inplace=False)
     units     = load_units(sid, exp, sra_units, udm, pilots,
                            sra_session, pu_rels, uts)
 
     # Session of sra: derive properties and total durations.
-    print '\n\n%s -- %s -- Loading session:\n' % (exp, sid)
+    print('\n\n%s -- %s -- Loading session:\n' % (exp, sid))
     load_session(sid, exp, sra_session, sra_pilots, sra_units,
                  sdm, pdm, udm, pilots, units, sts)
 
@@ -852,21 +852,21 @@ if __name__ == '__main__':
     sids    = get_new_sessions(rawsids)
     procs   = list()
 
-    print sids 
+    print(sids) 
 
     num_workers = psutil.cpu_count(logical=False)
     workers     = mp.Pool(num_workers)
 
     # Wrangle the new sessions.
     if sids:
-        for sdir,sid in sids.iteritems():
+        for sdir,sid in sids.items():
             wrangle_session(sdir, sid)
         #     workers.apply_async(wrangle_session, (sdir, sid,))
         # workers.close()
         # workers.join()
 
     else:
-        print 'No new sessions to wrangle found.'
+        print('No new sessions to wrangle found.')
 
 # ------------------------------------------------------------------------------
 

@@ -18,7 +18,7 @@ This example illustrates the use of the method ra.Session.duration()
 if __name__ == '__main__':
 
     if len(sys.argv) < 2:
-        print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
+        print("\n\tusage: %s <dir|tarball>\n" % sys.argv[0])
         sys.exit(1)
 
     src = sys.argv[1]
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     # A formatting helper before starting...
     def ppheader(message):
         separator = '\n' + 78 * '-' + '\n'
-        print separator + message + separator
+        print(separator + message + separator)
 
     # and here we go. Once we filter our session object so to keep only the
     # relevent entities (as seen in example 03), we are ready to perform our
@@ -83,22 +83,22 @@ if __name__ == '__main__':
 
     # we print the timestamps for the units for when they entered certain states
     ppheader("Timestamps for state transitions")
-    print '[rp.AGENT_STAGING_OUTPUT_PENDING]:'
+    print('[rp.AGENT_STAGING_OUTPUT_PENDING]:')
     pprint.pprint(units.timestamps(state=[rp.AGENT_STAGING_OUTPUT_PENDING]))
-    print 'rp.AGENT_EXECUTING'
+    print('rp.AGENT_EXECUTING')
     pprint.pprint(units.timestamps(state=rp.AGENT_EXECUTING))
-    print '[rp.AGENT_EXECUTING, rp.AGENT_STAGING_OUTPUT_PENDING]'
+    print('[rp.AGENT_EXECUTING, rp.AGENT_STAGING_OUTPUT_PENDING]')
     pprint.pprint(units.timestamps(state=[rp.AGENT_EXECUTING, rp.AGENT_STAGING_OUTPUT_PENDING]))
 
-    print """ The very careful reader may have noticed that the sum of the time
+    print(""" The very careful reader may have noticed that the sum of the time
     spent by the units to execute their kernel and performing staging out may be
     greater than the time spent by the units being active. This is explained by
     the potential overlapping between the time spent executing the kernell and
     that spent staging out. This overlapping is accounted for when calculating
-    the time spent by the units being active."""
+    the time spent by the units being active.""")
 
     ppheader("Ovelapping between executing and staging")
     overlap = (duration_exec + duration_sout) - duration_active
-    print overlap
+    print(overlap)
 
     sys.exit(0)

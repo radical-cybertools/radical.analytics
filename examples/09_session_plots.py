@@ -83,7 +83,7 @@ def plot_states(session):
       # print len([d[idx + 1] for d in data])
 
         plt.scatter([d[idx + 1] for d in data],
-                    range(len(data)),
+                    list(range(len(data))),
                     s=5,
                     color=state[1],
                     label=state[0])
@@ -115,7 +115,8 @@ def plot_rates(session):
         plt.step(x, y, color=colors[metric], label=metric, where='post',
                 linewidth=2, alpha=0.8)
 
-    ax.legend(data.keys(), ncol=3, loc='upper center', bbox_to_anchor=(0.5,1.11))
+    ax.legend(list(data.keys()), ncol=3, loc='upper center',
+                                 bbox_to_anchor=(0.5,1.11))
     plt.xlabel('time [s]')
     plt.ylabel('rate (#tasks / sec)')
 
@@ -140,7 +141,8 @@ def plot_concurrency(session):
         y = [e[1] for e in data[metric]]
         plt.step(x, y, color=colors[metric], label=metric, where='post')
 
-    ax.legend(data.keys(), ncol=3, loc='upper center', bbox_to_anchor=(0.5,1.11))
+    ax.legend(list(data.keys()), ncol=3, loc='upper center',
+                                 bbox_to_anchor=(0.5,1.11))
     plt.xlabel('time [s]')
     plt.ylabel('concurrency (#tasks)')
 
@@ -153,7 +155,7 @@ def plot_concurrency(session):
 if __name__ == '__main__':
 
     if len(sys.argv) != 2:
-        print "\n\tusage: %s <dir|tarball>\n" % sys.argv[0]
+        print("\n\tusage: %s <dir|tarball>\n" % sys.argv[0])
         sys.exit(1)
 
     src = sys.argv[1]
