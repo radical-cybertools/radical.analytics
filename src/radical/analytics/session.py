@@ -94,7 +94,13 @@ class Session(object):
 
         elif stype == 'radical.pilot':
 
-            import radical.pilot.utils as rpu
+            try:
+                import radical.pilot.utils as rpu
+            except:
+                raise RuntimeError('radical.analytics requires the '
+                                   'radical.pilot module to analyze this '
+                                   'session - please install it.')
+
             self._profile, accuracy, hostmap \
                               = rpu.get_session_profile    (sid=sid, src=self._src)
             self._description = rpu.get_session_description(sid=sid, src=self._src)
@@ -105,7 +111,12 @@ class Session(object):
 
         elif stype == 'radical.entk':
 
-            import radical.entk.utils as reu
+            try:
+                import radical.etk.utils as reu
+            except:
+                raise RuntimeError('radical.analytics requires the '
+                                   'radical.entk module to analyze this '
+                                   'session - please install it.')
 
             self._profile, accuracy, hostmap \
                               = reu.get_session_profile    (sid=sid, src=self._src)
@@ -955,7 +966,10 @@ class Session(object):
     #
     def utilization(self, metrics):
 
-        assert(self._stype == 'radical.pilot')
+        if self._stype != 'radical.pilot':
+            raise ValueError('session utilization is only available on '
+                             'radical.pilot sessions')
+
         import radical.pilot as rp
 
         provided  = rp.utils.get_provided_resources(self)
