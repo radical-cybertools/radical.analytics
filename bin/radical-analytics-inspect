@@ -3,6 +3,15 @@
 # FIXME: use metric definitions from RP (include colors and labels)
 # FIXME: use common plotter in src/ra/plotter.py (move from bin/ra-plot)
 
+python -c 'import radical.pilot' > /dev/null 2>&1
+if ! test "$?" = 0
+then
+    echo
+    echo "$0 requires radical.pilot, please install it."
+    echo
+    exit 1
+fi
+
 ARGS=$*
 bin="$( cd "$(dirname "$0")" ; pwd -P )"
 
