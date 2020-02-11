@@ -106,8 +106,6 @@ class Experiment(object):
         # obtain resources provisions and consumptions for all sessions
         for session in self._sessions:
 
-            import radical.pilot as rp
-
             sid = session.uid
             p, c, sa, sr, i = session.utilization(metrics)
 

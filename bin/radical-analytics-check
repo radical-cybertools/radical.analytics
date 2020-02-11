@@ -38,7 +38,12 @@ if __name__ == '__main__':
         found_events = set()
         all_events   = dict()
 
-        import radical.pilot as rp
+        try:
+            import radical.pilot as rp
+        except:
+            print('%s requires radical.pilot, please install it.' % sys.argv[0])
+            sys.exit(1)
+
         rp_path = os.path.dirname(rp.__file__)
         ev_path = '%s/../../../../../share/radical.pilot/events.md' % rp_path
 

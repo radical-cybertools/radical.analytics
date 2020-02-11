@@ -73,8 +73,11 @@ if __name__ == '__main__':
             else    : tstamps.append(None)
 
         data[thing.uid] = tstamps
-        pipe[thing.uid] = [int(x) for x
-                           in thing.description.get('name', '').split()]
+        try:
+            pipe[thing.uid] = [int(x) for x
+                               in thing.description.get('name', '').split()]
+        except:
+            pipe[thing.uid] = [0]
 
   # diffs = list()
   # for uid in data:
