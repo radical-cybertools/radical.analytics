@@ -112,7 +112,7 @@ class Session(object):
         elif stype == 'radical.entk':
 
             try:
-                import radical.etk.utils as reu
+                import radical.entk.utils as reu
             except:
                 raise RuntimeError('radical.analytics requires the '
                                    'radical.entk module to analyze this '
