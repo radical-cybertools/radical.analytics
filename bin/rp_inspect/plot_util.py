@@ -9,6 +9,7 @@ import sys
 import matplotlib        as mpl
 import matplotlib.pyplot as plt
 
+import radical.utils     as ru
 import radical.analytics as ra
 
 
@@ -108,9 +109,10 @@ if __name__ == '__main__':
     sid     = session.uid
     n_units = len(session.get(etype='unit'))
     p_size  = 0
+    p_zero  = None
     for pilot in session.get(etype='pilot'):
         p_size += pilot.description['cores']
-
+        p_zero  = pilot.timestamps(event={ru.EVENT: 'bootstrap_0_start'})[0]
 
     # get utilization information
     prov, cons, stats_abs, stats_rel, info = session.utilization(metrics)
@@ -156,8 +158,8 @@ if __name__ == '__main__':
         for part in parts:
             for uid in sorted(cons[part]):
                 for block in cons[part][uid]:
-                    orig_x = block[0]
-                    orig_y = block[2] - 0.5
+                    orig_x = block[0]       - p_zero
+                    orig_y = block[2] - 0.5 - p_zero
                     width  = block[1] - block[0]
                     height = block[3] - block[2] + 1.0
 
@@ -183,6 +185,7 @@ if __name__ == '__main__':
     plt.xlabel('runtime [s]')
     plt.ylabel('resource slot (index)')
 
+    print([x_min, x_max])
     plt.xlim([x_min, x_max])
     plt.ylim([y_min, y_max])
   # plt.xticks(list(range(int(x_min)-1, int(x_max)+1)))
