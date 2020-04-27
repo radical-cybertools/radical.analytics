@@ -153,7 +153,7 @@ class Session(object):
         if _init:
             self._initialize_properties()
 
-        print('session loaded')
+      # print('session loaded')
 
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
@@ -501,10 +501,10 @@ class Session(object):
 
             if event:
                 match = False
-                for e,etuple in list(entity.events.items()):
+                for etuple in entity.events:
                     if time and not ru.in_range(etuple[ru.TIME], time):
                         continue
-                    if e in event:
+                    if etuple[ru.EVENT] in event:
                         match = True
                         break
                 if not match:

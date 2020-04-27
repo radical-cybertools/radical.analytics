@@ -111,6 +111,8 @@ if __name__ == '__main__':
     p_size  = 0
     p_zero  = None
     for pilot in session.get(etype='pilot'):
+        import pprint
+        pprint.pprint(pilot.description)
         p_size += pilot.description['cores']
         p_zero  = pilot.timestamps(event={ru.EVENT: 'bootstrap_0_start'})[0]
 
