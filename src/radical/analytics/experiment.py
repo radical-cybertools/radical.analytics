@@ -1,5 +1,5 @@
-
-import radical.utils as ru
+__copyright__ = 'Copyright 2014-2016, http://radical.rutgers.edu'
+__license__   = 'MIT'
 
 from .session import Session
 

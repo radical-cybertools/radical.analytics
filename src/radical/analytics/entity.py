@@ -1,5 +1,6 @@
+__copyright__ = 'Copyright 2014-2016, http://radical.rutgers.edu'
+__license__   = 'MIT'
 
-import os
 import sys
 import pprint
 

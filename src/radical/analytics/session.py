@@ -1,3 +1,5 @@
+__copyright__ = 'Copyright 2014-2016, http://radical.rutgers.edu'
+__license__   = 'MIT'
 
 import os
 import sys
@@ -176,7 +178,7 @@ class Session(object):
 
         elif os.path.isfile(src):
 
-            # src is afile - we assume its a tarball and extract it
+            # src is a file - we assume its a tarball and extract it
             if  src.endswith('.prof'):
                 # use as is
                 tgt = src
