@@ -90,28 +90,25 @@ def prune_sids(sids, fcsv):
 
 
 # -----------------------------------------------------------------------------
+def convert_events(durations):
+
+    new = {}
+    for name, duration in durations.items():
+        new[name] = []
+        for event in duration:
+            for k, v in event.items():
+                new[name].append({int(k): v})
+
+    return new
+
+
+# -----------------------------------------------------------------------------
 def get_durations(session, entity, metrics, rels):
 
     measures = {}
 
     with open(metrics) as jm:
-        durations = json.load(jm)
-
-    # TODO: durations is invalid as json cannot have integers/python objects so
-    #       it cannot represent events at the moment. I guess we use non
-    #       standard json via RU? Why not using python dictionaries then?
-    durations = {'total'     : [{ru.EVENT: 'bootstrap_0_start'},
-                                {ru.EVENT: 'bootstrap_0_stop' }],
-                 'boot'      : [{ru.EVENT: 'bootstrap_0_start'},
-                                {ru.EVENT: 'sync_rel'         }],
-                 'setup_1'   : [{ru.EVENT: 'sync_rel'         },
-                                {ru.STATE: rps.PMGR_ACTIVE    }],
-                 'ignore'    : [{ru.STATE: rps.PMGR_ACTIVE    },
-                                {ru.EVENT: 'cmd'              ,
-                                 ru.MSG  : 'cancel_pilot'     }],
-                 'term'      : [{ru.EVENT: 'cmd'              ,
-                                 ru.MSG  : 'cancel_pilot'     },
-                                {ru.EVENT: 'bootstrap_0_stop' }]}
+        durations = convert_events(json.load(jm))
 
     for eid in sorted(session.list('uid')):
 
