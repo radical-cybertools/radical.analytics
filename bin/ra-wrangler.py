@@ -21,6 +21,7 @@ Warnings are printed when an expected duration cannot be computed and saved.
 """
 
 import os
+import re
 import sys
 import csv
 import json
@@ -63,12 +64,17 @@ def clparse():
 
 
 # -----------------------------------------------------------------------------
-def prune_sids(sids, fout):
+def prune_sids(sids, fcsv):
+
+    # no pruning if the csv file does not exist
+    if not os.path.isfile(fcsv) or os.stat(fcsv).st_size == 0:
+        return sids
+
     pruned = []
     stored = []
 
     # get the session names already wrangled
-    with open(fout, 'rt') as f:
+    with open(fcsv, 'rt') as f:
         reader = csv.reader(f, delimiter=',')
         next(reader)    # skip headers
         for raw in reader:
@@ -109,24 +115,25 @@ def get_durations(session, entity, metrics, rels):
 
     for eid in sorted(session.list('uid')):
 
-        sentity = session.get(uid=eid)[0]
+        # entity object with eid
+        sentity = session.get(etype=entity, uid=eid)[0]
 
         measures['sid'] = session._sid
 
         # properties of the entity
         if entity == 'pilot':
-            measures['pid'] = eid
+            measures['eid']    = eid
             measures['ncores'] = sentity.description['cores']
-            measures['ngpus'] = sentity.description['gpus']
+            measures['ngpus']  = sentity.description['gpus']
             measures['nunits'] = len(rels[eid])
 
         if entity == 'unit':
-            measures['uid'] = eid
-            measures['ncores'] = sentity.description['cpu_processes']
-            measures['ngpus'] = sentity.description['gpu_processes']
-            for pilot, units in rels.items():
-                if eid in units:
-                    measures['pid'] = pilot
+            measures['eid']    = eid
+            measures['ncores'] = (sentity.description['cpu_processes'] *
+                                  sentity.description['cpu_threads'])
+            measures['ngpus']  = sentity.description['gpu_processes']
+            measures['did']    = sentity.cfg['pilot']
+
 
         # durations of the entity
         for duration, events in durations.items():
@@ -140,7 +147,36 @@ def get_durations(session, entity, metrics, rels):
 
 
 # -----------------------------------------------------------------------------
-def update_csv(metrics, sid, csv_fname):
+def is_empty(fcsv):
+    content = open(fcsv, 'r').read()
+    if re.search(r'^\s*$', content):
+        return True
+
+
+# -----------------------------------------------------------------------------
+def update_csv(sid, measures, fcsv):
+
+
+    # The first time we create the csv file we do not have the headers for
+    # that entity. The file can exist but being empty.
+    if not os.path.isfile(fcsv) or is_empty(fcsv):
+        headers = measures.keys()
+        with open(fcsv, 'w') as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
+            writer.writeheader()
+            writer.writerow(measures)
+
+    # write the raw, fill missing headers with '' (restval). If measures has
+    # keys not found in the headers, an exception is raised by default.
+    else:
+        with open(fcsv, 'r') as f:
+            reader = csv.reader(f, delimiter=',')
+            headers = next(reader, None)
+
+        with open(fcsv, 'a+') as f:
+            writer = csv.DictWriter(f, fieldnames=headers, restval='')
+            writer.writerow(measures)
+
     return True
 
 
@@ -149,44 +185,40 @@ if __name__ == '__main__':
 
     # Get command line options and session IDs
     args = clparse()
-    print(args)
+    # print(args)
 
     # Find out what sessions need to be wrangled.
     nsids = prune_sids(args.sids, args.fout)
-    print(nsids)
+    # print(nsids)
 
-    # Wrangle the new sessions, if any.
-    if nsids:
-
-        # TODO: we use durations from a given file or the default one in
-        # RADICAL pilot (maybe to be moved to RU) for the entities are asked to
-        # process.
-        if not args.metrics:
-            pass
-
-        for sid in nsids:
-
-            # Construct the RADICAL Analytics session object.
-            # NOTE: this object can be very large in RAM.
-            # TODO: we assume a `radical.pilot` session, we should use
-            #       `radical`.
-            session = ra.Session(sid, 'radical.pilot')
-
-            # We load entity relationships before unloading entities from the
-            # session.
-            pu_rels = session.describe('relations', ['pilot', 'unit'])
-
-            # We unload everything but the entities we care about.
-            session = session.filter(etype=args.entity, inplace=True)
-
-            # get durations and properties from `session`
-            durations = get_durations(session, args.entity, args.metrics,
-                pu_rels)
-            print(durations)
-            sys.exit(0)
-
-            # write session durations and properties to the csv file.
-            update_csv(sid, durations, properties, args.fout)
-
-    else:
+    # Exit if no sessions to wrangle
+    if not nsids:
         print('No new sessions to wrangle found.')
+        sys.exit(0)
+
+    # TODO: we use durations from a given file or the default ones in RADICAL
+    #       pilot or RADICAL EnTK.
+    if not args.metrics:
+        pass
+
+    for sid in nsids:
+
+        # Construct the RADICAL Analytics session object.
+        # NOTE: this object can be very large in RAM.
+        # TODO: we assume a `radical.pilot` session, we should use
+        #       `radical`.
+        session = ra.Session(sid, 'radical.pilot')
+
+        # We load entity relationships before unloading entities from the
+        # session.
+        pu_rels = session.describe('relations', ['pilot', 'unit'])
+
+        # We unload everything but the entities we care about.
+        session = session.filter(etype=args.entity, inplace=True)
+
+        # get durations and properties from `session`
+        durations = get_durations(session, args.entity, args.metrics,
+            pu_rels)
+
+        # write session durations and properties to the csv file.
+        update_csv(sid, durations, args.fout)
