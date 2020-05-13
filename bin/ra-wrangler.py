@@ -27,9 +27,7 @@ import csv
 import json
 import argparse
 
-import radical.utils as ru
 import radical.analytics as ra
-import radical.pilot.states as rps
 
 
 # ------------------------------------------------------------------------------
@@ -38,19 +36,20 @@ def clparse():
     parser = argparse.ArgumentParser(
         description='wrangles RADICAL Cybertools sessions.')
 
+    parser.add_argument('-t', '--type_session',
+        dest='stype',
+        help='type of session: e.g., radical.pilot or radical.entk.')
+
     parser.add_argument('-e', '--entity',
         required=True,
         dest='entity',
         help='type of entity for which to measure durations.')
 
     parser.add_argument('-m', '--metrics',
-        #type=argparse.FileType('r'),
-        required=True,    #TODO: make this optional
-        dest='metrics',
+        dest='fmetrics',
         help='json file containing the durations.')
 
     parser.add_argument('-f', '--fout',
-        #type=argparse.FileType('a'),
         dest='fout',
         required=True,
         help='csv output file where to write durations.')
@@ -81,7 +80,6 @@ def prune_sids(sids, fcsv):
             stored.append(raw[0])
 
     # get the sessions that need to be wrangled.
-
     # NOTE: `sids` is a list of paths while `stored` is a list of session IDs.
     # We compare the tail of `sids` paths, i.e., the session IDs.
     pruned = [item for item in sids if os.path.split(item)[1] not in stored]
@@ -90,25 +88,69 @@ def prune_sids(sids, fcsv):
 
 
 # -----------------------------------------------------------------------------
-def convert_events(durations):
+def prune_metrics(metrics):
 
-    new = {}
-    for name, duration in durations.items():
-        new[name] = []
-        for event in duration:
+    # RADICAL-Pilot durations have an extra level of tagging (we should
+    # probably remove them has they are categories of durations while the
+    # constants are supposed to be durations.)
+    pruned = {}
+    for tag, duration in metrics.items():
+        pruned.update(duration)
+
+    return pruned
+
+
+# -----------------------------------------------------------------------------
+def get_metrics(stype, entity):
+
+    if stype == 'radical.pilot':
+        import radical.pilot as rp
+
+        if entity == 'pilot':
+            metrics = prune_metrics(rp.utils.PILOT_DURATIONS)
+        elif entity == 'unit':
+            metrics = prune_metrics(rp.utils.UNIT_DURATIONS_DEFAULT)
+        elif entity == 'unit.prrte':
+            metrics = prune_metrics(rp.utils.UNIT_DURATIONS_PRTE)
+        else:
+            raise Exception('ERROR: unknown entity: %s' % entity)
+
+    elif stype == 'radical.entk':
+
+        if entity in ['pipeline', 'stage', 'task']:
+            raise Exception('ERROR: RADICAL-EnTK wrangler not implemented.')
+        else:
+            raise Exception('ERROR: Unknown RADICAL-EnTK entity: %s' % entity)
+
+    else:
+
+        raise Exception('ERROR: Unknown type of session: %s' % stype)
+
+    return metrics
+
+
+# -----------------------------------------------------------------------------
+def convert_metrics(fmetrics):
+
+    metrics = {}
+
+    with open(fmetrics) as jm:
+        jmetrics = json.load(jm)
+
+    for name, duration in jmetrics.items():
+        metrics[name] = []
+        for i, event in enumerate(duration):
+            metrics[name].append({})
             for k, v in event.items():
-                new[name].append({int(k): v})
+                metrics[name][i].update({int(k): v})
 
-    return new
+    return metrics
 
 
 # -----------------------------------------------------------------------------
 def get_durations(session, entity, metrics, rels):
 
     measures = {}
-
-    with open(metrics) as jm:
-        durations = convert_events(json.load(jm))
 
     for eid in sorted(session.list('uid')):
 
@@ -133,7 +175,7 @@ def get_durations(session, entity, metrics, rels):
 
 
         # durations of the entity
-        for duration, events in durations.items():
+        for duration, events in metrics.items():
             try:
                 measures[duration] = session.duration(event=events)
             except:
@@ -181,29 +223,40 @@ def update_csv(sid, measures, fcsv):
 if __name__ == '__main__':
 
     # Get command line options and session IDs
-    args = clparse()
-    # print(args)
+    args     = clparse()
+    stype    = args.stype
+    entity   = args.entity
+    fmetrics = args.fmetrics
+    fout     = args.fout
+    sids     = args.sids
 
     # Find out what sessions need to be wrangled.
-    nsids = prune_sids(args.sids, args.fout)
+    sids = prune_sids(sids, fout)
     # print(nsids)
 
     # Exit if no sessions to wrangle
-    if not nsids:
+    if not sids:
         print('No new sessions to wrangle found.')
         sys.exit(0)
 
-    # TODO: we use durations from a given file or the default ones in RADICAL
-    #       pilot or RADICAL EnTK.
-    if not args.metrics:
-        pass
+    # radical.pilot is the default session type
+    if not stype:
+        stype = 'radical.pilot'
 
-    for sid in nsids:
+    # We use durations from a given file or the default ones in RADICAL-pilot
+    # or RADICAL-EnTK.
+    # TODO: implement EnTK metrics in entk.utils.
+    if not fmetrics:
+        metrics = get_metrics(stype, entity)
+        print('DEBUG: default metrics: %s' % metrics)
+    else:
+        metrics = convert_metrics(fmetrics)
+        print('DEBUG: json metrics: %s' % metrics)
+
+    for sid in sids:
 
         # Construct the RADICAL Analytics session object.
         # NOTE: this object can be very large in RAM.
-        # TODO: we assume a `radical.pilot` session, we should use
-        #       `radical`.
         session = ra.Session(sid, 'radical.pilot')
 
         # We load entity relationships before unloading entities from the
@@ -211,11 +264,10 @@ if __name__ == '__main__':
         pu_rels = session.describe('relations', ['pilot', 'unit'])
 
         # We unload everything but the entities we care about.
-        session = session.filter(etype=args.entity, inplace=True)
+        session = session.filter(etype=entity, inplace=True)
 
         # get durations and properties from `session`
-        durations = get_durations(session, args.entity, args.metrics,
-            pu_rels)
+        durations = get_durations(session, entity, metrics, pu_rels)
 
         # write session durations and properties to the csv file.
-        update_csv(sid, durations, args.fout)
+        update_csv(sid, durations, fout)
