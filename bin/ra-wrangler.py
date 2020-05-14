@@ -90,10 +90,12 @@ def prune_sids(sids, fcsv):
 # -----------------------------------------------------------------------------
 def prune_metrics(metrics):
 
-    # RADICAL-Pilot durations have an extra level of tagging (we should
-    # probably remove them has they are categories of durations while the
-    # constants are supposed to be durations.)
+    # RADICAL-Pilot durations have an extra level of tagging that we need to
+    # remove to get the dict of default durations.
+    # NOTE: should we remove them has they are categories of durations while
+    # the dicts are supposed to contain durations?
     pruned = {}
+
     for tag, duration in metrics.items():
         pruned.update(duration)
 
@@ -148,39 +150,32 @@ def convert_metrics(fmetrics):
 
 
 # -----------------------------------------------------------------------------
-def get_durations(session, entity, metrics, rels):
+def get_measures(sid, sentity, eid, metrics, rels):
 
-    measures = {}
+    measures = {'sid': sid}
 
-    for eid in sorted(session.list('uid')):
+    # properties of the entity
+    if entity == 'pilot':
+        measures['eid']    = eid
+        measures['ncores'] = sentity.description['cores']
+        measures['ngpus']  = sentity.description['gpus']
+        measures['nunits'] = len(rels[eid])
 
-        # entity object with eid
-        sentity = session.get(etype=entity, uid=eid)[0]
-
-        measures['sid'] = session._sid
-
-        # properties of the entity
-        if entity == 'pilot':
-            measures['eid']    = eid
-            measures['ncores'] = sentity.description['cores']
-            measures['ngpus']  = sentity.description['gpus']
-            measures['nunits'] = len(rels[eid])
-
-        if entity == 'unit':
-            measures['eid']    = eid
-            measures['ncores'] = (sentity.description['cpu_processes'] *
-                                  sentity.description['cpu_threads'])
-            measures['ngpus']  = sentity.description['gpu_processes']
-            measures['did']    = sentity.cfg['pilot']
+    if entity == 'unit':
+        measures['eid']    = eid
+        measures['ncores'] = (sentity.description['cpu_processes'] *
+                              sentity.description['cpu_threads'])
+        measures['ngpus']  = sentity.description['gpu_processes']
+        measures['did']    = sentity.cfg['pilot']
 
 
-        # durations of the entity
-        for duration, events in metrics.items():
-            try:
-                measures[duration] = session.duration(event=events)
-            except:
-                print('WARNING: Failed to calculate duration %s' % duration)
-                measures[duration] = ''
+    # durations of the entity
+    for duration, events in metrics.items():
+        try:
+            measures[duration] = sentity.duration(event=events)
+        except:
+            print('WARNING: Failed to calculate %s for %s' % (duration, eid))
+            measures[duration] = ''
 
     return measures
 
@@ -193,8 +188,7 @@ def is_empty(fcsv):
 
 
 # -----------------------------------------------------------------------------
-def update_csv(sid, measures, fcsv):
-
+def update_csv(measures, fcsv):
 
     # The first time we create the csv file we do not have the headers for
     # that entity. The file can exist but being empty.
@@ -248,26 +242,26 @@ if __name__ == '__main__':
     # TODO: implement EnTK metrics in entk.utils.
     if not fmetrics:
         metrics = get_metrics(stype, entity)
-        print('DEBUG: default metrics: %s' % metrics)
+        # print('DEBUG: default metrics: %s' % metrics)
     else:
         metrics = convert_metrics(fmetrics)
-        print('DEBUG: json metrics: %s' % metrics)
+        # print('DEBUG: json metrics: %s' % metrics)
 
     for sid in sids:
 
         # Construct the RADICAL Analytics session object.
         # NOTE: this object can be very large in RAM.
         session = ra.Session(sid, 'radical.pilot')
-
-        # We load entity relationships before unloading entities from the
-        # session.
+        sid = session._sid
         pu_rels = session.describe('relations', ['pilot', 'unit'])
 
-        # We unload everything but the entities we care about.
+        # We unload everything but the entities we care about to free RAM.
         session = session.filter(etype=entity, inplace=True)
 
-        # get durations and properties from `session`
-        durations = get_durations(session, entity, metrics, pu_rels)
-
-        # write session durations and properties to the csv file.
-        update_csv(sid, durations, fout)
+        # get durations and properties from `session`. for each entity,
+        # durations are written as a raw in the csv file. This avoids
+        # collecting too may raws into RAM.
+        for eid in sorted(session.list('uid')):
+            sentity = session.get(etype=entity, uid=eid)[0]
+            measures = get_measures(sid, sentity, eid, metrics, pu_rels)
+            update_csv(measures, fout)
