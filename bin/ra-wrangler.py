@@ -252,7 +252,7 @@ if __name__ == '__main__':
         # Construct the RADICAL Analytics session object.
         # NOTE: this object can be very large in RAM.
         session = ra.Session(sid, 'radical.pilot')
-        sid = session._sid
+        sid = session.uid
         pu_rels = session.describe('relations', ['pilot', 'unit'])
 
         # We unload everything but the entities we care about to free RAM.
