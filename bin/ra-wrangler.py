@@ -150,24 +150,41 @@ def convert_metrics(fmetrics):
 
 
 # -----------------------------------------------------------------------------
-def get_measures(sid, sentity, eid, metrics, rels):
+def measure_entity(sid, sentity, eid, metrics, rels):
 
     measures = {'sid': sid}
 
     # properties of the entity
     if entity == 'pilot':
-        measures['eid']    = eid
-        measures['ncores'] = sentity.description['cores']
-        measures['ngpus']  = sentity.description['gpus']
-        measures['nunits'] = len(rels[eid])
+        measures.update({
+            'eid'       : eid,
+            'resoure'   : sentity.description['resource'],
+            'cores'     : sentity.description['cores'],
+            'gpus'      : sentity.description['gpus'],
+            'project'   : sentity.description['project'],
+            'agent_lm'  : sentity.cfg['agent_launch_method'],
+            'mpi_lm'    : sentity.cfg['mpi_launch_method'],
+            'task_lm'   : sentity.cfg['task_launch_method'],
+            'rm'        : sentity.cfg['resource_manager'],
+            'dburl'     : sentity.cfg['dburl'],
+            'scheduler' : sentity.cfg['scheduler'],
+            'spawner'   : sentity.cfg['spawner'],
+            'sbox'      : sentity.cfg['session_sandbox'],
+            'gpus_node' : sentity.cfg['gpus_per_node'],
+           #'cores_node': sentity.cfg['cores_per_node']    TODO: broken,
+            'cores_node': sentity.cfg['resource_details']['rm_info']['cores_per_node'],
+            'nodes'     : len(sentity.cfg['resource_details']['rm_info']['node_list']),
+            'units'     : len(rels[eid])
+        })
+
 
     if entity == 'unit':
-        measures['eid']    = eid
-        measures['ncores'] = (sentity.description['cpu_processes'] *
-                              sentity.description['cpu_threads'])
-        measures['ngpus']  = sentity.description['gpu_processes']
-        measures['did']    = sentity.cfg['pilot']
-
+        measures.update({
+            'eid'   : eid,
+            'ncores': (sentity.description['cpu_processes'] *
+                       sentity.description['cpu_threads']),
+            'ngpus' : sentity.description['gpu_processes'],
+            'did'   : sentity.cfg['pilot']})
 
     # durations of the entity
     for duration, events in metrics.items():
@@ -179,6 +196,36 @@ def get_measures(sid, sentity, eid, metrics, rels):
 
     return measures
 
+
+# -----------------------------------------------------------------------------
+def measure_global(s, metrics, rels):
+
+    measures = {'sid': s.uid}
+
+    # global properties
+    measures.update({
+        'n_cores'        : sum([p.description['cores'] for p in s.get(etype='pilot')]),
+        'n_gpus'         : sum([p.description['gpus'] for p in s.get(etype='pilot')]),
+        # npilot = len(s.filter(etype='pilot').list('uid'))    # Slow+RAM
+        'n_pilots'       : len([p for p in s.describe()['tree'].keys() if 'pilot' in p]),
+        'n_units'        : len([u for u in s.describe()['tree'].keys() if 'unit' in u]),
+        'n_active_pilots': len([p for p in s.get(etype='pilot') if 'PMGR_ACTIVE' in p.states.keys()]),
+        'n_failed_pilots': len([p for p in s.get(etype='pilot') if 'FAILED' in p.states.keys()]),
+        'n_done_units'   : len([u for u in s.get(etype='unit')  if 'DONE' in u.states.keys()]),
+        'n_failed_units' : len([u for u in s.get(etype='unit')  if 'FAILED' in u.states.keys()]),
+        'n_nodes'        : sum([len(p.cfg['resource_details']['rm_info']['node_list']) for p in s.get(etype='pilot')])
+    })
+
+    #  global durations
+        # durations of the entity
+    for duration, events in metrics.items():
+        try:
+            measures[duration] = s.duration(event=events)
+        except:
+            print('WARNING: Failed to calculate %s' % duration)
+            measures[duration] = ''
+
+    return measures
 
 # -----------------------------------------------------------------------------
 def is_empty(fcsv):
@@ -230,8 +277,11 @@ if __name__ == '__main__':
 
     # Exit if no sessions to wrangle
     if not sids:
-        print('No new sessions to wrangle found.')
-        sys.exit(0)
+        raise Exception('No new sessions to wrangle found.')
+
+    # Exit if entity is unknow
+    if entity not in ['session', 'pilot', 'unit']:
+        raise Exception('ERROR: Unknown entity %s' % entity)
 
     # radical.pilot is the default session type
     if not stype:
@@ -252,16 +302,21 @@ if __name__ == '__main__':
         # Construct the RADICAL Analytics session object.
         # NOTE: this object can be very large in RAM.
         session = ra.Session(sid, 'radical.pilot')
-        sid = session.uid
         pu_rels = session.describe('relations', ['pilot', 'unit'])
 
-        # We unload everything but the entities we care about to free RAM.
-        session = session.filter(etype=entity, inplace=True)
-
-        # get durations and properties from `session`. for each entity,
-        # durations are written as a raw in the csv file. This avoids
-        # collecting too may raws into RAM.
-        for eid in sorted(session.list('uid')):
-            sentity = session.get(etype=entity, uid=eid)[0]
-            measures = get_measures(sid, sentity, eid, metrics, pu_rels)
+        # when entity is session, we get global properties and total durations
+        # for thw whole session.
+        if entity == 'session':
+            measures = measure_global(session, metrics, pu_rels)
             update_csv(measures, fout)
+
+        else:
+            # We unload everything but the entities we care about to free RAM.
+            session = session.filter(etype=entity, inplace=True)
+
+            # each entity's durations are written as a raw in the csv file.
+            # This avoids collecting too may raws into RAM.
+            for eid in sorted(session.list('uid')):
+                sentity = session.get(etype=entity, uid=eid)[0]
+                measures = measure_entity(session.uid, sentity, eid, metrics, pu_rels)
+                update_csv(measures, fout)
