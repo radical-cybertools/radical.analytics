@@ -329,10 +329,16 @@ class Entity(object):
     #
     def _match_event(self, needle, hay):
 
-        for key in range(ru.PROF_KEY_MAX):
+        for key in range(ru.PROF_KEY_MAX - 2):
             if needle[key] is not None:
                 if needle[key] != hay[key]:
                     return False
+
+        key = ru.PROF_KEY_MAX - 2
+        if needle[key] is not None:
+            if needle[key] not in hay[key]:
+                return False
+
         return True
 
 
