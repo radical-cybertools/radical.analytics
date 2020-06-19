@@ -807,10 +807,6 @@ class Session(object):
         for uid,e in list(self._entities.items()):
             ranges += e.ranges(state, event, time)
 
-        print()
-        import pprint
-        pprint.pprint(ranges)
-
         if not ranges:
             return []
 
@@ -865,9 +861,6 @@ class Session(object):
             # append last time stamp if it is not appended, yet
             if ret[-1] != [t, val]:
                 ret.append([t, val])
-
-        print()
-        pprint.pprint(ret)
 
         return ret
 
