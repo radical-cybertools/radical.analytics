@@ -24,7 +24,7 @@ usage(){
            $0 -h | help
 
 EOT
-    test -z "$msg" || exit 1
+    test -z "$msg"  1
 
     cat <<EOT
 

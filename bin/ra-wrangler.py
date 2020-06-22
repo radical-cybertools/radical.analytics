@@ -22,7 +22,6 @@ Warnings are printed when an expected duration cannot be computed and saved.
 
 import os
 import re
-import sys
 import csv
 import json
 import argparse
