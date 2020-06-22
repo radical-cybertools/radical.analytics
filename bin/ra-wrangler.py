@@ -183,7 +183,7 @@ def measure_entity(sid, sentity, eid, metrics, rels):
             'ncores': (sentity.description['cpu_processes'] *
                        sentity.description['cpu_threads']),
             'ngpus' : sentity.description['gpu_processes'],
-            'did'   : sentity.cfg['pilot']})
+            'pid'   : sentity.cfg['pilot']})
 
     # durations of the entity
     for duration, events in metrics.items():
