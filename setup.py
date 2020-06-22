@@ -224,7 +224,7 @@ setup_args = {
                                  '*.md', 'VERSION', 'SDIST', sdist_name]},
   # 'setup_requires'     : ['pytest-runner'],
     'install_requires'   : ['radical.utils>=1.0',
-                            'matplotlib<=3.0',
+                            'matplotlib>=3.1.2',
                             'psutil',
                             'pandas',
                             'numpy',
