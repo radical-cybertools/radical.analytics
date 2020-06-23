@@ -78,7 +78,7 @@ def get_version(mod_root):
         # versions).
         out, err, ret = sh_callout(
             'cd %s ; '
-            'test -z `git rev-parse --show-prefix` || exit -1; '
+            'test -z `git rev-parse --show-prefix`  -1; '
             'tag=`git describe --tags --always` 2>/dev/null ; '
             'branch=`git branch | grep -e "^*" | cut -f 2- -d " "` 2>/dev/null ; '
             'echo $tag@$branch' % src_root)
@@ -139,8 +139,8 @@ def get_version(mod_root):
 
 # ------------------------------------------------------------------------------
 # check python version. we need >= 2.7, <3.x
-if  sys.hexversion <= 0x03050000:
-    raise RuntimeError('%s requires Python 3.5 or higher' % name)
+if sys.hexversion < 0x03060000:
+    raise RuntimeError('%s requires Python 3.6 or higher' % name)
 
 
 # ------------------------------------------------------------------------------
@@ -195,7 +195,7 @@ setup_args = {
     'url'                : 'https://www.github.com/radical-cybertools/radical.analytics/',
     'license'            : 'GPL.v2',
     'keywords'           : 'radical analytics',
-    'python_requires'    : '>=3.5',
+    'python_requires'    : '>=3.6',
     'classifiers'        : [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -203,11 +203,10 @@ setup_args = {
         'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Utilities',
         'Topic :: System :: Distributed Computing',
         'Topic :: Scientific/Engineering',
-        'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX',
         'Operating System :: Unix'
     ],
