@@ -153,7 +153,7 @@ class Session(object):
         if _init:
             self._initialize_properties()
 
-        print('session loaded')
+      # print('session loaded')
 
         # FIXME: we should do a sanity check that all encountered states and
         #        events are part of the respective state and event models
@@ -501,10 +501,10 @@ class Session(object):
 
             if event:
                 match = False
-                for e,etuple in list(entity.events.items()):
+                for etuple in entity.events:
                     if time and not ru.in_range(etuple[ru.TIME], time):
                         continue
-                    if e in event:
+                    if etuple[ru.EVENT] in event:
                         match = True
                         break
                 if not match:
@@ -800,52 +800,67 @@ class Session(object):
                                         rp.AGENT_STAGING_OUTPUT_PENDING])
         '''
 
+        INC =  1  # increase concurrency
+        DEC = -1  # decrease concurrency
+
         ranges = list()
         for uid,e in list(self._entities.items()):
             ranges += e.ranges(state, event, time)
 
         if not ranges:
-            # nothing to do
             return []
 
-
-        ret   = list()
         times = list()
-        if sampling:
-            # get min and max of ranges, and add create timestamps at regular
-            # intervals
-            r_min = ranges[0][0]
-            r_max = ranges[0][1]
-            for r in ranges:
-                r_min = min(r_min, r[0])
-                r_max = max(r_max, r[1])
+        # get all start and end times for all ranges.  The start of a range will
+        # increase concurrency by one at that time stamp, and the end will
+        # decrease it by one again.
+        for r in ranges:
+            times.append([r[0], INC])
+            times.append([r[1], DEC])
 
-            t = r_min
-            while t < r_max:
-                times.append(t)
-                t += sampling
-            times.append(t)
+        # sort those times
+        times.sort()
+
+        # get the overall concurrency data
+        conc = 0
+        data = list()  # [[time, concurrency], ...]
+        for time, val in times:
+            conc += val
+            data.append([time, conc])
+
+        # collapse time stamps (use last value on same time stamps)
+        collapsed = list()
+        last      = data[0]
+        for time, val in data[1:]:
+            if time != last[0]:
+                collapsed.append(last)
+            last = [time, val]
+
+        # append last time
+        collapsed.append(last)
+
+        # make sure we start at zero (at time of first event)
+        collapsed.insert(0, [collapsed[0][0], 0])
+
+        if not sampling:
+            # return as is
+            ret = collapsed
 
         else:
-            # get all start and end times for all ranges, and use the resulting
-            # set as time sequence
-            for r in ranges:
-                times.append(r[0])
-                times.append(r[1])
-            times.sort()
+            # select data points according to sampling
+            # get min time, and create timestamps at regular intervals
+            t     = times[ 0][0]
+            last  = r_min
+            ret   = list()
+            idx   = 0
+            for time, val in collapsed:
+                while time >= t:
+                    ret.append(t, val)
+                    t += sampling
 
-        # we have the time sequence, now compute concurrency at those points
-        for t in times:
-            cnt = 0
-            for r in ranges:
-                if t >= r[0] and t <= r[1]:
-                    cnt += 1
-
-            if ret and [t,cnt] == ret[-1]:
-                # avoid repetition of values
-                continue
-
-            ret.append([t, cnt])
+            # append last time stamp if it is not appended, yet
+            if ret[-1] != [t, val]:
+                ret.append([t, val])
 
         return ret
 
