@@ -120,6 +120,7 @@ if __name__ == '__main__':
     with open('%s.stats' % sid, 'w') as fout:
         fout.write('\n%s\n\n' % info)
 
+  # import pprint
   # pprint.pprint(prov)
   # pprint.pprint(cons)
   # pprint.pprint(stats_abs)
@@ -158,15 +159,15 @@ if __name__ == '__main__':
         for part in parts:
             for uid in sorted(cons[part]):
                 for block in cons[part][uid]:
-                    orig_x = block[0]       - p_zero
-                    orig_y = block[2] - 0.5 - p_zero
+                    orig_x = block[0] - p_zero
+                    orig_y = block[2] - 0.5
                     width  = block[1] - block[0]
                     height = block[3] - block[2] + 1.0
 
                     if x_min is None: x_min = orig_x
                     if x_max is None: x_max = orig_x + width
-                    if y_min is None: y_min = orig_x
-                    if y_max is None: y_max = orig_x + height
+                    if y_min is None: y_min = orig_y
+                    if y_max is None: y_max = orig_y + height
 
                     x_min = min(x_min, orig_x)
                     y_min = min(y_min, orig_y)
