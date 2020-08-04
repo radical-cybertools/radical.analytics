@@ -12,16 +12,14 @@ class Entity(object):
 
     def __init__(self, _uid, _etype, _profile, _details):
         """
-        This is a private constructor for an RA Entity: it gets a series of
-        events and sorts it into its properties.  We have 4 properties:
-
-          - etype : the type of the entity in question.  This defines, amongst
-                    others, what state model the Session will assume to be valid
-                    for this entity
-          - uid   : an ID assumed to be unique in the scope of an RA Session
-          - states: a set of timed state transitions which are assumed to adhere
-                    to a well defined state model
-          - events: a time series of named, but otherwise unspecified events
+        Args:
+            uid (:obj:str): an ID assumed to be unique in the scope of an RA    
+                Session
+            etype (:obj:str): the type of the entity. This defines, amongst 
+                others, what event model the session will assume to be valid for 
+                this entity.
+            profile: .
+            details: .
         """
 
         assert(_uid)
