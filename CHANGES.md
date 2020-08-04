@@ -1,8 +1,18 @@
 
-  - For a list of bug fixes, see
+  - For a list of bug fixes, see:
     https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc
-  - For a list of open issues and known problems, see
+  - For a list of open issues and known problems, see:
     https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen+
+
+
+1.5.0 Release                                                         2020-08-04
+--------------------------------------------------------------------------------
+
+  - Move to Python 3
+  - Align with release number of RCT stack
+  - Fix multiple bugs
+  - First prototype of new wrangler
+  - New documentation
 
 
 0.72.1 Hotfix Release                                                 2019-09-28
