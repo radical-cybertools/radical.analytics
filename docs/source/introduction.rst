@@ -5,14 +5,14 @@ Introduction
 
 `RADICAL-Analytics <https://github.com/radical-cybertools/radical.analytics>`_ (RA) is a library implemented in Python to support the analysis of traces produced by `RADICAL-Cybertools <https://radical-cybertools.github.io/>`_ (RCT). Using RA requires knowing the architecture and the event model of the chosen RCT tool. Without that knowledge, you will not be able to choose the events that are relevant to your analysis and to understand how the results of your analysis relate to the inner working of the chosen RCT tool. 
 
-Dpending on the chosen RCT, an understanding of the following document is precondition to the use of RA:
+Dpending on the chosen RCT, **an understanding of the following document is precondition to the use of RA**:
 
-#. RP architecture (outdated as for Aug 2020)
-#. RP event model
-#. EnTK architecture
-#. EnTK state model
+#. `RP architecture <https://github.com/radical-cybertools/radical.pilot/wiki/Architecture>`_ (outdated as for Aug 2020)
+#. `RP event model <https://github.com/radical-cybertools/radical.pilot/blob/devel/docs/source/events.md>`_ 
+#. `EnTK architecture <https://radicalentk.readthedocs.io/en/latest/entk.html#architecture>`_ 
+#. `EnTK event model <https://radicalentk.readthedocs.io/en/latest/dev_docs/uml.html#events-recorded>`_ 
 
-.. note:: States are special types of events. Given two states, each state is guaranteed to generate an event, and state 1 is guaranteed to preceed state 2.
+.. note:: States are special types of events. Given two states in a sequence <1, 2>, both states are always recorded at runtime and state 1 always preceed state 2.
 
 Using RA
 --------
@@ -21,11 +21,11 @@ RA supports *post-mortem* analysis:
 
 #. Install RA and `RADICAL-Pilot <https://github.com/radical-cybertools/radical.pilot>`_ (RP) and/or `RADICAL-EnTK <https://github.com/radical-cybertools/radical.entk>`_.
 #. Write an application in Pyton to execute a workload (RP) or a workflow (EnTK) on an high-performance computing (HPC) platform.
-#. Set the environment variable ``RADICAL_PROFILE`` to ``TRUE`` with ``export RADICAL_PROFILE="TRUE"``.
+#. Set the environment variable ``RADICAL_PROFILE`` to ``TRUE`` with the command ``export RADICAL_PROFILE="TRUE"``.
 #. Execute your application. 
-#. Both RP and EnTK write traces (i.e., timestamped sequences of events) to a ``client sandbox`` directory. This directory is created inside the directory from which you executed your application. The name of the client sandbox directory is a session ID, e.g., ``rp.session.hostname.username.018443.0002`` or ``en.session.hostname.username.018443.0002``.
-#. Load the session trace in RA.
-#. Measure entity-level or session-level durations, concurrency or resource utilization.
+#. Both RP and EnTK write traces (i.e., timestamped sequences of events) to a  directory called ``client sandbox``. This directory is created inside the directory from which you executed your application. The name of the client sandbox is a session ID, e.g., ``rp.session.hostname.username.018443.0002`` or ``en.session.hostname.username.018443.0002``.
+#. Load the session traces in RA by creating an object :class:`ra.Session`.
+#. Measure entity-level or session-level durations, concurrency or resource utilization, using RA :ref:`API <chapter_api_reference>`.
 
 Fundamental Notions
 -------------------
@@ -48,7 +48,7 @@ Global analyses pertain to a set of entities, including all the entities of a ru
 Types of Measure
 ----------------
 
-RA is **agnostic** towards the tools used to perform the measurements. For example, RA supports writing stand-alone Python scripts, wranglers or being loaded into a Jupyter Notebook. RA offers classes and methods to perform three types of measures:
+RA is agnostic towards the tools used to perform the measurements. For example, RA supports writing stand-alone Python scripts, wranglers or being loaded into a Jupyter Notebook. RA offers classes and methods to perform three types of measures:
 
 #. **Duration**: measures the time spent by an instace of an entity (local analyses) or a set of instances of an entity (global analyses) between two timestamps. For example, staging, scheduling, pre-execute, execute time of one or more compute units; description, submission and execution time of one or more pipelines or stages; and runtime of one or more pilots.
 #. **Concurrency**: measures the number of entities of the same type that are between two given events in a time range during the execution. For example, this measures how many compute units where scheduled in a time range. Note that the time range here can be as large as the whole runtime of the application.
