@@ -281,7 +281,7 @@ class Entity(object):
     def timestamps(self, state=None, event=None, time=None):
         """
         This method accepts a set of conditions, and returns the list of
-        timestamps for which those conditions applied, i.e. for which state
+        timestamps for which those conditions applied, i.e., for which state
         transitions or events are known which match the given 'state' or 'event'
         parameter.  If no match is found, an empty list is returned.
 

@@ -1,56 +1,53 @@
-.. RADICAL-Analytics documentation master file, created by
-   sphinx-quickstart on Thu Jul 21 11:09:38 2016.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-=================
 RADICAL-Analytics
 =================
 
 `RADICAL-Analytics <https://github.com/radical-cybertools/radical.analytics>`_
-is a library supporting the analysis of data produced by the
-`RADICAL-Cybertools <https://radical-cybertools.github.io/>`_. Tools are
-assumed to have a set of entities, a state model, and a set of events. The
-state model defines the necessary and sufficient set of states for each
-entity. Each entity has an initial state and a set of defined final states.
-During their lifespan, entities transition from one state to another and
-cannot legally be in an undefined state. The state transitions of every entity
-are events. Each event is assumed to be timestamped and logged to enable
-*post-mortem* analysis. RADICAL-Cybertools can also implement methods to
-define arbitrary events for one or more entities. When timestamped and
-recorded, these events can be used with RADICAL-Analytics.
+(RA) is a library implemented in Python to support the analysis of traces
+produced by `RADICAL-Cybertools <https://radical-cybertools.github.io/>`_
+(RCT). Each RCT has a set of entities and a set of events associated to those
+entities. Each component of each RCT tool records a set of events at runtime,
+enabling *post-mortem* analysis.
 
-Currently, RADICAL-Analytics supports the `RADICAL-Pilot
-<https://github.com/radical-cybertools/radical.pilot>`_ cybertool and two
-event-based analyses: **duration** and **concurrency**. Duration analysis is
-used to calculate the amount of time spent by an entity in a state.
-Concurrency analysis is used to calculate the state in which a set of entities
-were in a given interval of time. Both analyses can be used with pairs of
-arbitrarily-defined events.
+Currently, RA supports two RCT---`RADICAL-Pilot
+<https://github.com/radical-cybertools/radical.pilot>`_ (RP) and `RADICAL-EnTK
+<https://github.com/radical-cybertools/radical.entk>`_ (EnTK)---and two
+event-based analyses---**duration** and **concurrency**. Both analyses work with
+pairs of arbitrarily-defined events. Duration analysis calculates the amount of
+time spent by one or more entities between two events. For example, for how long
+a pilot was active, how much time a pipeline took to execute, how much time all
+compute units took to execute. Concurrency analysis shows between which events one or more entity was in a given interval of time. 
 
-RADICAL-Analytics can be used to develop statistical analysis of experimental
-data, collected via multiple experimental runs. For example, RADICAL-Analytics
-can be used to support calculation of averages, spread, and skew among
-durations of repeated runs, to compare groups of diverse types of entities,
-association among variables, and analysis of dependent variables.
+RA enables developing statistical analysis of experimental data, collected via
+multiple experimental runs. For example, RA supports calculation of averages,
+spread, and skew among durations of repeated runs, to compare groups of diverse
+types of entities, association among variables, and analysis of dependent
+variables. RA also enables introspecting the behavior of RP or EnTK, measuring
+and characterizing percentage of resource utilization, information flow, and
+distribution patterns.
 
-RADICAL-Analytics can also be used to introspect the behavior of the chosen
-RADICAL-Cybertool, measuring and characterizing overheads, percentage of
-utilization, information flow, and distribution patterns.
+RA has supported the development and experimental analysis of most of the
+`papers published <http://radical.rutgers.edu/publications/>`_ by `RADICAL
+<http://radical.rutgers.edu/>`_ at Rutgers University.
 
-RADICAL-Analytics has been used to support and develop the experimental
-analysis `published <http://radical.rutgers.edu/publications/>`_ by the
-`RADICAL Group <http://radical.rutgers.edu/>`_ at Rutgers University.
+**Links**
+
+* repository:     https://github.com/radical-cybertools/radical.analytics
+* issues:         https://github.com/radical-cybertools/radical.analytics/issues
 
 Contents
 --------
 
 .. toctree::
+   :numbered:
    :maxdepth: 2
 
-   installation
-   examples/index
-   apidoc
+   introduction.rst
+   installation.rst
+   duration.rst
+   concurrency.rst
+   utilization.rst
+   inspection.rst
+   apidoc.rst
 
 Indices and tables
 ------------------

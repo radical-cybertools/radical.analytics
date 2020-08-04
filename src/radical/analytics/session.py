@@ -22,14 +22,15 @@ class Session(object):
         '''
         Create a radical.analytics session for analysis.
 
-        The session is created from a set of profiles, which usually have been
-        produced from some other session object in the RCT stack, such as
-        radical.pilot. Profiles are accepted in two forms: in a directory, or in
+        The session is created from a set of traces, which usually have been
+        produced by a Session object in the RCT stack, such as radical.pilot or
+        radical.entk. Profiles are accepted in two forms: in a directory, or in
         a tarball (of such a directory).  In the latter case, the tarball are
         extracted into `$TMP`, and then handled just as the directory case.
 
         If no `sid` (session ID) is specified, that ID is derived from the
         directory name.
+
         '''
 
         if _init:
@@ -317,9 +318,9 @@ class Session(object):
         '''
         After creating a session clone, we have identical sets of descriptions,
         profiles, and entities.  However, if we apply a filter during the clone
-        creation, we end up with a deep copy which should have a *different* set
-        of entities.  This method applies that new entity set to such a cloned
-        session.
+        creation, we end up with a deep copy which should have a **different**
+        set of entities.  This method applies that new entity set to such a
+        cloned session.
         '''
 
         self._entities = entities
@@ -359,8 +360,7 @@ class Session(object):
     #
     def _initialize_entities(self, profile):
         '''
-        populate self._entities from profile and
-        self._description.
+        Populates self._entities from profile and self._description.
 
         NOTE: We derive entity types via some heuristics for now: we assume the
         first part of any dot-separated uid to signify an entity type.
@@ -393,8 +393,8 @@ class Session(object):
     #
     def _initialize_properties(self):
         '''
-        populate self._properties from self._entities.  Self._properties has the
-        following format:
+        populate `self._properties` from `self._entities`.  `self._properties`∫
+        has the following format::
 
             {
               'state' : {
@@ -406,8 +406,8 @@ class Session(object):
               }
             }
 
-        So we basically count how often any property value appears in the
-        current set of entities.
+        We count how often any property value appears in the current set of
+        entities.
 
         RA knows exactly 4 properties:
           - uid   (entity idetifiers)
@@ -710,7 +710,7 @@ class Session(object):
     def timestamps(self, state=None, event=None, time=None, first=False):
         '''
         This method accepts a set of conditions, and returns the list of
-        timestamps for which those conditions applied, i.e. for which state
+        timestamps for which those conditions applied, i.e., for which state
         transitions or events are known which match the given 'state' or 'event'
         parameter.  If no match is found, an empty list is returned.
 
@@ -746,7 +746,7 @@ class Session(object):
         and will use the `ranges()` method to obtain a set of ranges.  It will
         return the sum of the durations for all resulting & collapsed ranges.
 
-        Example:
+        Example::
 
            session.duration(state=[rp.NEW, rp.FINAL]))
 
@@ -785,19 +785,20 @@ class Session(object):
         starting point (begin of first event matching the filters) the
         concurrency is computed.
 
-        Returned is an ordered list of tuples:
-
-          [ [time_0, concurrency_0] ,
-            [time_1, concurrency_1] ,
-            ...
-            [time_n, concurrency_n] ]
+        Returned is an ordered list of tuples::
+            
+            [ [time_0, concurrency_0],
+              [time_1, concurrency_1],
+              ...
+              [time_n, concurrency_n] ]
 
         where `time_n` is represented as `float`, and `concurrency_n` as `int`.
 
-        Example:
+        Example::
+        
+            session.filter(etype='unit').concurrency(state=[rp.AGENT_EXECUTING,
+                rp.AGENT_STAGING_OUTPUT_PENDING])
 
-           session.filter(etype='unit').concurrency(state=[rp.AGENT_EXECUTING,
-                                        rp.AGENT_STAGING_OUTPUT_PENDING])
         '''
 
         INC =  1  # increase concurrency
@@ -884,7 +885,7 @@ class Session(object):
         after the starting point (begin of first event matching the filters) the
         rate is computed.
 
-        Returned is an ordered list of tuples:
+        Returned is an ordered list of tuples::
 
           [ [time_0, rate_0] ,
             [time_1, rate_1] ,
@@ -900,7 +901,7 @@ class Session(object):
         The 'first' is defined, only the first matching event fir the selected
         entities is considered viable.
 
-        Example:
+        Example::
 
            session.filter(etype='unit').rate(state=[rp.AGENT_EXECUTING])
         '''
@@ -1070,21 +1071,21 @@ class Session(object):
     def utilization_bak(self, owner, consumer, resource, owner_events=None,
                                                       consumer_events=None):
         '''
-        This method accepts as parameters :
-        owner          : The entity name of the owner of the resources
-        consumer       : The ename of the entity that consumes the resources
-                         owned by owner
-        resource       : The type of resources whose utilization is requested,
-                         eg. Cores, Memory, GPUS etc.
-        owner_events   : A list of owner's/owners' events that will be used as
-                         starting and ending points for the resource ownership.
-        consumer_events: A list of owner's/owners' events that will be used as
-                         starting and ending points for resource consumption.
+        Parms:
+            owner          : The entity name of the owner of the resources
+            consumer       : The ename of the entity that consumes the resources
+                            owned by owner
+            resource       : The type of resources whose utilization is requested,
+                            eg. Cores, Memory, GPUS etc.
+            owner_events   : A list of owner's/owners' events that will be used as
+                            starting and ending points for the resource ownership.
+            consumer_events: A list of owner's/owners' events that will be used as
+                            starting and ending points for resource consumption.
 
         Based on these parameters the resources of the owners are collected, as
         well as, the times when the consumer(s) used those resources.
 
-        Returned is a dictionary of the form:
+        Returned is a dictionary of the form::
 
             { 'owner_0': {'range'      : owner_range,
                           'resources'  : resource_size,
@@ -1092,7 +1093,6 @@ class Session(object):
                                           [time_1, resource_utilization_1],
                                           ...
                                           [time_n, resource_utilization_n]]},
-
               'owner_1': {'range'      : owner_range,
                           'resources'  : resource_size,
                           'utilization': [[time_0, resource_utilization_0],
@@ -1111,7 +1111,7 @@ class Session(object):
         `int`, and resource_size is the total resources the owner has.
 
 
-        Example:
+        Example::
 
             s.utilization(owner          = 'pilot',
                           consumer       = 'unit',
@@ -1219,23 +1219,22 @@ class Session(object):
     #
     def consistency(self, mode=None):
         '''
-        Perform a number of data consistency checks, and return a set of UIDs
-        for entities which have been found to be inconsistent.
-        The method accepts a single parameter `mode` which can be a list of
-        strings defining what consistency checks are to be performed.  Valid
-        strings are:
+        Performs a number of data consistency checks, and returns a set of UIDs
+        for entities which have been found to be inconsistent. The method
+        accepts a single parameter `mode` which can be a list of strings
+        defining what consistency checks are to be performed. Valid strings are:
 
-            'state_model' : check if all entity states are in adherence to the
-                            respective entity state model
-            'event_model' : check if all entity events are in adherence to the
-                            respective entity event model
-            'timestamps'  : check if events and states are recorded with correct
-                            ordering in time.
+        - state_model: check if all entity states are in adherence to the
+          respective entity state model
+        - event_model: check if all entity events are in adherence to the
+          respective entity event model
+        - timestamps: check if events and states are recorded with correct
+          ordering in time.
 
         If not specified, the method will execute all three checks.
 
         After this method has been run, each checked entity will have more
-        detailed consistency information available via:
+        detailed consistency information available via::
 
             entity.consistency['state_model'] (bool)
             entity.consistency['event_model'] (bool)
@@ -1277,51 +1276,49 @@ class Session(object):
                     block_entity, block_events,
                     use_entity,   use_events):
         '''
-        Parameters:
-            alloc_entity: entity  which allocates resources
-            alloc_events: list of event tuples which specify allocation time
-            block_entity: entity  which blocks resources
-            block_events: list of event tuples which specify blocking time
-            use_entity:   entity  which uses resources
-            use_events:   list of event tuples which specify usage time
+        This method creates a dict with three entries: `alloc`, `block`, `use`.
+        Those three dict entries in turn have a a dict of entity IDs for all
+        entities which have blocks in the respective category, and foreach of
+        those entity IDs the dict values will be a list of rectangles.
 
-        Semantics:
+        A resource is considered:
+        
+        - `alloc`ated when it is owned by the RCT application;
+        - `block`ed when it is reserveed for a specific task;
+        - `use`d when it is utilized by that task.
+        
+        Each of the rectangles represents a continuous block of resources which 
+        is alloced/blocked/used:
+        
+        - x_0 time when alloc/block/usage begins;
+        - x_1 time when alloc/block/usage ends;
+        - y_0 lowest index of a continuous block of resource IDs;
+        - y_1 highest index of a continuous block of resource IDs.
+        
+        Any specific entity (pilot, task) can have a *set* of such resource
+        blocks, for example, a task might be placed over multiple,
+        non-consecutive nodes:
+        
+        - gpu and cpu resources are rendered as separate blocks (rectangles).
 
-            This method creates a dict with three entries: `alloc`, `block`,
-            `use`.  Those three dict entries in turn have a a dict of entity IDs
-            for all entities which have blocks in the respective category, and
-            foreach of those entity IDs the dict values will be a list of
-            rectangles.
+        Args:
+            alloc_entity (Entity): :class:`Entity` instance which allocates 
+                resources 
+            alloc_events (list): event tuples which specify allocation time
+            block_entity (Entity): :class:`Entity` instance which blocks 
+                resources 
+            block_events (list): event tuples which specify blocking time 
+            use_entity (Entity): :class:`Entity` instance which uses resources 
+            use_events (list): event tuples which specify usage time
 
-            The semantics is as follows:
-
-              - a resource is considered
-                - `alloc`ated when it is owned by the RCT application;
-                - `block`ed when it is reserveed for a specific task;
-                - `use`d when it is utilized by that task.
-
-              - each of the rectangles represents a continuous block of
-                resources which is alloced / blocked / used:
-                - x_0 time when alloc/block/usage begins
-                - x_1 time when alloc/block/usage ends
-                - y_0 lowest index of a continuous block of resource IDs
-                - y_1 highest index of a continuous block of resource IDs
-
-              - any specific entity (pilot, task) can have a *set* of such
-                resource blocks, for example, a task might be placed over
-                multiple, non-consecutive nodes
-
-              - gpu and cpu resources are rendered as separate blocks
-                (rectangles).
-
-        Example (RP):
-
-            usage('pilot',[{ru.STATE: None, ru.EVENT: 'bootstrap_0_start'},
-                           {ru.STATE: None, ru.EVENT: 'bootstrap_0_stop' }],
-                  'unit', [{ru.STATE: None, ru.EVENT: 'schedule_ok'      },
-                           {ru.STATE: None, ru.EVENT: 'unschedule_stop'  }],
-                  'unit', [{ru.STATE: None, ru.EVENT: 'exec_start'       },
-                           {ru.STATE: None, ru.EVENT: 'exec_stop'        }])
+        Example:
+        blocks::
+            usage('pilot', [{ru.STATE: None, ru.EVENT: 'bootstrap_0_start'},
+                            {ru.STATE: None, ru.EVENT: 'bootstrap_0_stop' }], 
+                  'unit' , [{ru.STATE: None, ru.EVENT: 'schedule_ok'      },
+                            {ru.STATE: None, ru.EVENT: 'unschedule_stop'  }], 
+                  'unit' , [{ru.STATE: None, ru.EVENT: 'exec_start'       },
+                            {ru.STATE: None, ru.EVENT: 'exec_stop'        }])
         '''
 
         # this is currently only supported for RP sessions, as we only know for
