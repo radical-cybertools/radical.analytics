@@ -346,7 +346,7 @@ class Entity(object):
                      expand=False, collapse=True):
         """
         This method accepts a set of initial and final conditions, in the form
-        of range of state and or event specifiers:
+        of range of state and or event specifiers::
 
           entity.ranges(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'],
                                 'FINAL_STATE_1',   'FINAL_STATE_2'  ]],
@@ -359,7 +359,7 @@ class Entity(object):
         second element defines the final condition.  The `time` parameter is
         expected to be a single tuple, or a list of tuples, each defining a pair
         of start and end time which are used to constrain the resulting ranges.
-        States are expected as strings, events as full event tuples
+        States are expected as strings, events as full event tuples::
 
             [ru.TIME,  ru.NAME, ru.UID,  ru.STATE, ru.EVENT, ru.MSG,  ru.ENTITY]
 
@@ -367,7 +367,7 @@ class Entity(object):
         must match exactly.  The events can also be specified as dictionaries,
         which then don't need to have all fields set.
 
-        The parameters are interpreted as follows: the method will
+        The method will:
 
           - determine the *earliest* timestamp when any of the given initial
             conditions have been met, which can be either an event or a state;
@@ -389,10 +389,10 @@ class Entity(object):
 
         Setting 'collapse' to 'True' (default) will prompt the method to
         collapse the resulting set of ranges.
-
+        
         The returned ranges are time-sorted
 
-        Example:
+        Example::
 
            unit.ranges(state=[rp.NEW, rp.FINAL]))
            unit.ranges(event=[{ru.NAME : 'exec_start'},

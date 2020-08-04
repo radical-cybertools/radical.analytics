@@ -672,13 +672,13 @@ class Session(object):
     #
     def ranges(self, state=None, event=None, time=None, collapse=True):
         '''
-        This method accepts a set of initial and final conditions, and will get
-        time ranges in accordance to those conditions from all session entities.
-        The resulting set of ranges is then collapsed to the minimal equivalent
-        set of ranges covering the same set of times.
+        Gets a set of initial and final conditions, and computes time ranges in
+        accordance to those conditions from all session entities. The resulting
+        set of ranges is then collapsed to the minimal equivalent set of ranges
+        covering the same set of times.
 
-        Please refer to the `Entity.ranges()` documentation on detail on the
-        constrain parameters.
+        Please refer to the :class:`Entity.ranges` documentation on detail on
+        the constrain parameters.
 
         Setting 'collapse' to 'True' (default) will prompt the method to
         collapse the resulting set of ranges.
@@ -1068,151 +1068,151 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def utilization_bak(self, owner, consumer, resource, owner_events=None,
-                                                      consumer_events=None):
-        '''
-        Parms:
-            owner          : The entity name of the owner of the resources
-            consumer       : The ename of the entity that consumes the resources
-                            owned by owner
-            resource       : The type of resources whose utilization is requested,
-                            eg. Cores, Memory, GPUS etc.
-            owner_events   : A list of owner's/owners' events that will be used as
-                            starting and ending points for the resource ownership.
-            consumer_events: A list of owner's/owners' events that will be used as
-                            starting and ending points for resource consumption.
+    # def utilization_bak(self, owner, consumer, resource, owner_events=None,
+    #                                                   consumer_events=None):
+    #     '''
+    #     Parms:
+    #         owner          : The entity name of the owner of the resources
+    #         consumer       : The ename of the entity that consumes the resources
+    #                         owned by owner
+    #         resource       : The type of resources whose utilization is requested,
+    #                         eg. Cores, Memory, GPUS etc.
+    #         owner_events   : A list of owner's/owners' events that will be used as
+    #                         starting and ending points for the resource ownership.
+    #         consumer_events: A list of owner's/owners' events that will be used as
+    #                         starting and ending points for resource consumption.
 
-        Based on these parameters the resources of the owners are collected, as
-        well as, the times when the consumer(s) used those resources.
+    #     Based on these parameters the resources of the owners are collected, as
+    #     well as, the times when the consumer(s) used those resources.
 
-        Returned is a dictionary of the form::
+    #     Returned is a dictionary of the form::
 
-            { 'owner_0': {'range'      : owner_range,
-                          'resources'  : resource_size,
-                          'utilization': [[time_0, resource_utilization_0],
-                                          [time_1, resource_utilization_1],
-                                          ...
-                                          [time_n, resource_utilization_n]]},
-              'owner_1': {'range'      : owner_range,
-                          'resources'  : resource_size,
-                          'utilization': [[time_0, resource_utilization_0],
-                                          [time_1, resource_utilization_1],
-                                          ...
-                                          [time_n, resource_utilization_n]]},
-              ...
-              'owner_n': {'range'      : owner_range,
-                          'resources'  : resource_size,
-                          'utilization': [[time_0, resource_utilization_0],
-                                          [time_1, resource_utilization_1],
-                                          ...
-                                          [time_n, resource_utilization_n]]}
+    #         { 'owner_0': {'range'      : owner_range,
+    #                       'resources'  : resource_size,
+    #                       'utilization': [[time_0, resource_utilization_0],
+    #                                       [time_1, resource_utilization_1],
+    #                                       ...
+    #                                       [time_n, resource_utilization_n]]},
+    #           'owner_1': {'range'      : owner_range,
+    #                       'resources'  : resource_size,
+    #                       'utilization': [[time_0, resource_utilization_0],
+    #                                       [time_1, resource_utilization_1],
+    #                                       ...
+    #                                       [time_n, resource_utilization_n]]},
+    #           ...
+    #           'owner_n': {'range'      : owner_range,
+    #                       'resources'  : resource_size,
+    #                       'utilization': [[time_0, resource_utilization_0],
+    #                                       [time_1, resource_utilization_1],
+    #                                       ...
+    #                                       [time_n, resource_utilization_n]]}
 
-        where `time_n` is represented as `float`, `resource_utilization_n` as
-        `int`, and resource_size is the total resources the owner has.
-
-
-        Example::
-
-            s.utilization(owner          = 'pilot',
-                          consumer       = 'unit',
-                          resource       = 'cores',
-                          owner_events   = [{ru.EVENT: 'bootstrap_0_start'},
-                                            {ru.EVENT: 'bootstrap_0_stop' }])
-                          consumer_events= [{ru.EVENT: 'exec_start'},
-                                            {ru.EVENT: 'exec_stop' }])
-        '''
-        ret = dict()
-
-        # Filter the session to get a session of the owners. If that is empty
-        # return an empty dict
-
-        relations = self .describe('relations', [owner, consumer])
-        if not relations:
-            return dict()
-
-        owners = self.filter(etype=owner, inplace=False)
-        if not owners:
-            return dict()
-
-        # Filter the self to get the consumers. If none are found, return an
-        # empty dict.
-        #
-        # FIXME: this should return an dict with zero utilization over the full
-        #        time range the resource exist.
-        #
-        for o in owners.get():
-            owner_id        = o.uid
-            owner_resources = o.description.get(resource)
-            owner_range     = o.ranges(event=owner_events)
-
-            consumers = self.filter(etype=consumer, uid=relations[owner_id],
-                                    inplace=False)
-            if not consumers:
-                util = [0]
-
-            else:
-                # Go through the consumer entities and create two dictionaries.
-                # The first keeps track of how many resources each consumer
-                # consumes, and the second has the ranges based on the events.
-                consumer_resources = dict()
-                consumer_ranges    = dict()
-
-                for c in consumers.get():
-
-                    ranges  = c.ranges(event=consumer_events)
-                    cons_id = c.uid
-
-                    resources_acquired = 0
-                    if resource == 'cores':
-                        cores   = c.description['cpu_processes'] * \
-                                  c.description['cpu_threads']
-                        resources_acquired += cores
-                    elif resource == 'gpus':
-                        gpus    = c.description['gpu_processes']
-                        resources_acquired += len(gpus)
-                    else:
-                        raise ValueError('unsupported utilization resource')
-
-                    consumer_resources[cons_id] = resources_acquired
-
-                    # Update consumer_ranges if there is at least one range
-                    if ranges:
-                        consumer_ranges.update({cons_id: ranges})
+    #     where `time_n` is represented as `float`, `resource_utilization_n` as
+    #     `int`, and resource_size is the total resources the owner has.
 
 
-                # Sort consumer_ranges based on their values. This command
-                # returns a dictionary, which is sorted based on the first value
-                # of each entry. In the end the key, are out of order but the
-                # values are.
-                consumer_ranges = sorted(iter(list(consumer_ranges.items())),
-                                         key=lambda k_v: (k_v[1][0],k_v[0]))
+    #     Example::
 
-                # Create a timeseries that contains all moments in consumer
-                # ranges and sort. This way we have a list that has time any
-                # change has happened.
-                times = list()
-                for cons_id,ranges in consumer_ranges:
-                    for r in ranges:
-                        times.append(r[0])
-                        times.append(r[1])
-                times.sort()
+    #         s.utilization(owner          = 'pilot',
+    #                       consumer       = 'unit',
+    #                       resource       = 'cores',
+    #                       owner_events   = [{ru.EVENT: 'bootstrap_0_start'},
+    #                                         {ru.EVENT: 'bootstrap_0_stop' }])
+    #                       consumer_events= [{ru.EVENT: 'exec_start'},
+    #                                         {ru.EVENT: 'exec_stop' }])
+    #     '''
+    #     ret = dict()
 
-                # we have the time sequence, now compute utilization
-                # at those points
-                util = list()
-                for t in times:
-                    cnt = 0
-                    for cons_id,ranges in consumer_ranges:
-                        for r in ranges:
-                            if t >= r[0] and t <= r[1]:
-                                cnt += consumer_resources[cons_id]
+    #     # Filter the session to get a session of the owners. If that is empty
+    #     # return an empty dict
 
-                    util.append([t, cnt])
+    #     relations = self .describe('relations', [owner, consumer])
+    #     if not relations:
+    #         return dict()
 
-            ret[owner_id] = {'range'      : owner_range,
-                             'resources'  : owner_resources,
-                             'utilization': util}
-        return ret
+    #     owners = self.filter(etype=owner, inplace=False)
+    #     if not owners:
+    #         return dict()
+
+    #     # Filter the self to get the consumers. If none are found, return an
+    #     # empty dict.
+    #     #
+    #     # FIXME: this should return an dict with zero utilization over the full
+    #     #        time range the resource exist.
+    #     #
+    #     for o in owners.get():
+    #         owner_id        = o.uid
+    #         owner_resources = o.description.get(resource)
+    #         owner_range     = o.ranges(event=owner_events)
+
+    #         consumers = self.filter(etype=consumer, uid=relations[owner_id],
+    #                                 inplace=False)
+    #         if not consumers:
+    #             util = [0]
+
+    #         else:
+    #             # Go through the consumer entities and create two dictionaries.
+    #             # The first keeps track of how many resources each consumer
+    #             # consumes, and the second has the ranges based on the events.
+    #             consumer_resources = dict()
+    #             consumer_ranges    = dict()
+
+    #             for c in consumers.get():
+
+    #                 ranges  = c.ranges(event=consumer_events)
+    #                 cons_id = c.uid
+
+    #                 resources_acquired = 0
+    #                 if resource == 'cores':
+    #                     cores   = c.description['cpu_processes'] * \
+    #                               c.description['cpu_threads']
+    #                     resources_acquired += cores
+    #                 elif resource == 'gpus':
+    #                     gpus    = c.description['gpu_processes']
+    #                     resources_acquired += len(gpus)
+    #                 else:
+    #                     raise ValueError('unsupported utilization resource')
+
+    #                 consumer_resources[cons_id] = resources_acquired
+
+    #                 # Update consumer_ranges if there is at least one range
+    #                 if ranges:
+    #                     consumer_ranges.update({cons_id: ranges})
+
+
+    #             # Sort consumer_ranges based on their values. This command
+    #             # returns a dictionary, which is sorted based on the first value
+    #             # of each entry. In the end the key, are out of order but the
+    #             # values are.
+    #             consumer_ranges = sorted(iter(list(consumer_ranges.items())),
+    #                                      key=lambda k_v: (k_v[1][0],k_v[0]))
+
+    #             # Create a timeseries that contains all moments in consumer
+    #             # ranges and sort. This way we have a list that has time any
+    #             # change has happened.
+    #             times = list()
+    #             for cons_id,ranges in consumer_ranges:
+    #                 for r in ranges:
+    #                     times.append(r[0])
+    #                     times.append(r[1])
+    #             times.sort()
+
+    #             # we have the time sequence, now compute utilization
+    #             # at those points
+    #             util = list()
+    #             for t in times:
+    #                 cnt = 0
+    #                 for cons_id,ranges in consumer_ranges:
+    #                     for r in ranges:
+    #                         if t >= r[0] and t <= r[1]:
+    #                             cnt += consumer_resources[cons_id]
+
+    #                 util.append([t, cnt])
+
+    #         ret[owner_id] = {'range'      : owner_range,
+    #                          'resources'  : owner_resources,
+    #                          'utilization': util}
+    #     return ret
 
 
     # --------------------------------------------------------------------------
@@ -1283,19 +1283,19 @@ class Session(object):
 
         A resource is considered:
         
-        - `alloc`ated when it is owned by the RCT application;
-        - `block`ed when it is reserveed for a specific task;
-        - `use`d when it is utilized by that task.
+        - `alloc` (allocated) when it is owned by the RCT application;
+        - `block` (blocked) when it is reserveed for a specific task;
+        - `use` (used) when it is utilized by that task.
         
         Each of the rectangles represents a continuous block of resources which 
         is alloced/blocked/used:
         
-        - x_0 time when alloc/block/usage begins;
-        - x_1 time when alloc/block/usage ends;
+        - x_0 time when `alloc/block/usage` begins;
+        - x_1 time when `alloc/block/usage` ends;
         - y_0 lowest index of a continuous block of resource IDs;
         - y_1 highest index of a continuous block of resource IDs.
         
-        Any specific entity (pilot, task) can have a *set* of such resource
+        Any specific entity (pilot, task) can have a **set** of such resource
         blocks, for example, a task might be placed over multiple,
         non-consecutive nodes:
         
@@ -1311,8 +1311,8 @@ class Session(object):
             use_entity (Entity): :class:`Entity` instance which uses resources 
             use_events (list): event tuples which specify usage time
 
-        Example:
-        blocks::
+        Example::
+        
             usage('pilot', [{ru.STATE: None, ru.EVENT: 'bootstrap_0_start'},
                             {ru.STATE: None, ru.EVENT: 'bootstrap_0_stop' }], 
                   'unit' , [{ru.STATE: None, ru.EVENT: 'schedule_ok'      },

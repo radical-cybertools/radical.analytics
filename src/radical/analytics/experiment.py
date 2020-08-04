@@ -56,7 +56,7 @@ class Experiment(object):
           - relative stats
           - information about resource utilization
 
-        The resource dictionaries have the following structures:
+        The resource dictionaries have the following structures::
 
             provided = {
                 <session_id> : {
@@ -74,7 +74,6 @@ class Experiment(object):
                 },
                 ...
             }
-
             consumed = {
                 <session_id> : {
                     'metric_1' : {
