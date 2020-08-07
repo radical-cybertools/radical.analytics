@@ -1,18 +1,19 @@
 language: python
-sudo: disabled
 
-python:
-  - "3.5"
+python: 
+  - '3.6'
+  - '3.7'
 
-os:
-  - linux
+os: linux
+
+dist: bionic
 
 git:
   depth: 1
 
 env:
   global:
-    - RADICAL_PILOT_DBURL=mongodb://ci-test:$CI-TEST@129.114.17.185/ci-test
+    - RADICAL_PILOT_DBURL=mongodb://ci-test:$CI_TEST@129.114.17.185/ci-test
     - RADICAL_PILOT_TEST_DBNAME=ci-test
     - LOG=`git log -n 1 | grep Merge`
     - OLD=`echo $LOG | cut -d ' ' -f2`
@@ -27,7 +28,7 @@ env:
     - CMD_PYLINT_TESTS="pylint tests/"
     - COVERAGE=false
     - CODECOV_TOKEN="62c13cf3-c8de-4b94-b790-5c11c322dbc3"
-  matrix:
+  jobs:
     - MAIN_CMD=$CMD_PYTEST COVERAGE=false
     - MAIN_CMD=$CMD_FLAKE8
     - MAIN_CMD=$CMD_PYLINT
