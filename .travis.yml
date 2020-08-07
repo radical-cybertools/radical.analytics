@@ -12,14 +12,14 @@ git:
 
 env:
   global:
-    - RADICAL_PILOT_DBURL=mongodb://rct:rct_test@one.radical-project.org/rct_test
-    - RADICAL_PILOT_TEST_DBNAME=rct_test
+    - RADICAL_PILOT_DBURL=mongodb://ci-test:$CI-TEST@129.114.17.185/ci-test
+    - RADICAL_PILOT_TEST_DBNAME=ci-test
     - LOG=`git log -n 1 | grep Merge`
     - OLD=`echo $LOG | cut -d ' ' -f2`
     - NEW=`echo $LOG | cut -d ' ' -f3`
     - DIFF=`git diff --name-only --diff-filter=b $OLD...$NEW`
     - DIFF=$(echo $DIFF | grep -o -e '\b[^ ]*.py\b')
-    - LOC=/home/travis/virtualenv/python2.7  # Location where VE is created on travis
+    - LOC=/home/travis/virtualenv/python3.6  # Location where VE is created on travis
     - CMD_PYTEST="coverage run -m pytest -vvv tests/"
     - CMD_FLAKE8="if ! test -z \"$DIFF\"; then flake8 --config=.flake8 $DIFF;else echo 'Nothing to pep8'; fi"
     - CMD_PYLINT="if ! test -z \"$DIFF\"; then pylint $DIFF;else echo 'Nothing to lint';fi"
@@ -63,6 +63,6 @@ after_success:
     fi
 notifications:
   email:
-    recipients: andre@merzky.net
+    recipients: matteo.turilli@gmail.com
     on_success: change
     on_failure: always
