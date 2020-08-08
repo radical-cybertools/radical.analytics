@@ -1,6 +1,4 @@
 
-import radical.utils as ru
-
 from .session import Session
 
 

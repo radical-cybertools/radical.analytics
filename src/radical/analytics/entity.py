@@ -1,5 +1,4 @@
 
-import os
 import sys
 import pprint
 
@@ -13,10 +12,10 @@ class Entity(object):
     def __init__(self, _uid, _etype, _profile, _details):
         """
         Args:
-            uid (:obj:str): an ID assumed to be unique in the scope of an RA    
+            uid (:obj:str): an ID assumed to be unique in the scope of an RA
                 Session
-            etype (:obj:str): the type of the entity. This defines, amongst 
-                others, what event model the session will assume to be valid for 
+            etype (:obj:str): the type of the entity. This defines, amongst
+                others, what event model the session will assume to be valid for
                 this entity.
             profile: .
             details: .
@@ -387,7 +386,7 @@ class Entity(object):
 
         Setting 'collapse' to 'True' (default) will prompt the method to
         collapse the resulting set of ranges.
-        
+
         The returned ranges are time-sorted
 
         Example::

@@ -786,7 +786,7 @@ class Session(object):
         concurrency is computed.
 
         Returned is an ordered list of tuples::
-            
+
             [ [time_0, concurrency_0],
               [time_1, concurrency_1],
               ...
@@ -795,7 +795,7 @@ class Session(object):
         where `time_n` is represented as `float`, and `concurrency_n` as `int`.
 
         Example::
-        
+
             session.filter(etype='unit').concurrency(state=[rp.AGENT_EXECUTING,
                 rp.AGENT_STAGING_OUTPUT_PENDING])
 
@@ -850,10 +850,10 @@ class Session(object):
         else:
             # select data points according to sampling
             # get min time, and create timestamps at regular intervals
-            t     = times[ 0][0]
+            t     = times[0][0]
             last  = r_min
             ret   = list()
-            idx   = 0
+
             for time, val in collapsed:
                 while time >= t:
                     ret.append(t, val)
@@ -1282,41 +1282,41 @@ class Session(object):
         those entity IDs the dict values will be a list of rectangles.
 
         A resource is considered:
-        
+
         - `alloc` (allocated) when it is owned by the RCT application;
         - `block` (blocked) when it is reserveed for a specific task;
         - `use` (used) when it is utilized by that task.
-        
-        Each of the rectangles represents a continuous block of resources which 
+
+        Each of the rectangles represents a continuous block of resources which
         is alloced/blocked/used:
-        
+
         - x_0 time when `alloc/block/usage` begins;
         - x_1 time when `alloc/block/usage` ends;
         - y_0 lowest index of a continuous block of resource IDs;
         - y_1 highest index of a continuous block of resource IDs.
-        
+
         Any specific entity (pilot, task) can have a **set** of such resource
         blocks, for example, a task might be placed over multiple,
         non-consecutive nodes:
-        
+
         - gpu and cpu resources are rendered as separate blocks (rectangles).
 
         Args:
-            alloc_entity (Entity): :class:`Entity` instance which allocates 
-                resources 
+            alloc_entity (Entity): :class:`Entity` instance which allocates
+                resources
             alloc_events (list): event tuples which specify allocation time
-            block_entity (Entity): :class:`Entity` instance which blocks 
-                resources 
-            block_events (list): event tuples which specify blocking time 
-            use_entity (Entity): :class:`Entity` instance which uses resources 
+            block_entity (Entity): :class:`Entity` instance which blocks
+                resources
+            block_events (list): event tuples which specify blocking time
+            use_entity (Entity): :class:`Entity` instance which uses resources
             use_events (list): event tuples which specify usage time
 
         Example::
-        
+
             usage('pilot', [{ru.STATE: None, ru.EVENT: 'bootstrap_0_start'},
-                            {ru.STATE: None, ru.EVENT: 'bootstrap_0_stop' }], 
+                            {ru.STATE: None, ru.EVENT: 'bootstrap_0_stop' }],
                   'unit' , [{ru.STATE: None, ru.EVENT: 'schedule_ok'      },
-                            {ru.STATE: None, ru.EVENT: 'unschedule_stop'  }], 
+                            {ru.STATE: None, ru.EVENT: 'unschedule_stop'  }],
                   'unit' , [{ru.STATE: None, ru.EVENT: 'exec_start'       },
                             {ru.STATE: None, ru.EVENT: 'exec_stop'        }])
         '''
@@ -1458,7 +1458,7 @@ class Session(object):
         for et in self.list('etype'):
 
             self._rep.info('%s state model\n' % et)
-            sm = self.describe('state_model', etype=et)
+            # sm = self.describe('state_model', etype=et)
             sv = self.describe('state_values', etype=et)[et]['state_values']
 
             for e in self.get(etype=et):
