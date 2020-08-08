@@ -18,7 +18,7 @@ def pilot_entity():
 
     with open("%s/pilot-entity-example.json" % directory, 'r') as f:
         entity = json.load(f)
-        entity['events'] = [tuple(l) for l in entity['events']]
+        entity['events'] = [tuple(event) for event in entity['events']]
         return entity
 
 
@@ -30,7 +30,7 @@ def range_entity():
 
     with open("%s/range-testing-entity-example.json" % directory, 'r') as f:
         entity = json.load(f)
-        entity['events'] = [tuple(l) for l in entity['events']]
+        entity['events'] = [tuple(event) for event in entity['events']]
         return entity
 
 
@@ -648,12 +648,12 @@ class TestEntity(object):
             ({ru.EVENT: 'update_pushed'})
         ])
         assert(ranges == [
-            [ 4.447200059890747,  4.457900047302246],
-            [ 4.458099842071533,  5.236199855804443],
+            [4.447200059890747 , 4.457900047302246],
+            [4.458099842071533 , 5.236199855804443],
             [21.666899919509888, 21.685499906539917],
             [29.752099990844727, 29.939599990844727],
             [30.722899913787842, 32.28690004348755 ],
-            [50.22889995574951,  50.240999937057495]
+            [50.22889995574951 , 50.240999937057495]
         ])
 
 
