@@ -168,15 +168,15 @@ def test_duration_method_barrier():
     # FIXME: data files broken
     return
 
-    data_loc   = '%s/barrier_data' % os.path.dirname(__file__)
-    json_files = glob.glob('%s/*.json' % data_loc)
-    json_file  = json_files[0]
-    sid        = os.path.basename(json_file)[:-5]
+    # data_loc   = '%s/barrier_data' % os.path.dirname(__file__)
+    # json_files = glob.glob('%s/*.json' % data_loc)
+    # json_file  = json_files[0]
+    # sid        = os.path.basename(json_file)[:-5]
 
-    session = ra.Session(sid=sid, stype='radical.pilot', src=data_loc)
+    # session = ra.Session(sid=sid, stype='radical.pilot', src=data_loc)
 
-    assert get_duration_ra(session) == get_duration_ru(session)
-    assert get_duration_ra(session) <  get_duration_minmax(session)
+    # assert get_duration_ra(session) == get_duration_ru(session)
+    # assert get_duration_ra(session) <  get_duration_minmax(session)
 
 
 # ------------------------------------------------------------------------------
