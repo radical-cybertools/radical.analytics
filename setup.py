@@ -76,7 +76,7 @@ def get_version(mod_root):
         # and the pip version used uses an install tmp dir in the ve space
         # instead of /tmp (which seems to happen with some pip/setuptools
         # versions).
-        out, err, ret = sh_callout(
+        out, _, ret = sh_callout(
             'cd %s ; '
             'test -z `git rev-parse --show-prefix`  -1; '
             'tag=`git describe --tags --always` 2>/dev/null ; '
@@ -165,7 +165,7 @@ class RunTwine(Command):
     def initialize_options (self) : pass
     def finalize_options   (self) : pass
     def run (self) :
-        out,  err, ret = sh_callout('python setup.py sdist upload -r pypi')
+        _,  _, ret = sh_callout('python setup.py sdist upload -r pypi')
         raise SystemExit(ret)
 
 

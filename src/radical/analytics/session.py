@@ -1,3 +1,4 @@
+# pylint: disable=W0102
 
 import os
 import sys
@@ -267,7 +268,7 @@ class Session(object):
     @staticmethod
     def create(src, stype, sid=None, _entities=None, _init=True, cache=True):
 
-        sid, src, tgt, ext = Session._get_sid(sid, src)
+        sid, src, _, _ = Session._get_sid(sid, src)
         base  = ru.get_radical_base('radical.analytics.cache')
         cache = '%s/%s.pickle' % (base, sid)
 
@@ -691,7 +692,7 @@ class Session(object):
             except ValueError:
                 print(('no ranges for %s' % uid))
                 # ignore entities for which the conditions did not apply
-                pass
+                # pass
 
         if not ranges:
             return []
@@ -728,7 +729,7 @@ class Session(object):
         '''
 
         ret = list()
-        for uid,entity in list(self._entities.items()):
+        for _,entity in list(self._entities.items()):
             tmp = entity.timestamps(state=state, event=event, time=time)
             if tmp and first:
                 ret.append(tmp[0])
@@ -805,7 +806,7 @@ class Session(object):
         DEC = -1  # decrease concurrency
 
         ranges = list()
-        for uid,e in list(self._entities.items()):
+        for _,e in list(self._entities.items()):
             ranges += e.ranges(state, event, time)
 
         if not ranges:
@@ -944,7 +945,7 @@ class Session(object):
 
         # make sure we start in correct state, and first data point does not
         # occur before sampling starts
-        timestamps[0] >= times[0]
+        assert timestamps[0] >= times[0]
 
         # we have the time sequence, now compute event rate at those points
         ts_idx  = 0                # index into the list of timestamps
@@ -1483,7 +1484,7 @@ class Session(object):
                 sm_ok    = True
                 sm_log   = list()
                 miss_log = list()
-                for v,s in list(sv.items()):
+                for _,s in list(sv.items()):
 
                     if not s:
                         continue
