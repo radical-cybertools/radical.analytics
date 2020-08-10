@@ -1484,7 +1484,7 @@ class Session(object):
                 sm_ok    = True
                 sm_log   = list()
                 miss_log = list()
-                for _,s in list(sv.items()):
+                for s in sv.values():
 
                     if not s:
                         continue
