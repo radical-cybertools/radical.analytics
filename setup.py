@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__author__    = 'RADICAL Team'
+__author__    = 'RADICAL Devel Team'
 __email__     = 'radical@rutgers.edu'
 __copyright__ = 'Copyright 2013-20, RADICAL Devel Team'
 __license__   = 'MIT'
