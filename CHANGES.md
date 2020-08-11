@@ -1,8 +1,18 @@
 
-  - For a list of bug fixes, see
+  - For a list of bug fixes, see:
     https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc
-  - For a list of open issues and known problems, see
+  - For a list of open issues and known problems, see:
     https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen+
+
+
+1.5.0 Release                                                         2020-08-04
+--------------------------------------------------------------------------------
+
+  - Move to Python 3
+  - Fix multiple bugs
+  - Align with release number of RCT stack
+  - Linting and RCT best code practices
+  - New documentation
 
 
 0.72.1 Hotfix Release                                                 2019-09-28
@@ -94,8 +104,8 @@
   - support sessions which only have profiles, but a limited or no event or
     state model
 
-  
-  
+
+
 0.47 Release                                                          2017-11-19
 --------------------------------------------------------------------------------
 

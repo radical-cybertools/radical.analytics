@@ -15,123 +15,151 @@ import radical.analytics as ra
 #
 if __name__ == '__main__':
 
-    sources = sys.argv[1:]
+    src = sys.argv[1]
+
+    if len(sys.argv) > 2:
+        stype = sys.argv[2]
+    else:
+        stype = None
 
     stypes = {'ra': 'radical.analytics',
               'rp': 'radical.pilot',
               're': 'radical.entk'}
 
     ret = 0
-    for src in sources:
+    src = src.rstrip('/')
 
-        src = src.rstrip('/')
+ #  # always point to the tarballs
+ #  if src[-4:] != '.tbz':
+ #      src += '.tbz'
 
-     #  # always point to the tarballs
-     #  if src[-4:] != '.tbz':
-     #      src += '.tbz'
+    base  = os.path.basename(src)
+    sidx  = base[0:2]
 
-        base  = os.path.basename(src)
-        sidx  = base[0:2]
+    if not stype:
         stype = stypes[sidx]
 
-        # build up the list of events we expect
-        found_events = set()
-        all_events   = dict()
+    # build up the list of events we expect
+    found_events = set()
+    all_events   = dict()
 
-        try:
-            import radical.pilot as rp
-        except:
-            print('%s requires radical.pilot, please install it.' % sys.argv[0])
-            sys.exit(1)
+    try:
+        import radical.pilot as rp
+    except:
+        print('%s requires radical.pilot, please install it.' % sys.argv[0])
+        sys.exit(1)
 
-        rp_path = os.path.dirname(rp.__file__)
-        ev_path = '%s/../../../../../share/radical.pilot/events.md' % rp_path
+    rp_path = os.path.dirname(rp.__file__)
+    ev_path = '%s/../../../../../share/radical.pilot/events.md' % rp_path
 
-        with open(ev_path, 'r') as fin:
-            for line in fin.readlines():
-                if ' : ' in line:
-                    line = line.strip()
-                    if line.startswith('* '):
-                        continue
-                    elems = line.split(':', 1)
-                    all_events[elems[0].strip()] = elems[1].strip()
+    with open(ev_path, 'r') as fin:
+        for line in fin.readlines():
+            if ' : ' in line:
+                line = line.strip()
+                if line.startswith('* '):
+                    continue
+                elems = line.split(':', 1)
+                all_events[elems[0].strip()] = elems[1].strip()
 
-        session  = ra.Session.create(src, stype)
-        sid      = session.uid
-        n_events = 0
-        n_types  = 0
+    session  = ra.Session.create(src, stype)
+    sid      = session.uid
+    n_events = 0
+    n_types  = 0
 
-        print()
-        print('-----------------------------------------------------------')
-        print('  source  : %s' % base)
-        print('  session : %s' % sid)
-        setypes = dict()
-        for p in session.get(etype=['rp', 'pmgr', 'umgr']):
-            for e in p.events:
-                t = e[ru.EVENT]
-                if t not in setypes: setypes[t]  = 1
-                else               : setypes[t] += 1
-        for t in sorted(setypes.keys()):
-            print('            %9d : %s' % (setypes[t], t))
-            n_events += setypes[t]
-        n_types += len(setypes.keys())
-
-
-        print()
-        print('  pilots  : %9d' % len(session.get(etype='pilot')))
-        petypes = dict()
-        for p in session.get(etype='pilot'):
-            for e in p.events:
-                t = e[ru.EVENT]
-                if t not in petypes: petypes[t]  = 1
-                else               : petypes[t] += 1
-        for t in sorted(petypes.keys()):
-            print('            %9d : %s' % (petypes[t], t))
-            n_events += petypes[t]
-        n_types += len(petypes.keys())
+    print()
+    print('-----------------------------------------------------------')
+    print('  source  : %s' % base)
+    print('  session : %s' % sid)
+    setypes = dict()
+    states  = dict()
+    for p in session.get(etype=['rp', 'pmgr', 'umgr']):
+        for e in p.events:
+            t = e[ru.EVENT]
+            if t not in setypes: setypes[t]  = 1
+            else               : setypes[t] += 1
+    for t in sorted(setypes.keys()):
+        print('            %9d : %s' % (setypes[t], t))
+        n_events += setypes[t]
+    n_types += len(setypes.keys())
 
 
-        print()
-        print('  units   : %9d' % len(session.get(etype='unit')))
-        uetypes = dict()
-        for u in session.get(etype='unit'):
-            for e in u.events:
-                t = e[ru.EVENT]
-                if t not in uetypes: uetypes[t]  = 1
-                else               : uetypes[t] += 1
-        for t in sorted(uetypes.keys()):
-            print('            %9d : %s' % (uetypes[t], t))
-            n_events += uetypes[t]
-        n_types += len(uetypes.keys())
+    print()
+    print('  pilots  : %9d' % len(session.get(etype='pilot')))
+    petypes = dict()
+    states  = dict()
+    for p in session.get(etype='pilot'):
+        for e in p.events:
+            t = e[ru.EVENT]
+            if t not in petypes: petypes[t]  = 1
+            else               : petypes[t] += 1
+            if t == 'state':
+                s = e[ru.STATE]
+                if s not in states: states[s]  = 1
+                else              : states[s] += 1
+    for t in sorted(petypes.keys()):
+        print('            %9d : %s' % (petypes[t], t))
+        n_events += petypes[t]
+    n_types += len(petypes.keys())
 
-        print()
-        print('  total   : %9d  (%d types)' % (n_events, n_types))
+    print()
+    smodel = session._description['entities']['pilot']['state_model']
+    for s in {k: v for k, v in sorted(smodel.items(), key=lambda item: item[1])}:
+        print('            %9d : %s' % (states.get(s, 0), s))
 
-        found   = list(setypes.keys()) \
-                + list(petypes.keys()) \
-                + list(uetypes.keys())
-        missing = list()
-        allkeys = sorted(all_events.keys())
-        for e in allkeys:
-            if e not in found:
-                missing.append(e)
 
-        print()
-        print('  missing:  %9d' % len(missing))
-        for e in sorted(missing):
 
-            if '[' in all_events[e]:
-                # conditional event - ignore
-                c = ' '
-            else:
-                # missing mandatory event
-                c    = '*'
-                ret += 1
+    print()
+    print('  units   : %9d' % len(session.get(etype='unit')))
+    uetypes = dict()
+    states  = dict()
+    for u in session.get(etype='unit'):
+        for e in u.events:
+            t = e[ru.EVENT]
+            if t not in uetypes: uetypes[t]  = 1
+            else               : uetypes[t] += 1
+            if t == 'state':
+                s = e[ru.STATE]
+                if s not in states: states[s]  = 1
+                else              : states[s] += 1
+    for t in sorted(uetypes.keys()):
+        print('            %9d : %s' % (uetypes[t], t))
+        n_events += uetypes[t]
+    n_types += len(uetypes.keys())
 
-            print('                  %s  %-20s : %s' % (c, e, all_events[e]))
-        print()
-        print('-----------------------------------------------------------')
-        print()
+    print()
+    smodel = session._description['entities']['unit']['state_model']
+    for s in {k: v for k, v in sorted(smodel.items(), key=lambda item: item[1])}:
+        print('            %9d : %s' % (states.get(s, 0), s))
+
+
+    print()
+    print('  total   : %9d  (%d types)' % (n_events, n_types))
+
+    found   = list(setypes.keys()) \
+            + list(petypes.keys()) \
+            + list(uetypes.keys())
+    missing = list()
+    allkeys = sorted(all_events.keys())
+    for e in allkeys:
+        if e not in found:
+            missing.append(e)
+
+    print()
+    print('  missing:  %9d' % len(missing))
+    for e in sorted(missing):
+
+        if '[' in all_events[e]:
+            # conditional event - ignore
+            c = ' '
+        else:
+            # missing mandatory event
+            c    = '*'
+            ret += 1
+
+        print('                  %s  %-20s : %s' % (c, e, all_events[e]))
+    print()
+    print('-----------------------------------------------------------')
+    print()
 
     sys.exit(ret)
 

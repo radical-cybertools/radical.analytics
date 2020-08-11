@@ -1,66 +1,48 @@
 .. _chapter_installation:
 
-************
-Installation
-************
-
-.. Warning:: The following requirements and installation procedure are currently BROKEN due to the undergoing development of RADICAL-Pilot OSG support. This will be fixed with the next release of RADICAL-Pilot and RADICAL-Utils (see `Ticket #10 <https://github.com/radical-cybertools/radical.analytics/issues/10>`_). Meanwhile, please refer to `examples/README.md <https://github.com/radical-cyb ertools/radical.analytics/blob/devel/examples/>`_ for a viable installation procedure.
-
-Requirements
-============
-
-RADICAL-Analytics (RA) requires the following packages:
-
-* Python >= 2.7
-* virtualenv >= 1.11
-* pip >= 1.4.1
-* radical.utils >= 0.42
-
-All dependencies are installed automatically by the installer. Besides that,
-RADICAL-Analytics needs the installation of the RADICAL-Cybertool used to
-produce a runtime profile, i.e., the file collecting all the information and
-timestamps of a run. Currently, RADICAL-Analytics has been tested with the
-RADICAL-Pilot cybertool.
-
 Installation
 ============
 
-To install RADICAL-Analytics in a virtual environment, open a terminal and
+RADICAL-Analytics (RA) is a Python module. RA must be installed in a virtual environment. Site-wide installation will not work. 
+
+RA requires the following packages:
+
+* Python >= 3.6
+* virtualenv >= 20
+* pip >= 20
+* radical.utils >= 1.4
+
+RA automatically installs the dependencies above. Besides that, RA
+requires the manual installation of the RADICAL-Cybertool (RCT) of choice.
+
+To install RA in a virtual environment, open a terminal and
 run:
-
-If your shell is BASH,
 
 .. code-block:: bash
 
-    virtualenv --system-site-packages $HOME/ve
+    virtualenv -p python3 $HOME/ve
     source $HOME/ve/bin/activate
     pip install radical.analytics
 
-
-If your shell is CSH,
-
-.. code-block:: csh
-
-    virtualenv --system-site-packages $HOME/ve
-    source $HOME/ve/bin/activate.csh
-    pip install radical.analytics
-    rehash
-
-For a quick sanity check, to make sure that the the packages have been
-installed properly, run:
+Run the following to make sure that RA  is properly installed:
 
 .. code-block:: bash
 
-    $ radicalanalytics-version
+    radical-analytics-version
 
-This command should print the version and release numbers of the radical.analytics package. For example: 0.1.
+This command should print the version and release numbers of the
+radical.analytics package. For example: 
 
+.. code-block:: bash
 
-** Installation is complete !**
+    $ radical-analytics-version
+    0.90.7-v0.72.0-64
+
+RA installation is now complete.
 
 
 Troubleshooting
-===============
+---------------
 
 **Missing virtualenv**
 
@@ -68,11 +50,7 @@ If virtualenv **is not** installed on your system, you can try the following.
 
 .. code-block:: bash
 
-    wget --no-check-certificate https://pypi.python.org/packages/source/v/virtualenv/virtualenv-1.9.tar.gz
-    tar xzf virtualenv-1.9.tar.gz
-
-    python virtualenv-1.9/virtualenv.py $HOME/ve
-    source $HOME/ve/bin/activate
+    pip install git+https://github.com/pypa/virtualenv.git@master
 
 
 **Installation Problems**
@@ -81,20 +59,15 @@ Many installation problems boil down to one of two causes:  an Anaconda based
 Python distribution, or an incompatible version of pip/setuptools.
 
 Many recent systems, specifically in the academic community, install Python in
-its incarnation as Anaconda Distribution.  RADICAL-Analytics is not yet able
-to function in that environment.  While support of Anaconda is planned in the
-near future, you will have to revert to a 'normal' Python distribution to use
-RADICAL-Analytics.
+its incarnation as Anaconda Distribution.  RA is not yet able to function in
+that environment.  While support of Anaconda is planned in the near future, you
+will have to revert to a 'normal' Python distribution to use RADICAL-Analytics.
 
 Python supports a large variety of module deployment paths: ``easy_install``,
 ``setuptools`` and ``pip`` being the most prominent ones for non-compilable
-modules.  RADICAL-Analytics only supports ``pip``.
+modules.  RA only supports ``pip``.
 
 
-**Mailing Lists**
+**Reaching out to the RADICAL devel team**
 
-If you encounter any errors, please do not hesitate to contact us via the
-mailing list:
-
-* https://groups.google.com/d/forum/radical-cybertools
-
+If you encounter any issue, please do not hesitate to contact us by opening an issue at https://github.com/radical-cybertools/radical.analytics/issues.

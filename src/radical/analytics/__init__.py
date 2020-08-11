@@ -1,14 +1,14 @@
 
-__copyright__ = "Copyright 2013-2016, http://radical.rutgers.edu"
-__license__   = "GPL.v2"
+__copyright__ = "Copyright 2013-2020, http://radical.rutgers.edu"
+__license__   = "MIT"
 
 
 # ------------------------------------------------------------------------------
-
+#
 from .experiment import Experiment
 from .session    import Session
+from .entity     import Entity
 from .plotter    import Plotter
-
 
 # ------------------------------------------------------------------------------
 #
@@ -26,3 +26,4 @@ logger.info('radical.analytics    version: %s' % version_detail)
 
 # ------------------------------------------------------------------------------
 
+__all__ = ('Experiment','Session','Entity','Plotter',)
