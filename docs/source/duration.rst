@@ -21,9 +21,9 @@ Currently, we offer a set of default durations for the entity types Pilot and Co
     pd_debug = rp.utils.PILOT_DURATIONS_DEBUG
     ud_debug = rp.utils.UNIT_DURATIONS_DEBUG
 
-    print('Default pilot debug durations: %s' % 
+    print('Default pilot debug durations: %s' %
         [pd_debug[x].keys() for x in pd_debug])
-    print('Default unit debug durations: %s' % 
+    print('Default unit debug durations: %s' %
         [ud_debug[x].keys() for x in ud_debug])
 
 That code produce the following lists of durations::
@@ -32,7 +32,7 @@ That code produce the following lists of durations::
 
     Default unit debug durations: [dict_keys(['u_umngr_create', 'u_umngr_schedule_queue', 'u_umngr_schedule', 'u_umngr_stage_in_queue', 'u_umngr_stage_in', 'u_agent_stage_in_queue', 'u_agent_stage_in', 'u_agent_schedule_queue', 'u_agent_schedule', 'u_agent_execute_queue', 'u_agent_execute_prepare', 'u_agent_execute_mkdir', 'u_agent_execute_layer_start', 'u_agent_execute_layer', 'u_agent_cu_start', 'u_agent_cu_pre_execute_start', 'u_agent_cu_pre_execute', 'u_agent_cu_execute_start', 'u_agent_cu_execute', 'u_agent_cu_stop', 'u_agent_cu_unschedule_start', 'u_agent_cu_stage_out_start', 'u_agent_cu_stage_out_queue', 'u_agent_cu_stage_out', 'u_agent_cu_unschedule_stop', 'u_agent_cu_push_to_umngr', 'u_umngr_cu_destroy'])]
 
-Most of those durations are meant for **debugging** as they are as granular as possible and (almost completely) contiguos. Nonetheless, some are commonly used in experiment analyses. For example: 
+Most of those durations are meant for **debugging** as they are as granular as possible and (almost completely) contiguos. Nonetheless, some are commonly used in experiment analyses. For example:
 
 - **p_agent_runtime**: the amount of time for which one or more pilots (i.e., RP Agent) were active.
 - **p_pmngr_scheduling**: the amount of time one or more pilots waited in the queue of the HPC batch system.
@@ -74,12 +74,12 @@ As seen above, durations measure the time spent by an instace of an entity (loca
 
 We starts with a global analysis to measure for how long all the pilots of our run have been active. Looking at the `event model <https://github.com/radical-cybertools/radical.pilot/blob/devel/docs/source/events.md#bootstrap_0sh>`__ of the entity of type `pilot` and to `rp.utils.PILOT_DURATIONS_DEBUG`, we know that a pilot is active between the event `UMGR_STAGING_OUTPUT` and one of the final events `DONE`, `CANCELED` or `FAILED`. We also know that we have a default duration with those events: `p_agent_runtime`.
 
-To measure that duration, first, we filter the session object so to keep only the entities of type Pilot; and, second, we get the **cumulative** amount of time for which all the pilot were active: 
+To measure that duration, first, we filter the session object so to keep only the entities of type Pilot; and, second, we get the **cumulative** amount of time for which all the pilot were active:
 
 .. code-block:: python
 
     pilots = session.filter(etype='pilot')
-    duration = pilots.duration(event=rp.utils.PILOT_DURATIONS_DEBUG['consume']['p_agent_runtime'])
+    duration = pilots.duration(event=rp.utils.PILOT_DURATIONS_DEBUG['p_agent_runtime'])
     print(duration)
 
 .. note: This works for a set of pilots, including the corner case in which we have a single pilot. If we have a single pilot, the cumulative active time of all the pilots is equal to the active time of the only available pilot.
@@ -96,10 +96,10 @@ Once we know the ID of the pilot we want to analyze, first we filter the session
 .. code-block:: python
 
     pilot = pilots.filter(uid='pilot.0000')
-    duration = pilot.duration(event=rp.utils.PILOT_DURATIONS_DEBUG['consume']['p_agent_runtime'])
+    duration = pilot.duration(event=rp.utils.PILOT_DURATIONS_DEBUG['p_agent_runtime'])
     print(duration)
 
-The same approach and both global and local analyses can be performed for every type of entity supported by RA (currently, Pilot, Unit, Pipeline, Stage and Task). 
+The same approach and both global and local analyses can be performed for every type of entity supported by RA (currently, Pilot, Unit, Pipeline, Stage and Task).
 
 Danger of Duration-Based Analyeses
 ----------------------------------
@@ -110,6 +110,6 @@ Consider three durations:
 
 1. **u_agent_cu_load**: the time from when RP Agent receives a compute unit to the time in which the compute unit's executable is launched.
 2. **u_agent_cu_execute**: default duration for the time taken by a compute unit's executable to execute.
-3. **u_agent_cu_load**: the time from when a compute unit's executable finishes to execute to when RP Agent mark the compute unit with a final state (DONE, CANCELED or FAILED). 
+3. **u_agent_cu_load**: the time from when a compute unit's executable finishes to execute to when RP Agent mark the compute unit with a final state (DONE, CANCELED or FAILED).
 
 For a single compute unit, u_agent_cu_load, u_agent_cu_execute and u_agent_cu_load are contiguos and therefore additive. A single compute unit cannot be loaded by RP Agent while it is also executed. For multiple compute units, this does not apply: one compute units might be loaded by RP Agent while another compute unit is being executed.
