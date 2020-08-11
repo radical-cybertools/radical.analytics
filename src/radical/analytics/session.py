@@ -1,4 +1,4 @@
-# pylint: disable=W0102
+# pylint: disable=W0102,W0212
 
 import os
 import sys
