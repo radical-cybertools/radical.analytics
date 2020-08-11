@@ -1,4 +1,4 @@
-# radical.analytics
+# RADICAL-Analytics (RA)
 
 [![Build Status](https://travis-ci.com/radical-cybertools/radical.analytics.svg?branch=devel)](https://travis-ci.org/radical-cybertools/radical.analytics)
 
