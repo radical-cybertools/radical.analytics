@@ -9,9 +9,9 @@
 --------------------------------------------------------------------------------
 
   - Move to Python 3
-  - Align with release number of RCT stack
   - Fix multiple bugs
-  - First prototype of new wrangler
+  - Align with release number of RCT stack
+  - Linting and RCT best code practices
   - New documentation
 
 
@@ -104,8 +104,8 @@
   - support sessions which only have profiles, but a limited or no event or
     state model
 
-  
-  
+
+
 0.47 Release                                                          2017-11-19
 --------------------------------------------------------------------------------
 
