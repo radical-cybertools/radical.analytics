@@ -96,8 +96,9 @@ if __name__ == '__main__':
     if order == 'uid':
         sorted_uids = sorted(pipe.keys())
     else:
-        sorted_uids = [x[0] for x in sorted(list(data.items()),
-                                            key=lambda v: v[1][index])]
+        l = [x for x in data.items() if x[1][index] is not None]
+        sorted_uids = [x[0] for x in sorted(l, key=lambda v: v[1][index])]
+
     sorted_data   = list()
     index         = 0
     for uid in sorted_uids:

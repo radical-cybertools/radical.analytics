@@ -1,5 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
+# ------------------------------------------------------------------------------
+#
+MAX_LINES   = 0
+MAX_SOURCES = 0
+N_BINS      = 50
+
+# ------------------------------------------------------------------------------
+#
 import sys
 import time
 import optparse
@@ -7,9 +15,9 @@ import optparse
 import numpy             as np
 import matplotlib.pyplot as plt
 
-font = {'family' : 'normal',
-        'weight' : 'bold',
-        'size'   : 14}
+font = {# 'family' : 'normal',
+          'weight' : 'bold',
+          'size'   : 24}  # 30
 
 plt.rcParams['axes.titlesize']   = 14
 plt.rcParams['axes.labelsize']   = 14
@@ -17,7 +25,7 @@ plt.rcParams['axes.linewidth']   =  2
 plt.rcParams['xtick.labelsize']  = 14
 plt.rcParams['ytick.labelsize']  = 14
 plt.rcParams['lines.markersize'] = 14
-plt.rcParams['lines.linewidth']  =  2
+plt.rcParams['lines.linewidth']  =  4
 plt.rcParams['lines.color']      = 'r'
 
 plt.rc('font', **font)
@@ -26,7 +34,7 @@ plt.rc('font', **font)
 # ------------------------------------------------------------------------------
 #
 TITLE     = ''
-DELIM     = ','
+DELIM     = None
 MATCH     = None
 COLUMN_X  = 'count'
 COLUMNS_Y = ['1']
@@ -38,10 +46,11 @@ TICKS_Y   = []
 LOG_X     = False
 LOG_Y     = False
 LOG       = ''
-SIZE      = (20, 14)
+SIZE      = (13, 8)
 STYLE     = 'line'  # 'point', 'line', 'step', 'bar', 'hist'
 GRID      = True    # True, False
 SAVE_AS   = 'x11'   # 'svg', 'png', 'x11'
+FNAME     = ''
 
 
 # ------------------------------------------------------------------------------
@@ -75,6 +84,7 @@ def usage(msg=None):
         -z, --size       <20,14>               : canvas size
         -l, --log        <x | y | x,y>         : log-scale for x and/or y axis
         -a, --save-as    <png | svg | x11>     : save fig in format (x11: show)
+        -f, --filename   <file_name>           : filename base for save (no ext)
 
 ''')
 
@@ -99,16 +109,14 @@ parser.add_option('-s', '--style',     dest='style')
 parser.add_option('-z', '--size',      dest='size')
 parser.add_option('-l', '--log',       dest='log')
 parser.add_option('-a', '--save-as',   dest='save')
+parser.add_option('-f', '--filename',  dest='fname')
 parser.add_option('-h', '--help',      dest='help', action="store_true")
 
 options, args = parser.parse_args()
-if len(args) > 1:
-    usage("Too many arguments (%s)" % args)
-
 if len(args) < 1:
-    src = None
+    srcs = [None]
 else:
-    src = args[0]
+    srcs = args[0:]
 
 if options.help   : usage()
 if options.title  : TITLE        =  str(options.title)
@@ -125,9 +133,13 @@ if options.size   : SIZE         = [int(x) for x in options.size  .split(',')]
 if options.log    : LOG          =  str(options.log)
 if options.style  : STYLE        =  str(options.style)
 if options.save   : SAVE_AS      =  str(options.save)
+if options.fname  : FNAME        =  str(options.fname)
 
 if 'x' in LOG: LOG_X = True
 if 'y' in LOG: LOG_Y = True
+
+if STYLE not in ['point', 'line', 'step', 'bar', 'hist']:
+    raise ValueError('invalid style: %s' % STYLE)
 
 if COLUMN_X not in ['count']:
     COLUMN_X = int(COLUMN_X)
@@ -135,17 +147,21 @@ if COLUMN_X not in ['count']:
 if SAVE_AS not in ['x11', 'png', 'svg']:
     raise ValueError('invalid save_as value: %s' % SAVE_AS)
 
-if STYLE not in ['point', 'line', 'step', 'bar', 'hist']:
-    raise ValueError('invalid style: %s' % STYLE)
+if not FNAME:
+    FNAME = TITLE.replace('', '_').lower()
 
 
 # ------------------------------------------------------------------------------
 # read and sort data
-def get_lines():
+def get_lines(src):
     if src:
+        x = 0
         with open(src, 'r') as fin:
             for line in fin.readlines():
                 line = line.strip()
+                x += 1
+                if MAX_LINES and x >= MAX_LINES:
+                    break
                 if line:
                     yield line
     else:
@@ -172,110 +188,134 @@ def get_elems(line):
 
     return ret
 
-
-# ------------------------------------------------------------------------------
-rows = list()
-for line in get_lines():
-
-    if line.startswith('#'):
-      # continue
-        elems  = get_elems(line)[1:]
-        if not LEGEND:
-            LEGEND = [''] * (len(elems))
-        for idx in range(len(elems)):
-            elem = elems[idx]
-            if idx == COLUMN_X:
-                if not LABEL_X:
-                    LABEL_X = elem
-            else:
-                if not LEGEND:
-                    LEGEND[idx] = elem
-
-    else:
-        if MATCH and MATCH not in line:
-            continue
-        rows.append(get_elems(line))
-
-    if not LABEL_X:
-        LABEL_X = COLUMN_X
-
-if not rows:
-    raise ValueError('no matching data')
-
-
-# ------------------------------------------------------------------------------
-# invert rows to actual data layout
-data  = list()
-ncols = len(rows[0])
-for idx in range(ncols):
-    data.append(list())
-
-for row in rows:
-    for col in range(ncols):
-        data[col].append(row[col])
-
-if STYLE == 'hist':
-    if COLUMN_X and COLUMN_X != 'count':
-        raise ValueError('histogram plots should specify `-y`, not `-x`')
-
-# ------------------------------------------------------------------------------
-# plot data
 plt.figure(figsize=SIZE)
-# pprint.pprint(data)
-try:
-    cnum = 0
-    for col in COLUMNS_Y:
 
-        if LEGEND: label = LEGEND[cnum]
-        else     : label = str(cnum)
-        cnum += 1
+# plt.xlim(xmin=1, xmax=4000)
+# plt.ylim(ymin=1, ymax=10000000)
 
-        if COLUMN_X == 'count':
-            data_x = list(range(len(data[0])))
+p_idx = 0
+
+# ------------------------------------------------------------------------------
+s = 0
+for src in srcs:
+
+    if MAX_SOURCES and s >= MAX_SOURCES:
+        break
+    s += 1
+
+    print(src)
+
+    rows = list()
+    for line in get_lines(src):
+    
+        if line.startswith('#'):
+          # continue
+            elems  = get_elems(line)[1:]
+            if not LEGEND:
+                LEGEND = [''] * (len(elems))
+            for idx in range(len(elems)):
+                elem = elems[idx]
+                if idx == COLUMN_X:
+                    if not LABEL_X:
+                        LABEL_X = elem
+                else:
+                    if not LEGEND:
+                        LEGEND[idx] = elem
+    
         else:
-            data_x = np.array(data[COLUMN_X])
+            if MATCH and MATCH not in line:
+                continue
+            rows.append(get_elems(line))
+    
+        if not LABEL_X:
+            LABEL_X = COLUMN_X
+    
+    if not rows:
+        raise ValueError('no matching data')
+    
+    
+    # ------------------------------------------------------------------------------
+    # invert rows to actual data layout
+    data  = list()
+    ncols = len(rows[0])
+    for idx in range(ncols):
+        data.append(list())
+    
+    for row in rows:
+        for col in range(ncols):
+            data[col].append(row[col])
+    
+    if STYLE == 'hist':
+        if COLUMN_X and COLUMN_X != 'count':
+            raise ValueError('histogram plots should specify `-y`, not `-x`')
+    
+    # ------------------------------------------------------------------------------
+    # plot data
+    # pprint.pprint(data)
+    try:
+        cnum = 0
+        for col in COLUMNS_Y:
 
-        if '+' in col:
-            cols = col.split('+', 1)
-            cols = [int(cols[0]), int(cols[1])]
-            data_y = np.array(data[cols[0]]) + np.array(data[cols[0]])
+            if LEGEND: label = LEGEND[p_idx]
+            else     : label = str(cnum)
 
-        elif '-' in col:
-            cols = col.split('-', 1)
-            cols = [int(cols[0]), int(cols[1])]
-            data_y = np.array(data[cols[0]]) - np.array(data[cols[0]])
+            cnum  += 1
+            p_idx += 1
+    
+            if COLUMN_X == 'count':
+                data_x = list(range(len(data[0])))
+            else:
+                data_x = np.array(data[COLUMN_X])
+    
+            if '+' in col:
+                cols = col.split('+', 1)
+                cols = [int(cols[0]), int(cols[1])]
+                data_y = np.array(data[cols[0]]) + np.array(data[cols[0]])
+    
+            elif '-' in col:
+                cols = col.split('-', 1)
+                cols = [int(cols[0]), int(cols[1])]
+                data_y = np.array(data[cols[0]]) - np.array(data[cols[0]])
+    
+            else:
+                col = int(col)
+                data_y = np.array(data[col])
+    
+            if   STYLE == 'point': plt.scatter(data_x, data_y, label=label, s=10)
+            elif STYLE == 'line' : plt.plot   (data_x, data_y, 'b', label=label)
+            elif STYLE == 'step' : plt.step   (data_x, data_y, 'b', label=label,
+                                               where='post')
+            elif STYLE == 'bar'  : plt.bar    (data_x, data_y, label=label)
+            elif STYLE == 'hist' :
 
-        else:
-            col = int(col)
-            time.sleep(1)
-            data_y = np.array(data[col])
-
-        if   STYLE == 'point': plt.scatter(data_x, data_y, label=label, s=10)
-        elif STYLE == 'line' : plt.plot   (data_x, data_y, 'b', label=label)
-        elif STYLE == 'step' : plt.step   (data_x, data_y, 'b', label=label)
-        elif STYLE == 'bar'  : plt.bar    (data_x, data_y, label=label)
-        elif STYLE == 'hist' : plt.hist   (data_y,  150,   label=label)
-
-except IndexError:
-    print('index error')
-    for i,e in enumerate(data[0]):
-        print('    %2d: %s' % (i, e))
-    raise
-
-plt.legend(ncol=2, fancybox=True, loc='lower right')
-
-# if TITLE   : plt.title(TITLE)
-if LOG_X   : plt.xscale('log')
-if LOG_Y   : plt.yscale('log')
-if LABEL_X : plt.xlabel(LABEL_X)
-if LABEL_Y : plt.ylabel(LABEL_Y)
-if TICKS_X : plt.xticks([int(t) for t in TICKS_X], TICKS_X)
-if TICKS_Y : plt.yticks([int(t) for t in TICKS_Y], TICKS_Y)
-if GRID    : plt.grid(True)
+                if LOG_X:
+                    hist, bins, _ = plt.hist(data_y, bins=N_BINS)
+                    logbins       = np.logspace(np.log10(bins[0]),
+                                                np.log10(bins[-1]), len(bins))
+                    plt.hist(data_y, bins=logbins, label=label, histtype='bar')
+                else:
+                    plt.hist(data_y, bins=N_BINS,  label=label, histtype='bar')
+    
+    except IndexError:
+        print('index error')
+      # for i,e in enumerate(data[0]):
+      #     print('    %2d: %s' % (i, e))
+        raise
+    
+    plt.legend(ncol=2, fancybox=True, loc='upper right')
+    
+    # if TITLE   : plt.title(TITLE)
+    if LOG_X   : plt.xscale('log')
+    if LOG_Y   : plt.yscale('log')
+    if LABEL_X : plt.xlabel(LABEL_X)
+    if LABEL_Y : plt.ylabel(LABEL_Y)
+    if TICKS_X : plt.xticks([int(t) for t in TICKS_X], TICKS_X)
+    if TICKS_Y : plt.yticks([int(t) for t in TICKS_Y], TICKS_Y)
+    if GRID    : plt.grid(True)
 
 fbase = TITLE.lower()
-if   SAVE_AS == 'png': plt.savefig('%s.png' % (TITLE.lower()), bbox_inches="tight")
-elif SAVE_AS == 'svg': plt.savefig('%s.svg' % (TITLE.lower()), bbox_inches="tight")
+if   SAVE_AS == 'png': plt.savefig('%s.png' % (FNAME), bbox_inches="tight")
+elif SAVE_AS == 'svg': plt.savefig('%s.svg' % (FNAME), bbox_inches="tight")
 elif SAVE_AS == 'x11': plt.show()
 
 

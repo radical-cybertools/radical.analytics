@@ -157,6 +157,8 @@ if __name__ == '__main__':
             parts = [metric]
 
         for part in parts:
+            if not cons.get(part):
+                continue
             for uid in sorted(cons[part]):
                 for block in cons[part][uid]:
                     orig_x = block[0] - p_zero

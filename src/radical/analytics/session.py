@@ -1011,6 +1011,8 @@ class Session(object):
                 stats_abs[name] = 0.0
 
             for part in parts:
+                if not consumed.get(part):
+                    continue
                 for uid in consumed[part]:
                     for box in consumed[part][uid]:
                         stats_abs[name] += (box[1] - box[0]) * \
