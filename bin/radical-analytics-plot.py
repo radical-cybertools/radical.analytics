@@ -144,9 +144,6 @@ if STYLE not in ['point', 'line', 'step', 'bar', 'hist']:
 if COLUMN_X not in ['count']:
     COLUMN_X = int(COLUMN_X)
 
-if SAVE_AS not in ['x11', 'png', 'svg']:
-    raise ValueError('invalid save_as value: %s' % SAVE_AS)
-
 if not FNAME:
     FNAME = TITLE.replace('', '_').lower()
 
@@ -207,7 +204,7 @@ for src in srcs:
 
     rows = list()
     for line in get_lines(src):
-    
+
         if line.startswith('#'):
           # continue
             elems  = get_elems(line)[1:]
@@ -221,34 +218,34 @@ for src in srcs:
                 else:
                     if not LEGEND:
                         LEGEND[idx] = elem
-    
+
         else:
             if MATCH and MATCH not in line:
                 continue
             rows.append(get_elems(line))
-    
+
         if not LABEL_X:
             LABEL_X = COLUMN_X
-    
+
     if not rows:
         raise ValueError('no matching data')
-    
-    
+
+
     # ------------------------------------------------------------------------------
     # invert rows to actual data layout
     data  = list()
     ncols = len(rows[0])
     for idx in range(ncols):
         data.append(list())
-    
+
     for row in rows:
         for col in range(ncols):
             data[col].append(row[col])
-    
+
     if STYLE == 'hist':
         if COLUMN_X and COLUMN_X != 'count':
             raise ValueError('histogram plots should specify `-y`, not `-x`')
-    
+
     # ------------------------------------------------------------------------------
     # plot data
     # pprint.pprint(data)
@@ -261,26 +258,26 @@ for src in srcs:
 
             cnum  += 1
             p_idx += 1
-    
+
             if COLUMN_X == 'count':
                 data_x = list(range(len(data[0])))
             else:
                 data_x = np.array(data[COLUMN_X])
-    
+
             if '+' in col:
                 cols = col.split('+', 1)
                 cols = [int(cols[0]), int(cols[1])]
-                data_y = np.array(data[cols[0]]) + np.array(data[cols[0]])
-    
+                data_y = np.array(data[cols[0]]) + np.array(data[cols[1]])
+
             elif '-' in col:
                 cols = col.split('-', 1)
                 cols = [int(cols[0]), int(cols[1])]
-                data_y = np.array(data[cols[0]]) - np.array(data[cols[0]])
-    
+                data_y = np.array(data[cols[0]]) - np.array(data[cols[1]])
+
             else:
                 col = int(col)
                 data_y = np.array(data[col])
-    
+
             if   STYLE == 'point': plt.scatter(data_x, data_y, label=label, s=10)
             elif STYLE == 'line' : plt.plot   (data_x, data_y, 'b', label=label)
             elif STYLE == 'step' : plt.step   (data_x, data_y, 'b', label=label,
@@ -295,15 +292,15 @@ for src in srcs:
                     plt.hist(data_y, bins=logbins, label=label, histtype='bar')
                 else:
                     plt.hist(data_y, bins=N_BINS,  label=label, histtype='bar')
-    
+
     except IndexError:
         print('index error')
       # for i,e in enumerate(data[0]):
       #     print('    %2d: %s' % (i, e))
         raise
-    
+
     plt.legend(ncol=2, fancybox=True, loc='upper right')
-    
+
     # if TITLE   : plt.title(TITLE)
     if LOG_X   : plt.xscale('log')
     if LOG_Y   : plt.yscale('log')
@@ -314,9 +311,10 @@ for src in srcs:
     if GRID    : plt.grid(True)
 
 fbase = TITLE.lower()
-if   SAVE_AS == 'png': plt.savefig('%s.png' % (FNAME), bbox_inches="tight")
-elif SAVE_AS == 'svg': plt.savefig('%s.svg' % (FNAME), bbox_inches="tight")
-elif SAVE_AS == 'x11': plt.show()
+save_as = SAVE_AS.split(',')
+if 'png' in save_as: plt.savefig('%s.png' % (FNAME), bbox_inches="tight")
+if 'svg' in save_as: plt.savefig('%s.svg' % (FNAME), bbox_inches="tight")
+if 'x11' in save_as: plt.show()
 
 
 # ------------------------------------------------------------------------------
