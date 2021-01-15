@@ -26,7 +26,7 @@ plt.rc('font', **font)
 # ------------------------------------------------------------------------------
 #
 TITLE     = ''
-DELIM     = ','
+DELIM     = ''
 MATCH     = None
 COLUMN_X  = 'count'
 COLUMNS_Y = ['1']
@@ -159,7 +159,6 @@ def get_lines():
 def get_elems(line):
     if DELIM:
         elems = [e.strip() for e in line.split(DELIM)]
-      # print(elems)
     else:
         elems = line.split()
 
@@ -248,6 +247,9 @@ try:
         else:
             col = int(col)
             time.sleep(1)
+            print('---')
+            print(data)
+            print('----')
             data_y = np.array(data[col])
 
         if   STYLE == 'point': plt.scatter(data_x, data_y, label=label, s=10)
