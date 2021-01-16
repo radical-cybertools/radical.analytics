@@ -104,7 +104,8 @@ t_metrics = {
 
 
 # read the session profiles
-sid = sys.argv[1].rstrip('/')
+sid  = sys.argv[1].rstrip('/')
+name = os.path.basename(sid)
 
 session = ra.Session.create(src=sid, stype='radical.pilot')
 pilots  = session.filter(etype='pilot',  inplace=False)
@@ -303,7 +304,8 @@ for pilot in pilots.get():
             ax.legend(patches, to_plot.keys())
 
     plt.subplots_adjust(hspace=.0)
-    fname = '%s.%s.util.jpg' % (os.path.basename(sid), pilot.uid)
+    fig.suptitle('%s - %s resources usage' % (name, pilot.uid))
+    fname = '%s.%s.util.jpg' % (name, pilot.uid)
     fig.savefig(fname)
   # plt.show()
 
