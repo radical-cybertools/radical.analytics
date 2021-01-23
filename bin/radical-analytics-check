@@ -112,7 +112,7 @@ if __name__ == '__main__':
     print('  units   : %9d' % len(session.get(etype='unit')))
     uetypes = dict()
     states  = dict()
-    for u in session.get(etype='unit'):
+    for u in session.get(etype=['unit', 'master', 'worker', 'request']):
         for e in u.events:
             t = e[ru.EVENT]
             if t not in uetypes: uetypes[t]  = 1

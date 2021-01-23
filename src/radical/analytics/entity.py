@@ -28,6 +28,7 @@ class Entity(object):
         self._etype       = _etype
         self._details     = _details
         self._description = self._details.get('description', dict())
+        self._resources   = self._details.get('resources',   dict())
         self._cfg         = self._details.get('cfg',         dict())
 
         # FIXME: this should be sorted out on RP level
@@ -56,6 +57,7 @@ class Entity(object):
                  'etype'       : self._etype,
                  'details'     : self._details,
                  'description' : self._description,
+                 'resources'   : self._resources,
                  'cfg'         : self._cfg,
 
                  'states'      : self._states,
@@ -78,6 +80,7 @@ class Entity(object):
         self._etype        = state['etype']
         self._details      = state['details']
         self._description  = state['description']
+        self._resources    = state['resources']
         self._cfg          = state['cfg']
 
         self._states       = state['states']
@@ -122,6 +125,10 @@ class Entity(object):
     @property
     def description(self):
         return self._description
+
+    @property
+    def resources(self):
+        return self._resources
 
     @property
     def cfg(self):
@@ -223,6 +230,7 @@ class Entity(object):
                 'states'     : self._states,
                 'events'     : self._events,
                 'cfg'        : self._cfg,
+                'resources'  : self._resources,
                 'description': self._description,
                }
 
@@ -326,7 +334,7 @@ class Entity(object):
     #
     def _match_event(self, needle, hay):
 
-        for key in range(ru.PROF_KEY_MAX - 2):
+        for key in range(ru.PROF_KEY_MAX - 1):
             if needle[key] is not None:
                 if key == ru.MSG:
                     if needle[key] not in hay[key]:

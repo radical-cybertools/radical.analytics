@@ -20,15 +20,35 @@ from radical.pilot import states as s
 resrc = ['cpu', 'gpu']
 
 # pick and choose what contributions to plot
-to_plot = {   # metric,      line color, alpha, fill color, alpha
-              'boot'      : ['#0000AA',  1.0,   '#0000AA',  0.5],
-              'setup_1'   : ['#00AA00',  1.0,   '#00AA00',  0.5],
-              'agent'     : ['#00AAAA',  1.0,   '#00AAAA',  0.5],
-              'exec_queue': ['#AAAA00',  1.0,   '#AAAA00',  0.5],
-              'exec_cmd'  : ['#AA0000',  1.0,   '#AA0000',  0.5],
-              'term'      : ['#AA00AA',  1.0,   '#AA00AA',  0.5],
-              'idle'      : ['#000000',  0.3,   '#000000',  0.1],
-          }
+to_stack = [  # metric,      ,
+                'boot'       ,
+                'setup'      ,
+                'agent'      ,
+                'schedule'   ,
+                'exec_master',
+                'workload'   ,
+                'exec_req'   ,
+                'exec_cmd'   ,
+                'exec_worker',
+                'idle'       ,
+                'term'       ,
+           ]
+to_plot  = {  # metric,      line color, alpha, fill color, alpha
+                'boot'       : ['#0000AA',  1.0,   '#0000AA',  0.5],
+                'setup'      : ['#00AA00',  1.0,   '#00AA00',  0.5],
+                'agent'      : ['#00AAAA',  1.0,   '#00AAAA',  0.5],
+                'schedule'   : ['#AAAA00',  1.0,   '#AAAA00',  0.5],
+                'exec_master': ['#AA0000',  1.0,   '#AA0000',  0.5],
+                'workload'   : ['#AA0000',  1.0,   '#AA0000',  1.0],
+                'exec_req'   : ['#AAAA00',  1.0,   '#AAAA00',  0.2],
+                'exec_cmd'   : ['#990000',  1.0,   '#990000',  0.5],
+                'exec_worker': ['#CC0000',  1.0,   '#CC0000',  0.5],
+                'idle'       : ['#333333',  0.3,   '#000000',  0.1],
+                'term'       : ['#AA00AA',  1.0,   '#AA00AA',  0.5],
+}
+
+use_percent = True
+
 # ------------------------------------------------------------------------------
 
 font = {'family' : 'monospace',
@@ -48,59 +68,57 @@ plt.rc('font', **font)
 
 
 # ------------------------------------------------------------------------------
+# transition events for pilot, task, master, worker, request
+#
+# event  : resource transitions from : resource transitions to
+#
+p_trans = [[{1: 'bootstrap_0_start'}     , 'system'    , 'boot'      ],
+           [{1: 'bootstrap_0_ok'}        , 'boot'      , 'setup'     ],
+           [{5: 'PMGR_ACTIVE'}           , 'setup'     , 'idle'      ],
+           # tasks,  sub-agents
+           [{1: 'cmd', 6: 'cancel_pilot'}, 'idle'      , 'term'      ],
+           [{1: 'bootstrap_0_stop'}      , 'term'      , 'system'    ],
+           [{1: 'sub_agent_start'}       , 'setup'     , 'agent'     ],
+           [{1: 'sub_agent_stop'}        , 'agent'     , 'term'      ]]
 
-# pilot metrics
-p_metrics = {
-    'provide' : {
-        'total'     : [{ru.EVENT: 'bootstrap_0_start'},
-                       {ru.EVENT: 'bootstrap_0_stop' }]
-    },
-    'consume' : {
-        'boot'      : [{ru.EVENT: 'bootstrap_0_start'},
-                       {ru.EVENT: 'bootstrap_0_ok'   }],
-        'setup_1'   : [{ru.EVENT: 'bootstrap_0_ok'   },
-                       {ru.STATE: s.PMGR_ACTIVE      }],
-        # all task contributions are taken out of the pilot's `idle` time
-        'idle'      : [{ru.STATE: s.PMGR_ACTIVE      },
-                       {ru.EVENT: 'cmd'              ,
-                        ru.MSG  : 'cancel_pilot'     }],
-        'term'      : [{ru.EVENT: 'cmd'              ,
-                        ru.MSG  : 'cancel_pilot'     },
-                       {ru.EVENT: 'bootstrap_0_stop' }],
-        'agent'     : [{ru.EVENT: 'sub_agent_start'  },
-                       {ru.EVENT: 'sub_agent_stop'   }],
-    }
-}
+t_trans = [[{1: 'schedule_ok'}           , 'idle'      , 'schedule'  ],
+           [{1: 'exec_start'}            , 'schedule'  , 'exec_rp'   ],
+           [{1: 'cu_exec_start'}         , 'exec_rp'   , 'exec_cmd'  ],
+           [{1: 'unschedule_stop'}       , 'exec_cmd'  , 'idle'      ]]
 
-# task metrics
-t_metrics = {
-    'consume' : {
-        'exec_queue'  : [{ru.EVENT: 'schedule_ok'            },
-      #                  {ru.STATE: s.AGENT_EXECUTING        }],
-      # 'exec_prep'   : [{ru.STATE: s.AGENT_EXECUTING        },
-      #                  {ru.EVENT: 'exec_start'             }],
-      # 'exec_rp'     : [{ru.EVENT: 'exec_start'             },
-      #                  {ru.EVENT: 'cu_start'               }],
-      # 'exec_sh'     : [{ru.EVENT: 'cu_start'               },
-                         {ru.EVENT: 'cu_exec_start'          }],
-        'exec_cmd'    : [{ru.EVENT: 'cu_exec_start'          },
-      #                  {ru.EVENT: 'cu_exec_stop'           }],
-      # 'term_sh'     : [{ru.EVENT: 'cu_exec_stop'           },
-      #                  {ru.EVENT: 'cu_stop'                }],
-      # 'term_rp'     : [{ru.EVENT: 'cu_stop'                },
-      #                  {ru.EVENT: 'exec_stop'              }],
-      # 'unschedule'  : [{ru.EVENT: 'exec_stop'              },
-                         {ru.EVENT: 'unschedule_stop'        }]
+m_trans = [[{1: 'schedule_ok'}           , 'idle'      , 'schedule'  ],
+           [{1: 'exec_start'}            , 'schedule'  , 'exec_rp'   ],
+           [{1: 'cu_exec_start'}         , 'exec_rp'   , 'exec_master'  ],
+           [{1: 'unschedule_stop'}       , 'exec_master'  , 'idle'      ]]
+         # [{1: 'cu_exec_start'}         , 'exec_rp'   , 'exec_cmd'  ],
+         # [{1: 'unschedule_stop'}       , 'exec_cmd'  , 'idle'      ]]
 
-      # # if we have cmd_start / cmd_stop:
-      # 'exec_sh'     : [{ru.EVENT: 'cu_start'               },
-      #                  {ru.EVENT: 'app_start'              }],
-      # 'exec_cmd'    : [{ru.EVENT: 'app_start'              },
-      #                  {ru.EVENT: 'app_stop'               }],
-      # 'term_sh'     : [{ru.EVENT: 'app_stop'               },
-      #                  {ru.EVENT: 'cu_stop'                }],
-    }
-}
+w_trans = [[{1: 'schedule_ok'}           , 'idle'      , 'schedule'  ],
+           [{1: 'exec_start'}            , 'schedule'  , 'exec_rp'   ],
+           [{1: 'cu_exec_start'}         , 'exec_rp'   , 'exec_worker'  ],
+           # request
+           [{1: 'unschedule_stop'}       , 'exec_worker'  , 'idle'      ]]
+         # [{1: 'cu_exec_start'}         , 'exec_rp'   , 'exec_cmd'  ],
+         # # request
+         # [{1: 'unschedule_stop'}       , 'exec_cmd'  , 'idle'      ]]
+
+r_trans = [[{1: 'req_start'}             , 'exec_cmd'  , 'exec_req'  ],
+           [{1: 'app_start'}             , 'exec_req'  , 'workload'  ],
+           [{1: 'app_stop'}              , 'workload'  , 'exec_req'  ],
+           [{1: 'req_stop'}              , 'exec_req'  , 'exec_cmd'  ]]
+
+# pprint.pprint(p_trans)
+# pprint.pprint(t_trans)
+
+# what entity maps to what transition table
+tmap = {
+           'pilot'  : p_trans,
+           'task'   : t_trans,
+           'unit'   : t_trans,
+           'master' : m_trans,
+           'worker' : w_trans,
+           'request': r_trans,
+       }
 
 
 # read the session profiles
@@ -108,8 +126,13 @@ sid  = sys.argv[1].rstrip('/')
 name = os.path.basename(sid)
 
 session = ra.Session.create(src=sid, stype='radical.pilot')
-pilots  = session.filter(etype='pilot',  inplace=False)
-tasks   = session.filter(etype='unit',   inplace=False)
+
+# uids = [e.uid for e in session.get()]
+# for uid in sorted(uids):
+#     print(uid)
+
+pilots = session.filter(etype='pilot',  inplace=False)
+tasks  = session.filter(etype=['unit', 'task', 'master', 'worker'], inplace=False)
 
 # one plot per pilot
 for pilot in pilots.get():
@@ -123,17 +146,11 @@ for pilot in pilots.get():
 
     # derive the pilot resource transition points from the metrics
     rpp = rp.utils.prof_utils
-    p_trans, t_trans = rpp.get_resource_transitions(pilot,
-            task_metrics=t_metrics, pilot_metrics=p_metrics)
-
-  # pprint.pprint(p_trans)
-  # pprint.pprint(t_trans)
 
     # get all contributions
-    metrics  = [x[1] for x in p_trans]
-    metrics += [x[2] for x in p_trans]
-    metrics += [x[1] for x in t_trans]
-    metrics += [x[2] for x in t_trans]
+    metrics = list()
+    for trans in tmap.values():
+        metrics += [x[1] for x in trans]
     metrics  = set(metrics)
 
   # pprint.pprint('metrics')
@@ -145,50 +162,113 @@ for pilot in pilots.get():
                    for m in metrics}
                 for r in resrc}
 
-    # get pilot contributions
-    for trans in p_trans:
+    for entity in session.get():
 
-        # for reach transition, remember at what time what resources
-        # transitioned from what metric to what other metric
-
-        event  = trans[0]
-        p_from = trans[1]
-        p_to   = trans[2]
-
-        ts = pilot.timestamps(event=event)
-        if not ts:
-            # most pilots have no sub-agent - but complain otherwise
-            if 'sub_agent_st' not in event.get(ru.EVENT):
-                print('warning: %s: not transition for %s' % (pilot.uid, event))
+        if not trans:
             continue
 
-        for r in resrc:
-            contribs[r][p_from].append([ts[0], -p_resrc[r]])
-            contribs[r][p_to  ].append([ts[0], +p_resrc[r]])
+        uid = entity.uid
+        td  = entity.description
 
-    # get task contributions
-    for task in tasks.get():
-
-        # ensure that this task uses resources from the current pilot
-        if task.cfg.get('pilot') != pilot.uid:
+        # filter out worker ranks
+        if uid.count('.') > 1:
+          # print('skip', uid)
             continue
 
-        for trans in t_trans:
+        transitions = tmap.get(entity.etype, [])
+      # print(uid, entity.etype, len(transitions))
+        for trans in transitions:
 
             event  = trans[0]
             p_from = trans[1]
             p_to   = trans[2]
 
-            td = task.description
-            t_resrc = {'cpu': td['cpu_processes'] * td.get('cpu_threads', 1),
-                       'gpu': td['gpu_processes']}
+            if entity.resources:
+                t_resrc = {'cpu': entity.resources['cpu'],
+                           'gpu': entity.resources['gpu']}
+            else:
+                t_resrc = {'cpu': 1,
+                           'gpu': 0}
 
-            ts = task.timestamps(event=event)
+            ts = entity.timestamps(event=event)
             if not ts:
-                print('warning: %s: no transition for %s' % (task.uid, event))
+                print('=== WARNING: %s: no transition for %s' % (uid, event))
+                print([e[1] for e in entity.events])
+                print()
+                continue
+
             for r in resrc:
-                contribs[r][p_from].append([ts[0], -t_resrc[r]])
-                contribs[r][p_to  ].append([ts[0], +t_resrc[r]])
+                try:
+                    amount = t_resrc[r]
+                    if amount == 0:
+                        continue
+                    contribs[r][p_from].append([ts[0], -amount])
+                    contribs[r][p_to  ].append([ts[0], +amount])
+                except Exception as e:
+                    pass
+                  # print('skip %s: %s' % (trans, repr(e)))
+
+
+
+#    # get pilot contributions
+#    for trans in p_trans:
+#
+#        # for reach transition, remember at what time what resources
+#        # transitioned from what metric to what other metric
+#
+#        event  = trans[0]
+#        p_from = trans[1]
+#        p_to   = trans[2]
+#
+#        ts = pilot.timestamps(event=event)
+#        if not ts:
+#            # most pilots have no sub-agent - but complain otherwise
+#            if 'sub_agent_st' not in event.get(ru.EVENT):
+#                print('warning: %s: not transition for %s' % (pilot.uid, event))
+#            continue
+#
+#        for r in resrc:
+#            contribs[r][p_from].append([ts[0], -p_resrc[r]])
+#            contribs[r][p_to  ].append([ts[0], +p_resrc[r]])
+#
+#    # get task contributions
+#    for task in tasks.get():
+#
+#        uid = task.uid
+#        td  = task.description
+#
+#        # ensure that this task uses resources from the current pilot
+#      # if task.cfg.get('pilot') != pilot.uid:
+#      #     continue
+#
+#        print(task.etype, task.uid)
+#
+#        for trans in t_trans:
+#
+#            event  = trans[0]
+#            p_from = trans[1]
+#            p_to   = trans[2]
+#
+#            t_resrc = {'cpu': td['cpu_processes'] * td.get('cpu_threads', 1),
+#                       'gpu': td['gpu_processes']}
+#
+#            ts = task.timestamps(event=event)
+#            if not ts:
+#                print('warning: %s: no transition for %s' % (task.uid, event))
+#
+#            for r in resrc:
+#                try:
+#                    amount = t_resrc[r]
+#                    if amount == 0:
+#                        continue
+#                    print('%-20s : %-20s : %-20s : %-20s'
+#                            % (p_from, uid, t_resrc[r], ''))
+#                    contribs[r][p_from].append([ts[0], -amount])
+#                    print('%-20s : %-20s : %-20s : %-20s'
+#                            % (p_to, uid, '', t_resrc[r]))
+#                    contribs[r][p_to  ].append([ts[0], +amount])
+#                except Exception as e:
+#                    print('skip %s: %s' % (trans, repr(e)))
 
   # pprint.pprint('contribs')
   # pprint.pprint(contribs)
@@ -213,19 +293,34 @@ for pilot in pilots.get():
             for c in sorted(contribs[r][m]):
                 value += c[1]
                 # normalize to pilot resources to obtain percent
-                series[r][m].append([c[0], value / p_resrc[r] * 100])
+                if p_resrc[r]:
+                    if use_percent:
+                        series[r][m].append([c[0], value / p_resrc[r] * 100])
+                    else:
+                        series[r][m].append([c[0], value])
+                else:
+                    series[r][m].append([c[0], 0])
 
   # pprint.pprint('series')
   # pprint.pprint(series)
 
+    n_plots = 0
+    for r in p_resrc:
+        if p_resrc[r]:
+            n_plots += 1
+
+
     # sub-plots for each resource, legend on first, x-axis shared
     fig    = plt.figure(figsize=(20,14))
-    gs     = mpl.gridspec.GridSpec(len(resrc), 1)
+    gs     = mpl.gridspec.GridSpec(n_plots, 1)
 
     for plot_id, r in enumerate(resrc):
 
+        if not p_resrc[r]:
+            continue
+
         # create sub-plot
-        ax  = plt.subplot(gs[plot_id])
+        ax = plt.subplot(gs[plot_id])
 
         # create data frames for each metric and combine them into one data
         # frame for alignment.
@@ -236,7 +331,7 @@ for pilot in pilots.get():
         # the NaN values with the previous valid value, which in our case holds
         # until the next transition happens.
         dfs = [pd.DataFrame(series[r][m], columns=['time', m])
-                for m in to_plot]
+                for m in series[r]]
 
         # merge them into one data frame, creating a common time-line
         merged = functools.reduce(lambda left, right:
@@ -258,18 +353,27 @@ for pilot in pilots.get():
         prev    = list()
 
         # for each metric, copy the metric column and add all previous colums
-        for m in to_plot:
+        fout = open('t', 'w')
+        for m in to_stack:
             stacked[m] = merged[m]
             for p in prev:
                 stacked[m] += merged[p]
+
+            fout.write('%-10s : %s\n' % (m, prev))
             prev.append(m)
+        fout.close()
 
 
         # plot individual metrics
         prev_m  = None
         lines   = list()
         patches = list()
-        for num, m in enumerate(to_plot.keys()):
+        for num, m in enumerate(stacked.keys()):
+
+            if m not in to_plot:
+                if m != 'time':
+                    print('skip', m)
+                continue
 
             # plot the (stacked) line
             line, = ax.step(stacked['time'], stacked[m], where='post', label=m,
@@ -277,7 +381,7 @@ for pilot in pilots.get():
                             linewidth=1)
 
             # fill first metric toward 0, all others towards previous line
-            if num == 0:
+            if not prev_m:
                 patch = ax.fill_between(stacked['time'], stacked[m],
                                         step='post', label=m,
                                         color=to_plot[m][2],
@@ -296,16 +400,24 @@ for pilot in pilots.get():
             # remember this line to fill against
             prev_m = m
 
+        t_span = t_max  - t_min
+        x_max  = t_span + 0.05 * t_span
+        ax.set_xlim([0, x_max])
+        if use_percent:
+            ax.set_ylim([0, 110])
+        else:
+            ax.set_ylim([0, p_resrc[r]])
         ax.set_xlabel('time [sec]')
         ax.set_ylabel('%s resources [%%]' % r)
 
         # first sub-plot gets legend
         if plot_id == 0:
-            ax.legend(patches, to_plot.keys())
+            ax.legend(patches, to_plot.keys(), loc='upper left')
 
     plt.subplots_adjust(hspace=.0)
     fig.suptitle('%s - %s resources usage' % (name, pilot.uid))
     fname = '%s.%s.util.jpg' % (name, pilot.uid)
+    fname = 'util.jpg'
     fig.savefig(fname)
   # plt.show()
 
