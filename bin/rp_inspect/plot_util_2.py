@@ -78,7 +78,7 @@ p_trans = [[{1: 'bootstrap_0_start'}     , 'system'    , 'boot'      ],
            # tasks,  sub-agents
            [{1: 'cmd', 6: 'cancel_pilot'}, 'idle'      , 'term'      ],
            [{1: 'bootstrap_0_stop'}      , 'term'      , 'system'    ],
-           [{1: 'sub_agent_start'}       , 'setup'     , 'agent'     ],
+           [{1: 'sub_agent_start'}       , 'idle'     , 'agent'     ],
            [{1: 'sub_agent_stop'}        , 'agent'     , 'term'      ]]
 
 t_trans = [[{1: 'schedule_ok'}           , 'idle'      , 'schedule'  ],
@@ -190,11 +190,15 @@ for pilot in pilots.get():
                 t_resrc = {'cpu': 1,
                            'gpu': 0}
 
+            # we need to work around the fact that sub-agents have no separate
+            # entity type, but belong to the pilot.  So instead we assign them
+            # resources of 1 node.  We tage those data from the pilot.
+            if 'agent' in str(event):
+                t_resrc = {'cpu': pilot.cfg['cores_per_node'],
+                           'gpu': pilot.cfg['gpus_per_node' ]}
+
             ts = entity.timestamps(event=event)
             if not ts:
-                print('=== WARNING: %s: no transition for %s' % (uid, event))
-                print([e[1] for e in entity.events])
-                print()
                 continue
 
             for r in resrc:
@@ -208,67 +212,6 @@ for pilot in pilots.get():
                     pass
                   # print('skip %s: %s' % (trans, repr(e)))
 
-
-
-#    # get pilot contributions
-#    for trans in p_trans:
-#
-#        # for reach transition, remember at what time what resources
-#        # transitioned from what metric to what other metric
-#
-#        event  = trans[0]
-#        p_from = trans[1]
-#        p_to   = trans[2]
-#
-#        ts = pilot.timestamps(event=event)
-#        if not ts:
-#            # most pilots have no sub-agent - but complain otherwise
-#            if 'sub_agent_st' not in event.get(ru.EVENT):
-#                print('warning: %s: not transition for %s' % (pilot.uid, event))
-#            continue
-#
-#        for r in resrc:
-#            contribs[r][p_from].append([ts[0], -p_resrc[r]])
-#            contribs[r][p_to  ].append([ts[0], +p_resrc[r]])
-#
-#    # get task contributions
-#    for task in tasks.get():
-#
-#        uid = task.uid
-#        td  = task.description
-#
-#        # ensure that this task uses resources from the current pilot
-#      # if task.cfg.get('pilot') != pilot.uid:
-#      #     continue
-#
-#        print(task.etype, task.uid)
-#
-#        for trans in t_trans:
-#
-#            event  = trans[0]
-#            p_from = trans[1]
-#            p_to   = trans[2]
-#
-#            t_resrc = {'cpu': td['cpu_processes'] * td.get('cpu_threads', 1),
-#                       'gpu': td['gpu_processes']}
-#
-#            ts = task.timestamps(event=event)
-#            if not ts:
-#                print('warning: %s: no transition for %s' % (task.uid, event))
-#
-#            for r in resrc:
-#                try:
-#                    amount = t_resrc[r]
-#                    if amount == 0:
-#                        continue
-#                    print('%-20s : %-20s : %-20s : %-20s'
-#                            % (p_from, uid, t_resrc[r], ''))
-#                    contribs[r][p_from].append([ts[0], -amount])
-#                    print('%-20s : %-20s : %-20s : %-20s'
-#                            % (p_to, uid, '', t_resrc[r]))
-#                    contribs[r][p_to  ].append([ts[0], +amount])
-#                except Exception as e:
-#                    print('skip %s: %s' % (trans, repr(e)))
 
   # pprint.pprint('contribs')
   # pprint.pprint(contribs)
