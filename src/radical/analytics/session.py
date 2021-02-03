@@ -855,7 +855,7 @@ class Session(object):
             ret   = list()
             for time, val in collapsed:
                 while time >= t:
-                    ret.append(t, val)
+                    ret.append([t, val])
                     t += sampling
 
             # append last time stamp if it is not appended, yet
