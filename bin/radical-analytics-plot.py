@@ -1,32 +1,100 @@
 #!/usr/bin/env python
 
+
 import sys
 import time
 import optparse
 
 import numpy             as np
+import matplotlib        as mpl
 import matplotlib.pyplot as plt
 
-font = {'family' : 'normal',
-        'weight' : 'bold',
-        'size'   : 14}
 
-plt.rcParams['axes.titlesize']   = 14
-plt.rcParams['axes.labelsize']   = 14
-plt.rcParams['axes.linewidth']   =  2
-plt.rcParams['xtick.labelsize']  = 14
-plt.rcParams['ytick.labelsize']  = 14
-plt.rcParams['lines.markersize'] = 14
-plt.rcParams['lines.linewidth']  =  2
-plt.rcParams['lines.color']      = 'r'
+# ----------------------------------------------------------------------------
+# Global configurations
+# ----------------------------------------------------------------------------
+# matplotlib style
+plt.style.use('seaborn-ticks')
 
-plt.rc('font', **font)
+# use LaTeX and its body font for the diagrams' text.
+mpl.rcParams['text.usetex'] = True
+
+# mpl.rcParams['text.latex.unicode'] = True
+mpl.rcParams['font.serif']  = ['Nimbus Roman Becker No9L']
+mpl.rcParams['font.family'] = 'serif'
+
+
+# font sizes
+SIZE = 24
+plt.rc('font'  , size      = SIZE    )
+plt.rc('axes'  , titlesize = SIZE    )
+plt.rc('axes'  , labelsize = SIZE    )
+plt.rc('xtick' , labelsize = SIZE    )
+plt.rc('ytick' , labelsize = SIZE    )
+plt.rc('legend', fontsize  = SIZE - 2)
+plt.rc('figure', titlesize = SIZE    )
+
+# thinner lines for axes to avoid distractions.
+mpl.rcParams['axes.linewidth']    = 0.75
+mpl.rcParams['xtick.major.width'] = 0.75
+mpl.rcParams['xtick.minor.width'] = 0.75
+mpl.rcParams['ytick.major.width'] = 0.75
+mpl.rcParams['ytick.minor.width'] = 0.75
+mpl.rcParams['lines.linewidth']   = 2
+
+# do not use a box for the legend to avoid distractions.
+mpl.rcParams['legend.frameon'] = False
+
+# restore part of matplotlib 1.5 behavior
+mpl.rcParams['patch.force_edgecolor'] = True
+mpl.rcParams['patch.edgecolor']       = 'black'
+mpl.rcParams['errorbar.capsize']      = 3
+
+# Use coordinated colors. These are the "Tableau 20" colors as
+# RGB. Each pair is strong/light. For a theory of color
+tableau20 = [( 31, 119, 180), (174, 199, 232),  # blue        [ 0,1 ]
+             (255, 127,  14), (255, 187, 120),  # orange      [ 2,3 ]
+             ( 44, 160,  44), (152, 223, 138),  # green       [ 4,5 ]
+             (214,  39,  40), (255, 152, 150),  # red         [ 6,7 ]
+             (148, 103, 189), (197, 176, 213),  # purple      [ 8,9 ]
+             (140,  86,  75), (196, 156, 148),  # brown       [10,11]
+             (227, 119, 194), (247, 182, 210),  # pink        [12,13]
+             (188, 189,  34), (219, 219, 141),  # yellow      [14,15]
+             ( 23, 190, 207), (158, 218, 229),  # cyan        [16,17]
+             ( 65,  68,  81), ( 96,  99, 106),  # gray        [18,19]
+             (127, 127, 127), (143, 135, 130),  # gray        [20,21]
+             (165, 172, 175), (199, 199, 199),  # gray        [22,23]
+             (207, 207, 207)]                   # gray        [24]
+
+# Scale the RGB values to the [0, 1] range, which is the format
+# matplotlib accepts.
+for i in range(len(tableau20)):
+    r, g, b = tableau20[i]
+    tableau20[i] = (round(r / 255.,1), round(g / 255.,1), round(b / 255.,1))
+
+
+# Return a single plot without right and top axes, spanning one column text.
+def fig_setup(figsize=None):
+
+    if not figsize:
+        figsize = (13,7)
+
+    fig = plt.figure(figsize=figsize)
+    ax  = fig.add_subplot(111)
+
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+
+    return fig, ax
 
 
 # ------------------------------------------------------------------------------
 #
 TITLE     = ''
-DELIM     = ','
+DELIM     = ''
 MATCH     = None
 COLUMN_X  = 'count'
 COLUMNS_Y = ['1']
@@ -219,10 +287,11 @@ if STYLE == 'hist':
 
 # ------------------------------------------------------------------------------
 # plot data
-plt.figure(figsize=SIZE)
 # pprint.pprint(data)
 try:
-    cnum = 0
+
+    fig, ax = fig_setup()
+    cnum    = 0
     for col in COLUMNS_Y:
 
         if LEGEND: label = LEGEND[cnum]
@@ -249,11 +318,11 @@ try:
             time.sleep(1)
             data_y = np.array(data[col])
 
-        if   STYLE == 'point': plt.scatter(data_x, data_y, label=label, s=10)
-        elif STYLE == 'line' : plt.plot   (data_x, data_y, 'b', label=label)
-        elif STYLE == 'step' : plt.step   (data_x, data_y, 'b', label=label)
-        elif STYLE == 'bar'  : plt.bar    (data_x, data_y, label=label)
-        elif STYLE == 'hist' : plt.hist   (data_y,  150,   label=label)
+        if   STYLE == 'point': ax.scatter(data_x, data_y, label=label, s=10)
+        elif STYLE == 'line' : ax.plot   (data_x, data_y, 'b', label=label)
+        elif STYLE == 'step' : ax.step   (data_x, data_y, 'b', label=label)
+        elif STYLE == 'bar'  : ax.bar    (data_x, data_y, label=label)
+        elif STYLE == 'hist' : ax.hist   (data_y,  150,   label=label)
 
 except IndexError:
     print('index error')
@@ -263,19 +332,19 @@ except IndexError:
 
 plt.legend(ncol=2, fancybox=True, loc='lower right')
 
-# if TITLE   : plt.title(TITLE)
-if LOG_X   : plt.xscale('log')
-if LOG_Y   : plt.yscale('log')
-if LABEL_X : plt.xlabel(LABEL_X)
-if LABEL_Y : plt.ylabel(LABEL_Y)
-if TICKS_X : plt.xticks([int(t) for t in TICKS_X], TICKS_X)
-if TICKS_Y : plt.yticks([int(t) for t in TICKS_Y], TICKS_Y)
-if GRID    : plt.grid(True)
+if TITLE   : ax.set_title(TITLE)
+if LOG_X   : ax.set_xscale('log')
+if LOG_Y   : ax.set_yscale('log')
+if LABEL_X : ax.set_xlabel(LABEL_X)
+if LABEL_Y : ax.set_ylabel(LABEL_Y)
+if TICKS_X : ax.set_xticks([int(t) for t in TICKS_X], TICKS_X)
+if TICKS_Y : ax.set_yticks([int(t) for t in TICKS_Y], TICKS_Y)
+if GRID    : ax.grid(True)
 
 fbase = TITLE.lower()
-if   SAVE_AS == 'png': plt.savefig('%s.png' % (TITLE.lower()), bbox_inches="tight")
-elif SAVE_AS == 'svg': plt.savefig('%s.svg' % (TITLE.lower()), bbox_inches="tight")
-elif SAVE_AS == 'x11': plt.show()
+if   SAVE_AS == 'png': fig.savefig('%s.png' % (TITLE.lower()), bbox_inches="tight")
+elif SAVE_AS == 'svg': fig.savefig('%s.svg' % (TITLE.lower()), bbox_inches="tight")
+elif SAVE_AS == 'x11': fig.show()
 
 
 # ------------------------------------------------------------------------------

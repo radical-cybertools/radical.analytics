@@ -27,30 +27,30 @@ import radical.analytics as ra
 #    spent on those activities (see `PILOT_DURATIONS` below).
 #
 #    NOTE: we assume that the pilot activities thus measured stop at the point
-#          when the first unit gets scheduled on a (set of) core(s), and
-#          restarts when the last unit gets unscheduled, as that is the time
+#          when the first task gets scheduled on a (set of) core(s), and
+#          restarts when the last task gets unscheduled, as that is the time
 #          frame where we in principle consider cores to be available to the
 #          workload.
 #
-#  - For each unit, we look at the amount of time that unit has been scheduled
+#  - For each task, we look at the amount of time that task has been scheduled
 #    on a set of cores, as those cores are then essentially blocked.  Multiplied
-#    by the size of the unit, that gives a number of core-hours those cores are
-#    'used' for that unit.
+#    by the size of the task, that gives a number of core-hours those cores are
+#    'used' for that task.
 #
 #    not all of that time is utilized for application use though: some is spent
 #    on preparation for execution, on spawning, unscheduling etc.  We separate
-#    out those utilizations for each unit.
+#    out those utilizations for each task.
 #
 #  - we consider core hours to be additive, in the following sense:
 #
 #    - all core-hours used by the pilot in various global activities listed in
-#      the first point, plus the sumof core hours spend by all units in various
+#      the first point, plus the sumof core hours spend by all tasks in various
 #      individual activities as in the second point, equals the overall core
 #      hours available to the pilot.
 #
-#      This only holds with one caveat: after the agent started to work on unit
+#      This only holds with one caveat: after the agent started to work on task
 #      execution, some cores may not *yet* be allocated (scheduler is too slow),
-#      or may not be allocated *anymore* (some units finished, we wait for the
+#      or may not be allocated *anymore* (some tasks finished, we wait for the
 #      remaining ones).  We consider those core-hours as 'idle'.
 #
 #      Also, the agent itself utilizes one node, and we consider that time as
@@ -107,7 +107,7 @@ if __name__ == '__main__':
 
     session = ra.Session.create(src, stype)
     sid     = session.uid
-    n_units = len(session.get(etype='unit'))
+    n_tasks = len(session.get(etype='task'))
     p_size  = 0
     p_zero  = None
     for pilot in session.get(etype='pilot'):

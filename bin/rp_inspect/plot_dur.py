@@ -19,14 +19,14 @@ import numpy             as np
 # and the durations between subsequential events are considered contributing
 # sub-durations.  For each entity, we plot the times derived that way.
 #
-event_entity = 'unit'
+event_entity = 'task'
 event_list   = \
     [
     # {ru.STATE: 'NEW'                          , ru.EVENT: 'state'           },
-    # {ru.STATE: 'UMGR_SCHEDULING_PENDING'      , ru.EVENT: 'state'           },
-    # {ru.STATE: 'UMGR_SCHEDULING'              , ru.EVENT: 'state'           },
-    # {ru.STATE: 'UMGR_STAGING_INPUT_PENDING'   , ru.EVENT: 'state'           },
-    # {ru.STATE: 'UMGR_STAGING_INPUT'           , ru.EVENT: 'state'           },
+    # {ru.STATE: 'TMGR_SCHEDULING_PENDING'      , ru.EVENT: 'state'           },
+    # {ru.STATE: 'TMGR_SCHEDULING'              , ru.EVENT: 'state'           },
+    # {ru.STATE: 'TMGR_STAGING_INPUT_PENDING'   , ru.EVENT: 'state'           },
+    # {ru.STATE: 'TMGR_STAGING_INPUT'           , ru.EVENT: 'state'           },
     # {ru.STATE: 'AGENT_STAGING_INPUT_PENDING'  , ru.EVENT: 'state'           },
     # {ru.STATE: None                           , ru.EVENT: 'get'             },
     # {ru.STATE: 'AGENT_STAGING_INPUT'          , ru.EVENT: 'state'           },
@@ -41,8 +41,8 @@ event_list   = \
     # {ru.STATE: None                           , ru.EVENT: 'unschedule_start'},
       {ru.STATE: None                           , ru.EVENT: 'unschedule_stop' },
     # {ru.STATE: 'AGENT_STAGING_OUTPUT_PENDING' , ru.EVENT: 'state'           },
-    # {ru.STATE: 'UMGR_STAGING_OUTPUT_PENDING'  , ru.EVENT: 'state'           },
-    # {ru.STATE: 'UMGR_STAGING_OUTPUT'          , ru.EVENT: 'state'           },
+    # {ru.STATE: 'TMGR_STAGING_OUTPUT_PENDING'  , ru.EVENT: 'state'           },
+    # {ru.STATE: 'TMGR_STAGING_OUTPUT'          , ru.EVENT: 'state'           },
     # {ru.STATE: 'AGENT_STAGING_OUTPUT'         , ru.EVENT: 'state'           },
     # {ru.STATE: 'DONE'                         , ru.EVENT: 'state'           },
     ]

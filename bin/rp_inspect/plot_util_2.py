@@ -120,7 +120,6 @@ r_trans = [
 tmap = {
            'pilot'  : p_trans,
            'task'   : t_trans,
-           'unit'   : t_trans,
            'master' : m_trans,
            'worker' : w_trans,
            'request': r_trans,
@@ -142,7 +141,7 @@ rep.ok('ok')
 #     print(uid)
 
 pilots = session.filter(etype='pilot',  inplace=False)
-tasks  = session.filter(etype=['unit', 'task', 'master', 'worker'], inplace=False)
+tasks  = session.filter(etype=['task', 'master', 'worker'], inplace=False)
 
 # one plot per pilot
 for pilot in pilots.get():
@@ -207,8 +206,12 @@ for pilot in pilots.get():
             except:
                 if 'request' not in entity.uid:
                     print('guess resources for %s' % entity.uid)
-                t_resrc = {'cpu': 1,
-                           'gpu': 0}
+                if pilot in entity.uid:
+                    t_resrc = {'cpu': 1024 * 40,
+                               'gpu': 1024 *  8}
+                else:
+                    t_resrc = {'cpu': 1,
+                               'gpu': 0}
 
             # we need to work around the fact that sub-agents have no separate
             # entity type, but belong to the pilot.  So instead we assign them

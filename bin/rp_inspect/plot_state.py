@@ -18,13 +18,13 @@ import numpy             as np
 # type `event_entity`..  Before plotting, we sort those entities by the
 # timestamp of the first event in the event list
 
-event_entity = 'unit'
+event_entity = 'task'
 event_list   = [
     # {ru.STATE: rp.NEW                         , ru.EVENT: 'state'          },
-    # {ru.STATE: rp.UMGR_SCHEDULING_PENDING     , ru.EVENT: 'state'          },
-    # {ru.STATE: rp.UMGR_SCHEDULING             , ru.EVENT: 'state'          },
-    # {ru.STATE: rp.UMGR_STAGING_INPUT_PENDING  , ru.EVENT: 'state'          },
-    # {ru.STATE: rp.UMGR_STAGING_INPUT          , ru.EVENT: 'state'          },
+    # {ru.STATE: rp.TMGR_SCHEDULING_PENDING     , ru.EVENT: 'state'          },
+    # {ru.STATE: rp.TMGR_SCHEDULING             , ru.EVENT: 'state'          },
+    # {ru.STATE: rp.TMGR_STAGING_INPUT_PENDING  , ru.EVENT: 'state'          },
+    # {ru.STATE: rp.TMGR_STAGING_INPUT          , ru.EVENT: 'state'          },
     # {ru.STATE: rp.AGENT_STAGING_INPUT_PENDING , ru.EVENT: 'state'          },
     # {ru.COMP : 'agent_0'                      , ru.EVENT: 'get'            },
       {ru.STATE: rp.AGENT_STAGING_INPUT         , ru.EVENT: 'state'          },
@@ -42,8 +42,8 @@ event_list   = [
     # {ru.STATE: None                           , ru.EVENT: 'exec_stop'      },
       {ru.STATE: rp.AGENT_STAGING_OUTPUT_PENDING, ru.EVENT: 'state'          },
       {ru.STATE: rp.AGENT_STAGING_OUTPUT        , ru.EVENT: 'state'          },
-    # {ru.STATE: rp.UMGR_STAGING_OUTPUT_PENDING , ru.EVENT: 'state'          },
-    # {ru.STATE: rp.UMGR_STAGING_OUTPUT         , ru.EVENT: 'state'          },
+    # {ru.STATE: rp.TMGR_STAGING_OUTPUT_PENDING , ru.EVENT: 'state'          },
+    # {ru.STATE: rp.TMGR_STAGING_OUTPUT         , ru.EVENT: 'state'          },
     # {ru.STATE: rp.DONE                        , ru.EVENT: 'state'          },
 ]
 
@@ -85,7 +85,7 @@ if __name__ == '__main__':
   # print(sorted(diffs))
 
 
-  # sort x-axis (unit IDs) by
+  # sort x-axis (task IDs) by
   #     'uid'  : task ID
   #     'get'  : time of ingest
   #     'sched': time of sccheduling
