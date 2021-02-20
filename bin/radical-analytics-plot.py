@@ -21,7 +21,7 @@ mpl.rcParams['text.usetex'] = True
 
 # mpl.rcParams['text.latex.unicode'] = True
 mpl.rcParams['font.serif']  = ['Nimbus Roman Becker No9L']
-mpl.rcParams['font.family'] = 'serif'
+# mpl.rcParams['font.family'] = 'serif'
 
 
 # font sizes
@@ -109,6 +109,7 @@ LOG       = ''
 SIZE      = (20, 14)
 STYLE     = 'line'  # 'point', 'line', 'step', 'bar', 'hist'
 GRID      = True    # True, False
+FNAME     = None
 SAVE_AS   = 'x11'   # 'svg', 'png', 'x11'
 
 
@@ -143,6 +144,7 @@ def usage(msg=None):
         -z, --size       <20,14>               : canvas size
         -l, --log        <x | y | x,y>         : log-scale for x and/or y axis
         -a, --save-as    <png | svg | x11>     : save fig in format (x11: show)
+        -f, --file-name  <filename>            : name to save to (w/o ext)
 
 ''')
 
@@ -167,6 +169,7 @@ parser.add_option('-s', '--style',     dest='style')
 parser.add_option('-z', '--size',      dest='size')
 parser.add_option('-l', '--log',       dest='log')
 parser.add_option('-a', '--save-as',   dest='save')
+parser.add_option('-f', '--file-name', dest='fname')
 parser.add_option('-h', '--help',      dest='help', action="store_true")
 
 options, args = parser.parse_args()
@@ -193,6 +196,7 @@ if options.size   : SIZE         = [int(x) for x in options.size  .split(',')]
 if options.log    : LOG          =  str(options.log)
 if options.style  : STYLE        =  str(options.style)
 if options.save   : SAVE_AS      =  str(options.save)
+if options.fname  : FNAME        =  str(options.fname)
 
 if 'x' in LOG: LOG_X = True
 if 'y' in LOG: LOG_Y = True
@@ -330,7 +334,9 @@ except IndexError:
         print('    %2d: %s' % (i, e))
     raise
 
-plt.legend(ncol=2, fancybox=True, loc='lower right')
+if LEGEND != ['-']:
+    print('===', LEGEND)
+    plt.legend(ncol=2, fancybox=True, loc='lower right')
 
 if TITLE   : ax.set_title(TITLE)
 if LOG_X   : ax.set_xscale('log')
@@ -341,9 +347,10 @@ if TICKS_X : ax.set_xticks([int(t) for t in TICKS_X], TICKS_X)
 if TICKS_Y : ax.set_yticks([int(t) for t in TICKS_Y], TICKS_Y)
 if GRID    : ax.grid(True)
 
-fbase = TITLE.lower()
-if   SAVE_AS == 'png': fig.savefig('%s.png' % (TITLE.lower()), bbox_inches="tight")
-elif SAVE_AS == 'svg': fig.savefig('%s.svg' % (TITLE.lower()), bbox_inches="tight")
+if not FNAME:
+    FNAME = TITLE.lower().replace(' ', '_')
+if   SAVE_AS == 'png': fig.savefig('%s.png' % FNAME, bbox_inches="tight")
+elif SAVE_AS == 'svg': fig.savefig('%s.svg' % FNAME, bbox_inches="tight")
 elif SAVE_AS == 'x11': fig.show()
 
 
