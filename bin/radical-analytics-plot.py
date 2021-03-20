@@ -300,6 +300,7 @@ for src in srcs:
                 cols = col.split('+', 1)
                 cols = [int(cols[0]), int(cols[1])]
                 data_y = np.array(data[cols[0]]) + np.array(data[cols[0]])
+                data_y = np.array(data[cols[0]]) + np.array(data[cols[1]])
 
             elif '-' in col:
                 cols = col.split('-', 1)
@@ -331,7 +332,6 @@ for src in srcs:
                     else:
                         plt.hist(data_y, label=label, histtype='bar')
 
-
     except IndexError:
         print('index error')
       # for i,e in enumerate(data[0]):
@@ -353,7 +353,6 @@ fbase = TITLE.lower()
 formats = SAVE_AS.split(',')
 if 'png' in formats: plt.savefig('%s.png' % (FNAME), bbox_inches="tight")
 if 'svg' in formats: plt.savefig('%s.svg' % (FNAME), bbox_inches="tight")
-print('show')
 if 'x11' in formats: plt.show()
 
 
