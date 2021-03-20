@@ -13,18 +13,22 @@ import time
 import optparse
 
 import numpy             as np
+import matplotlib
+# matplotlib.use('module://drawilleplot')
+
 import matplotlib.pyplot as plt
+
 
 font = {# 'family' : 'normal',
           'weight' : 'bold',
-          'size'   : 24}  # 30
+          'size'   : 26}
 
-plt.rcParams['axes.titlesize']   = 14
-plt.rcParams['axes.labelsize']   = 14
-plt.rcParams['axes.linewidth']   =  2
-plt.rcParams['xtick.labelsize']  = 14
-plt.rcParams['ytick.labelsize']  = 14
-plt.rcParams['lines.markersize'] = 14
+plt.rcParams['axes.titlesize']   = 26
+plt.rcParams['axes.labelsize']   = 26
+plt.rcParams['axes.linewidth']   =  4
+plt.rcParams['xtick.labelsize']  = 26
+plt.rcParams['ytick.labelsize']  = 26
+plt.rcParams['lines.markersize'] = 26
 plt.rcParams['lines.linewidth']  =  4
 plt.rcParams['lines.color']      = 'r'
 
@@ -144,9 +148,6 @@ if STYLE not in ['point', 'line', 'step', 'bar', 'hist']:
 if COLUMN_X not in ['count']:
     COLUMN_X = int(COLUMN_X)
 
-if SAVE_AS not in ['x11', 'png', 'svg']:
-    raise ValueError('invalid save_as value: %s' % SAVE_AS)
-
 if not FNAME:
     FNAME = TITLE.replace('', '_').lower()
 
@@ -184,14 +185,26 @@ def get_elems(line):
         try:
             ret.append(float(e))
         except:
-            ret.append(e)
+            ret.append(0.0)
 
     return ret
 
 plt.figure(figsize=SIZE)
+plt.locator_params(axis='y', nbins=5)
+plt.locator_params(axis='x', nbins=5)
 
-# plt.xlim(xmin=1, xmax=4000)
-# plt.ylim(ymin=1, ymax=10000000)
+
+import os
+if 'XLIM' in os.environ:
+    xmin, xmax = os.environ['XLIM'].split(':')
+    xmin = int(xmin)
+    xmax = int(xmax)
+    plt.xlim(xmin=xmin, xmax=xmax)
+if 'YLIM' in os.environ:
+    ymin, ymax = os.environ['YLIM'].split(':')
+    ymin = int(ymin)
+    ymax = int(ymax)
+    plt.ylim(ymin=ymin, ymax=ymax)
 
 p_idx = 0
 
@@ -207,7 +220,7 @@ for src in srcs:
 
     rows = list()
     for line in get_lines(src):
-    
+
         if line.startswith('#'):
           # continue
             elems  = get_elems(line)[1:]
@@ -221,34 +234,49 @@ for src in srcs:
                 else:
                     if not LEGEND:
                         LEGEND[idx] = elem
-    
+
         else:
             if MATCH and MATCH not in line:
                 continue
             rows.append(get_elems(line))
-    
+
         if not LABEL_X:
             LABEL_X = COLUMN_X
-    
+
     if not rows:
         raise ValueError('no matching data')
-    
-    
+
+    ZERO_X = True
+    if ZERO_X and COLUMN_X != 'count':
+        idx = int(COLUMN_X)
+        sub = min([row[idx] for row in rows])
+        for row in rows:
+            row[idx] -= sub
+
+    ZERO_Y = True
+    if ZERO_Y:
+        for COLUMN_Y in COLUMNS_Y:
+            idx = int(COLUMN_Y)
+            sub = min([y for y in rows[idx]])
+            for row in rows:
+                row[idx] -= sub
+
+
     # ------------------------------------------------------------------------------
     # invert rows to actual data layout
     data  = list()
     ncols = len(rows[0])
     for idx in range(ncols):
         data.append(list())
-    
+
     for row in rows:
         for col in range(ncols):
             data[col].append(row[col])
-    
+
     if STYLE == 'hist':
         if COLUMN_X and COLUMN_X != 'count':
             raise ValueError('histogram plots should specify `-y`, not `-x`')
-    
+
     # ------------------------------------------------------------------------------
     # plot data
     # pprint.pprint(data)
@@ -257,30 +285,33 @@ for src in srcs:
         for col in COLUMNS_Y:
 
             if LEGEND: label = LEGEND[p_idx]
-            else     : label = str(cnum)
+            else     : label = None
+          # else     : label = str(cnum)
 
             cnum  += 1
             p_idx += 1
-    
+
             if COLUMN_X == 'count':
                 data_x = list(range(len(data[0])))
             else:
                 data_x = np.array(data[COLUMN_X])
-    
+
             if '+' in col:
                 cols = col.split('+', 1)
                 cols = [int(cols[0]), int(cols[1])]
                 data_y = np.array(data[cols[0]]) + np.array(data[cols[0]])
-    
+
             elif '-' in col:
                 cols = col.split('-', 1)
                 cols = [int(cols[0]), int(cols[1])]
                 data_y = np.array(data[cols[0]]) - np.array(data[cols[0]])
-    
+
             else:
-                col = int(col)
-                data_y = np.array(data[col])
-    
+                scale  = float(os.environ.get('SCALE', 1))
+                col    = int(col)
+                tmp    = [x * scale for x in data[col]]
+                data_y = np.array(tmp)
+
             if   STYLE == 'point': plt.scatter(data_x, data_y, label=label, s=10)
             elif STYLE == 'line' : plt.plot   (data_x, data_y, 'b', label=label)
             elif STYLE == 'step' : plt.step   (data_x, data_y, 'b', label=label,
@@ -294,16 +325,21 @@ for src in srcs:
                                                 np.log10(bins[-1]), len(bins))
                     plt.hist(data_y, bins=logbins, label=label, histtype='bar')
                 else:
-                    plt.hist(data_y, bins=N_BINS,  label=label, histtype='bar')
-    
+                    if xmin is not None and xmax is not None:
+                        bins = list(range(xmin, xmax, N_BINS))
+                        plt.hist(data_y, bins=bins, label=label, histtype='bar')
+                    else:
+                        plt.hist(data_y, label=label, histtype='bar')
+
+
     except IndexError:
         print('index error')
       # for i,e in enumerate(data[0]):
       #     print('    %2d: %s' % (i, e))
         raise
-    
+
     plt.legend(ncol=2, fancybox=True, loc='upper right')
-    
+
     # if TITLE   : plt.title(TITLE)
     if LOG_X   : plt.xscale('log')
     if LOG_Y   : plt.yscale('log')
@@ -314,9 +350,11 @@ for src in srcs:
     if GRID    : plt.grid(True)
 
 fbase = TITLE.lower()
-if   SAVE_AS == 'png': plt.savefig('%s.png' % (FNAME), bbox_inches="tight")
-elif SAVE_AS == 'svg': plt.savefig('%s.svg' % (FNAME), bbox_inches="tight")
-elif SAVE_AS == 'x11': plt.show()
+formats = SAVE_AS.split(',')
+if 'png' in formats: plt.savefig('%s.png' % (FNAME), bbox_inches="tight")
+if 'svg' in formats: plt.savefig('%s.svg' % (FNAME), bbox_inches="tight")
+print('show')
+if 'x11' in formats: plt.show()
 
 
 # ------------------------------------------------------------------------------
