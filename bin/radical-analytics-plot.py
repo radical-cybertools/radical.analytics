@@ -103,6 +103,7 @@ LABEL_X   = ''
 LABEL_Y   = ''
 TICKS_X   = []
 TICKS_Y   = []
+RANGE     = [None, None, None, None]
 LOG_X     = False
 LOG_Y     = False
 LOG       = ''
@@ -139,6 +140,7 @@ def usage(msg=None):
         -L, --legend     <label_1,label_2,...> : name of plots specified in '-y'
         -u, --x-ticks    <tick_1,tick_2,...>   : not yet supported
         -v, --y-ticks    <tick_1,tick_2,...>   : not yet supported
+        -r, --range      <xmin,xmax,ymin,ymax> : axis range
         -s, --style      <point | line | step | bar | hist>
                                                : plot type
         -z, --size       <20,14>               : canvas size
@@ -164,6 +166,7 @@ parser.add_option('-x', '--x-column',  dest='xcol')
 parser.add_option('-y', '--y-columns', dest='ycols')
 parser.add_option('-u', '--x-ticks',   dest='xticks')
 parser.add_option('-v', '--y-ticks',   dest='yticks')
+parser.add_option('-r', '--range',     dest='range')
 parser.add_option('-L', '--legend',    dest='legend')
 parser.add_option('-s', '--style',     dest='style')
 parser.add_option('-z', '--size',      dest='size')
@@ -197,6 +200,14 @@ if options.log    : LOG          =  str(options.log)
 if options.style  : STYLE        =  str(options.style)
 if options.save   : SAVE_AS      =  str(options.save)
 if options.fname  : FNAME        =  str(options.fname)
+
+if options.range  :
+    RANGE = options.range .split(',')
+    RANGE = [float(x) if x else None for x in RANGE]
+
+LEGEND  = [s.strip() for s in LEGEND]
+TICKS_X = [s.strip() for s in TICKS_X]
+TICKS_Y = [s.strip() for s in TICKS_Y]
 
 if 'x' in LOG: LOG_X = True
 if 'y' in LOG: LOG_Y = True
@@ -310,23 +321,44 @@ try:
         if '+' in col:
             cols = col.split('+', 1)
             cols = [int(cols[0]), int(cols[1])]
-            data_y = np.array(data[cols[0]]) + np.array(data[cols[0]])
+            data_y = np.array(data[cols[0]]) + np.array(data[cols[1]])
 
         elif '-' in col:
             cols = col.split('-', 1)
             cols = [int(cols[0]), int(cols[1])]
-            data_y = np.array(data[cols[0]]) - np.array(data[cols[0]])
+            data_y = np.array(data[cols[0]]) - np.array(data[cols[1]])
+
+        elif '*' in col:
+            cols = col.split('*', 1)
+            cols = [int(cols[0]), int(cols[1])]
+            data_y = np.array(data[cols[0]]) * np.array(data[cols[1]])
+
+        elif '/' in col:
+            cols = col.split('/', 1)
+            cols = [int(cols[0]), int(cols[1])]
+            data_y = np.array(data[cols[0]]) / np.array(data[cols[1]])
 
         else:
             col = int(col)
             time.sleep(1)
             data_y = np.array(data[col])
 
-        if   STYLE == 'point': ax.scatter(data_x, data_y, label=label, s=10)
-        elif STYLE == 'line' : ax.plot   (data_x, data_y, 'b', label=label)
-        elif STYLE == 'step' : ax.step   (data_x, data_y, 'b', label=label)
-        elif STYLE == 'bar'  : ax.bar    (data_x, data_y, label=label)
-        elif STYLE == 'hist' : ax.hist   (data_y,  150,   label=label)
+        color = tableau20[cnum]
+
+        if cnum == 3:
+            color = tableau20[4]
+
+        if   STYLE == 'point': ax.scatter(data_x, data_y,      c=color, label=label, s=10)
+        elif STYLE == 'line' : ax.plot   (data_x, data_y, 'b', c=color, label=label)
+        elif STYLE == 'step' : ax.step   (data_x, data_y, 'b', c=color, label=label)
+        elif STYLE == 'bar'  : ax.bar    (data_x, data_y,      c=color, label=label)
+        elif STYLE == 'hist' : ax.hist   (data_y,  150,        color=color, label=label)
+
+
+
+    ax.yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
+
+
 
 except IndexError:
     print('index error')
@@ -347,8 +379,16 @@ if TICKS_X : ax.set_xticks([int(t) for t in TICKS_X], TICKS_X)
 if TICKS_Y : ax.set_yticks([int(t) for t in TICKS_Y], TICKS_Y)
 if GRID    : ax.grid(True)
 
+xmin, xmax, ymin, ymax = RANGE
+if xmin is not None: ax.set_xlim(left=0)
+if xmax is not None: ax.set_xlim(right=0)
+if ymin is not None: ax.set_ylim(left=0)
+if ymax is not None: ax.set_ylim(right=0)
+
 if not FNAME:
     FNAME = TITLE.lower().replace(' ', '_')
+    FNAME = FNAME.replace(':', '_-_')
+    FNAME = FNAME.replace('__', '_')
 if   SAVE_AS == 'png': fig.savefig('%s.png' % FNAME, bbox_inches="tight")
 elif SAVE_AS == 'svg': fig.savefig('%s.svg' % FNAME, bbox_inches="tight")
 elif SAVE_AS == 'x11': fig.show()
