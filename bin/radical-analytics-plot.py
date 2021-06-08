@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 plt.style.use('seaborn-ticks')
 
 # use LaTeX and its body font for the diagrams' text.
-mpl.rcParams['text.usetex'] = True
+# mpl.rcParams['text.usetex'] = True
 
 # mpl.rcParams['text.latex.unicode'] = True
 mpl.rcParams['font.serif']  = ['Nimbus Roman Becker No9L']
@@ -25,22 +25,22 @@ mpl.rcParams['font.serif']  = ['Nimbus Roman Becker No9L']
 
 
 # font sizes
-SIZE = 24
+SIZE = 30
 plt.rc('font'  , size      = SIZE    )
 plt.rc('axes'  , titlesize = SIZE    )
 plt.rc('axes'  , labelsize = SIZE    )
 plt.rc('xtick' , labelsize = SIZE    )
 plt.rc('ytick' , labelsize = SIZE    )
-plt.rc('legend', fontsize  = SIZE - 2)
+plt.rc('legend', fontsize  = SIZE - 0)
 plt.rc('figure', titlesize = SIZE    )
 
 # thinner lines for axes to avoid distractions.
-mpl.rcParams['axes.linewidth']    = 0.75
+mpl.rcParams['axes.linewidth']    = 1.00
 mpl.rcParams['xtick.major.width'] = 0.75
 mpl.rcParams['xtick.minor.width'] = 0.75
 mpl.rcParams['ytick.major.width'] = 0.75
 mpl.rcParams['ytick.minor.width'] = 0.75
-mpl.rcParams['lines.linewidth']   = 2
+mpl.rcParams['lines.linewidth']   = 2.00
 
 # do not use a box for the legend to avoid distractions.
 mpl.rcParams['legend.frameon'] = False
@@ -368,7 +368,7 @@ except IndexError:
 
 if LEGEND != ['-']:
     print('===', LEGEND)
-    plt.legend(ncol=2, fancybox=True, loc='lower right')
+    plt.legend(ncol=1, fancybox=True, loc='upper left')
 
 if TITLE   : ax.set_title(TITLE)
 if LOG_X   : ax.set_xscale('log')
