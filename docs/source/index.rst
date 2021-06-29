@@ -8,14 +8,15 @@ produced by `RADICAL-Cybertools <https://radical-cybertools.github.io/>`_
 entities. Each component of each RCT tool records a set of events at runtime,
 enabling *post-mortem* analysis.
 
-Currently, RA supports two RCT---`RADICAL-Pilot
+Currently, RA supports two RCT, `RADICAL-Pilot
 <https://github.com/radical-cybertools/radical.pilot>`_ (RP) and `RADICAL-EnTK
-<https://github.com/radical-cybertools/radical.entk>`_ (EnTK)---and two
-event-based analyses---**duration** and **concurrency**. Both analyses work with
-pairs of arbitrarily-defined events. Duration analysis calculates the amount of
-time spent by one or more entities between two events. For example, for how long
-a pilot was active, how much time a pipeline took to execute, how much time all
-compute units took to execute. Concurrency analysis shows between which events one or more entity was in a given interval of time. 
+<https://github.com/radical-cybertools/radical.entk>`_ (EnTK), and three
+event-based analyses: **duration**, **concurrency** and **utilization**. All the
+analyses work with pairs of arbitrarily-defined events. Duration analysis
+calculates the amount of time spent by one or more entities between two events.
+Concurrency analysis shows between which events one or more entity was in a
+given interval of time, and utilization analysis shows for how much time each
+available resource was used during runtime.
 
 RA enables developing statistical analysis of experimental data, collected via
 multiple experimental runs. For example, RA supports calculation of averages,
@@ -34,8 +35,8 @@ RA has supported the development and experimental analysis of most of the
 * repository:     https://github.com/radical-cybertools/radical.analytics
 * issues:         https://github.com/radical-cybertools/radical.analytics/issues
 
-Contents
---------
+Content
+-------
 
 .. toctree::
    :numbered:
@@ -49,10 +50,10 @@ Contents
    inspection.rst
    apidoc.rst
 
-Indices and tables
-------------------
+.. Indices and tables
+.. ------------------
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`
 

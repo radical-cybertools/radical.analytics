@@ -2,7 +2,6 @@
 
 import sys
 import time
-import pprint
 import optparse
 
 import numpy             as np
@@ -47,7 +46,7 @@ SAVE_AS   = 'x11'   # 'svg', 'png', 'x11'
 
 # ------------------------------------------------------------------------------
 #
-def usage(parser, msg=None):
+def usage(msg=None):
 
     ret = 0
     if msg:
@@ -104,14 +103,14 @@ parser.add_option('-h', '--help',      dest='help', action="store_true")
 
 options, args = parser.parse_args()
 if len(args) > 1:
-    usage(parser, "Too many arguments (%s)" % args)
+    usage("Too many arguments (%s)" % args)
 
 if len(args) < 1:
     src = None
 else:
     src = args[0]
 
-if options.help   : usage(parser)
+if options.help   : usage()
 if options.title  : TITLE        =  str(options.title)
 if options.delim  : DELIM        =  str(options.delim)
 if options.match  : MATCH        =  str(options.match)

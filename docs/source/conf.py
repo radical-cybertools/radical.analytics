@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# pylint: disable=W0622
+# # -*- coding: utf-8 -*-
 #
 # RADICAL-Analytics documentation build configuration file, created by
 # sphinx-quickstart on Thu Jul 21 11:09:38 2016.
@@ -24,8 +25,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'RADICAL-Analytics'
-copyright = '2020, The RADICAL Group at Rutgers University'
-author = 'The RADICAL Group at Rutgers University'
+copyright = '2020, RADICAL Devel Team'
+author = 'RADICAL Devel Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -130,7 +131,7 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-#html_theme = 'alabaster'
+# html_theme = 'alabaster'
 
 # RADICAL docs theme
 html_theme = "armstrong"

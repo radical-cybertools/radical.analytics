@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-__author__    = 'RADICAL Team'
+__author__    = 'RADICAL Devel Team'
 __email__     = 'radical@rutgers.edu'
-__copyright__ = 'Copyright 2013-19, RADICAL Research, Rutgers University'
-__license__   = 'GPL.v2'
+__copyright__ = 'Copyright 2013-20, RADICAL Devel Team'
+__license__   = 'MIT'
 
 
 ''' Setup script, only usable via pip. '''
@@ -76,7 +76,7 @@ def get_version(mod_root):
         # and the pip version used uses an install tmp dir in the ve space
         # instead of /tmp (which seems to happen with some pip/setuptools
         # versions).
-        out, err, ret = sh_callout(
+        out, _, ret = sh_callout(
             'cd %s ; '
             'test -z `git rev-parse --show-prefix`  -1; '
             'tag=`git describe --tags --always` 2>/dev/null ; '
@@ -123,7 +123,7 @@ def get_version(mod_root):
             # the formerly derived version as ./VERSION
             shutil.move("VERSION", "VERSION.bak")            # backup version
             shutil.copy("%s/VERSION" % path, "VERSION")      # use full version
-            os.system  ("python setup.py sdist")             # build sdist
+            os.system  ("python3 setup.py sdist")             # build sdist
             shutil.copy('dist/%s' % sdist_name,
                         '%s/%s'   % (mod_root, sdist_name))  # copy into tree
             shutil.move('VERSION.bak', 'VERSION')            # restore version
@@ -134,11 +134,11 @@ def get_version(mod_root):
         return version_base, version_detail, sdist_name
 
     except Exception as e:
-        raise RuntimeError('Could not extract/set version: %s' % e)
+        raise RuntimeError('Could not extract/set version: %s' % e) from e
 
 
 # ------------------------------------------------------------------------------
-# check python version. we need >= 2.7, <3.x
+# check python version. we need >= 3.6
 if sys.hexversion < 0x03060000:
     raise RuntimeError('%s requires Python 3.6 or higher' % name)
 
@@ -165,7 +165,7 @@ class RunTwine(Command):
     def initialize_options (self) : pass
     def finalize_options   (self) : pass
     def run (self) :
-        out,  err, ret = sh_callout('python setup.py sdist upload -r pypi')
+        _, _, ret = sh_callout('python3 setup.py sdist upload -r pypi')
         raise SystemExit(ret)
 
 
@@ -190,17 +190,17 @@ setup_args = {
   # 'long_description'   : (read('README.md') + '\n\n' + read('CHANGES.md')),
     'author'             : 'RADICAL Group at Rutgers University',
     'author_email'       : 'radical@rutgers.edu',
-    'maintainer'         : 'The RADICAL Group',
+    'maintainer'         : 'The RADICAL Devel Team',
     'maintainer_email'   : 'radical@rutgers.edu',
     'url'                : 'https://www.github.com/radical-cybertools/radical.analytics/',
-    'license'            : 'GPL.v2',
+    'license'            : 'MIT',
     'keywords'           : 'radical analytics',
     'python_requires'    : '>=3.6',
     'classifiers'        : [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Environment :: Console',
-        'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
+        'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
@@ -222,7 +222,7 @@ setup_args = {
     'package_data'       : {'': ['*.txt', '*.sh', '*.json', '*.gz', '*.c',
                                  '*.md', 'VERSION', 'SDIST', sdist_name]},
   # 'setup_requires'     : ['pytest-runner'],
-    'install_requires'   : ['radical.utils>=1.0',
+    'install_requires'   : ['radical.utils>=1.4',
                             'matplotlib>=3.1.2',
                             'psutil',
                             'pandas',
