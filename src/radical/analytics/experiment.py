@@ -1,3 +1,4 @@
+
 __copyright__ = 'Copyright 2014-2016, http://radical.rutgers.edu'
 __license__   = 'MIT'
 
@@ -49,8 +50,14 @@ class Experiment(object):
     #
     def utilization(self, metrics):
         '''
-        return two dictionaries, one for provided resources, one for consumed
-        resources, with the following structures:
+        return five dictionaries:
+          - provided resources
+          - consumed resources
+          - absolute stats
+          - relative stats
+          - information about resource utilization
+
+        The resource dictionaries have the following structures::
 
             provided = {
                 <session_id> : {
@@ -68,7 +75,6 @@ class Experiment(object):
                 },
                 ...
             }
-
             consumed = {
                 <session_id> : {
                     'metric_1' : {
@@ -90,7 +96,7 @@ class Experiment(object):
         `list` is a list of 4-tuples `[t0, t1, r0, r1]` which signify at what
         specific time interval (`t0 to t1`) what specific resources (`r0 to r1`)
         have been used.  The unit of the resources are here dependent on the
-        session type - only RP sessions are supported at the moment where those
+        session type: only RP sessions are supported at the moment where those
         resource values are indexes in to the list of cores used in that
         specific session (offset over multiple pilots, if needed).
         '''

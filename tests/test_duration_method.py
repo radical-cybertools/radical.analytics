@@ -1,9 +1,8 @@
 
-import radical.analytics as ra
-import radical.utils as ru
+# import radical.analytics as ra
 import radical.pilot as rp
-import os
-import glob
+# import os
+# import glob
 
 
 # ------------------------------------------------------------------------------
@@ -43,61 +42,61 @@ def get_duration_minmax(session):
 # ------------------------------------------------------------------------------
 #
 def collapse_ranges(ranges):
-        """
-        given be a set of ranges (as a set of pairs of floats [start, end] with
-        'start <= end'. This algorithm will then collapse that set into the
-        smallest possible set of ranges which cover the same, but not more nor
-        less, of the domain (floats).
+    """
+    given be a set of ranges (as a set of pairs of floats [start, end] with
+    'start <= end'. This algorithm will then collapse that set into the
+    smallest possible set of ranges which cover the same, but not more nor
+    less, of the domain (floats).
 
-        We first sort the ranges by their starting point. We then start with the
-        range with the smallest starting point [start_1, end_1], and compare to
-        the next following range [start_2, end_2], where we now know that
-        start_1 <= start_2. We have now two cases:
+    We first sort the ranges by their starting point. We then start with the
+    range with the smallest starting point [start_1, end_1], and compare to
+    the next following range [start_2, end_2], where we now know that
+    start_1 <= start_2. We have now two cases:
 
-        a) when start_2 <= end_1, then the ranges overlap, and we collapse them
-        into range_1: range_1 = [start_1, max[end_1, end_2]
+    a) when start_2 <= end_1, then the ranges overlap, and we collapse them
+    into range_1: range_1 = [start_1, max[end_1, end_2]
 
-        b) when start_2 > end_2, then ranges don't overlap. Importantly, none of
-        the other later ranges can ever overlap range_1. So we move range_1 to
-        the set of final ranges, and restart the algorithm with range_2 being
-        the smallest one.
+    b) when start_2 > end_2, then ranges don't overlap. Importantly, none of
+    the other later ranges can ever overlap range_1. So we move range_1 to
+    the set of final ranges, and restart the algorithm with range_2 being
+    the smallest one.
 
-        Termination condition is if only one range is left -- it is also moved
-        to the list of final ranges then, and that list is returned.
-        """
+    Termination condition is if only one range is left -- it is also moved
+    to the list of final ranges then, and that list is returned.
+    """
 
-        # FIXME: this is a useless helper: it implements ru.collapse_ranges
-        #        again, and of course the same result appears - duh! We can
-        #        rely external methods to be tested.
+    # FIXME: this is a useless helper: it implements ru.collapse_ranges
+    #        again, and of course the same result appears - duh! We can
+    #        rely external methods to be tested.
 
-        final = []
+    final = []
 
-        # sort ranges into a copy list
-        _ranges = sorted (ranges, key=lambda x: x[0])
+    # sort ranges into a copy list
+    _ranges = sorted (ranges, key=lambda x: x[0])
 
-        START = 0
-        END = 1
+    START = 0
+    END = 1
 
-        base = _ranges[0] # smallest range
+    base = _ranges[0]  # smallest range
 
-        for _range in _ranges[1:]:
+    for _range in _ranges[1:]:
 
-            if _range[START] <= base[END]:
+        if _range[START] <= base[END]:
 
-                # ranges overlap -- extend the base
-                base[END] = max(base[END], _range[END])
+            # ranges overlap -- extend the base
+            base[END] = max(base[END], _range[END])
 
-            else:
+        else:
 
-                # ranges don't overlap -- move base to final, and current _range
-                # becomes the new base
-                final.append(base)
-                base = _range
+            # ranges don't overlap -- move base to final, and current _range
+            # becomes the new base
+            final.append(base)
+            base = _range
 
-        # termination: push last base to final
-        final.append(base)
+    # termination: push last base to final
+    final.append(base)
 
-        return final
+    return final
 
 
 # ------------------------------------------------------------------------------
@@ -142,16 +141,15 @@ def test_duration_no_barrier():
     # FIXME: data files broken
     return
 
+    # data_loc   = '%s/no_barrier_data' % os.path.dirname(__file__)
+    # json_files = glob.glob('%s/*.json' % data_loc)
+    # json_file  = json_files[0]
+    # sid        = os.path.basename(json_file)[:-5]
 
-    data_loc   = '%s/no_barrier_data' % os.path.dirname(__file__)
-    json_files = glob.glob('%s/*.json' % data_loc)
-    json_file  = json_files[0]
-    sid        = os.path.basename(json_file)[:-5]
+    # session = ra.Session(sid=sid, stype='radical.pilot', src=data_loc)
 
-    session = ra.Session(sid=sid, stype='radical.pilot', src=data_loc)
-
-    assert get_duration_ra(session) == get_duration_ru(session)
-    assert get_duration_ra(session) == get_duration_minmax(session)
+    # assert get_duration_ra(session) == get_duration_ru(session)
+    # assert get_duration_ra(session) == get_duration_minmax(session)
 
 
 # ------------------------------------------------------------------------------
@@ -170,15 +168,15 @@ def test_duration_method_barrier():
     # FIXME: data files broken
     return
 
-    data_loc   = '%s/barrier_data' % os.path.dirname(__file__)
-    json_files = glob.glob('%s/*.json' % data_loc)
-    json_file  = json_files[0]
-    sid        = os.path.basename(json_file)[:-5]
+    # data_loc   = '%s/barrier_data' % os.path.dirname(__file__)
+    # json_files = glob.glob('%s/*.json' % data_loc)
+    # json_file  = json_files[0]
+    # sid        = os.path.basename(json_file)[:-5]
 
-    session = ra.Session(sid=sid, stype='radical.pilot', src=data_loc)
+    # session = ra.Session(sid=sid, stype='radical.pilot', src=data_loc)
 
-    assert get_duration_ra(session) == get_duration_ru(session)
-    assert get_duration_ra(session) <  get_duration_minmax(session)
+    # assert get_duration_ra(session) == get_duration_ru(session)
+    # assert get_duration_ra(session) <  get_duration_minmax(session)
 
 
 # ------------------------------------------------------------------------------
