@@ -1,5 +1,4 @@
 
-import os
 import sys
 import pprint
 
@@ -12,16 +11,14 @@ class Entity(object):
 
     def __init__(self, _uid, _etype, _profile, _details):
         """
-        This is a private constructor for an RA Entity: it gets a series of
-        events and sorts it into its properties.  We have 4 properties:
-
-          - etype : the type of the entity in question.  This defines, amongst
-                    others, what state model the Session will assume to be valid
-                    for this entity
-          - uid   : an ID assumed to be unique in the scope of an RA Session
-          - states: a set of timed state transitions which are assumed to adhere
-                    to a well defined state model
-          - events: a time series of named, but otherwise unspecified events
+        Args:
+            uid (:obj:str): an ID assumed to be unique in the scope of an RA
+                Session
+            etype (:obj:str): the type of the entity. This defines, amongst
+                others, what event model the session will assume to be valid for
+                this entity.
+            profile: .
+            details: .
         """
 
         assert(_uid)
@@ -281,7 +278,7 @@ class Entity(object):
     def timestamps(self, state=None, event=None, time=None):
         """
         This method accepts a set of conditions, and returns the list of
-        timestamps for which those conditions applied, i.e. for which state
+        timestamps for which those conditions applied, i.e., for which state
         transitions or events are known which match the given 'state' or 'event'
         parameter.  If no match is found, an empty list is returned.
 
@@ -329,10 +326,14 @@ class Entity(object):
     #
     def _match_event(self, needle, hay):
 
-        for key in range(ru.PROF_KEY_MAX):
+        for key in range(ru.PROF_KEY_MAX - 2):
             if needle[key] is not None:
-                if needle[key] != hay[key]:
-                    return False
+                if key == ru.MSG:
+                    if needle[key] not in hay[key]:
+                        return False
+                else:
+                    if needle[key] != hay[key]:
+                        return False
         return True
 
 
@@ -342,7 +343,7 @@ class Entity(object):
                      expand=False, collapse=True):
         """
         This method accepts a set of initial and final conditions, in the form
-        of range of state and or event specifiers:
+        of range of state and or event specifiers::
 
           entity.ranges(state=[['INITIAL_STATE_1', 'INITIAL_STATE_2'],
                                 'FINAL_STATE_1',   'FINAL_STATE_2'  ]],
@@ -355,7 +356,7 @@ class Entity(object):
         second element defines the final condition.  The `time` parameter is
         expected to be a single tuple, or a list of tuples, each defining a pair
         of start and end time which are used to constrain the resulting ranges.
-        States are expected as strings, events as full event tuples
+        States are expected as strings, events as full event tuples::
 
             [ru.TIME,  ru.NAME, ru.UID,  ru.STATE, ru.EVENT, ru.MSG,  ru.ENTITY]
 
@@ -363,7 +364,7 @@ class Entity(object):
         must match exactly.  The events can also be specified as dictionaries,
         which then don't need to have all fields set.
 
-        The parameters are interpreted as follows: the method will
+        The method will:
 
           - determine the *earliest* timestamp when any of the given initial
             conditions have been met, which can be either an event or a state;
@@ -388,7 +389,7 @@ class Entity(object):
 
         The returned ranges are time-sorted
 
-        Example:
+        Example::
 
            unit.ranges(state=[rp.NEW, rp.FINAL]))
            unit.ranges(event=[{ru.NAME : 'exec_start'},

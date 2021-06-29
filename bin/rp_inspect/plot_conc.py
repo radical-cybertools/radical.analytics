@@ -6,7 +6,6 @@ __license__   = 'MIT'
 
 import sys
 
-import matplotlib        as mpl
 import matplotlib.pyplot as plt
 
 import radical.utils     as ru
@@ -69,7 +68,7 @@ if __name__ == '__main__':
     for metric in data:
         x = [e[0] for e in data[metric]]
         y = [e[1] for e in data[metric]]
-        plt.plot(x, y, color=colors[metric], label=metric)
+        plt.step(x, y, color=colors[metric], label=metric, where='post')
 
     ax.legend(list(data.keys()), ncol=3, loc='upper center',
                                  bbox_to_anchor=(0.5,1.11))
