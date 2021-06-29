@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 __author__    = 'RADICAL Devel Team'
 __email__     = 'radical@rutgers.edu'
@@ -123,7 +123,7 @@ def get_version(mod_root):
             # the formerly derived version as ./VERSION
             shutil.move("VERSION", "VERSION.bak")            # backup version
             shutil.copy("%s/VERSION" % path, "VERSION")      # use full version
-            os.system  ("python setup.py sdist")             # build sdist
+            os.system  ("python3 setup.py sdist")             # build sdist
             shutil.copy('dist/%s' % sdist_name,
                         '%s/%s'   % (mod_root, sdist_name))  # copy into tree
             shutil.move('VERSION.bak', 'VERSION')            # restore version
@@ -134,7 +134,7 @@ def get_version(mod_root):
         return version_base, version_detail, sdist_name
 
     except Exception as e:
-        raise RuntimeError('Could not extract/set version: %s' % e)
+        raise RuntimeError('Could not extract/set version: %s' % e) from e
 
 
 # ------------------------------------------------------------------------------
@@ -165,7 +165,7 @@ class RunTwine(Command):
     def initialize_options (self) : pass
     def finalize_options   (self) : pass
     def run (self) :
-        _,  _, ret = sh_callout('python setup.py sdist upload -r pypi')
+        _, _, ret = sh_callout('python3 setup.py sdist upload -r pypi')
         raise SystemExit(ret)
 
 
