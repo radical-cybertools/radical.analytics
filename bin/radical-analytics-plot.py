@@ -17,11 +17,12 @@ import radical.analytics as ra
 import numpy             as np
 
 plt.style.use(ra.get_style('radical_mpl'))
+plt.rcParams['axes.autolimit_mode'] = 'data'
 
 
 # ------------------------------------------------------------------------------
 #
-def set_size(width, fraction=1, subplots=(1, 1)):
+def set_size(width=250, fraction=1, subplots=(1, 1)):
     """ Set aesthetic figure dimensions to avoid scaling in latex.
 
     Parameters
@@ -45,15 +46,11 @@ def set_size(width, fraction=1, subplots=(1, 1)):
     # Golden ratio to set aesthetic figure height
     golden_ratio = (5 ** 0.5 - 1) / 2
 
-    # Figure width in inches
-    fig_width_in = fig_width_pt * inches_per_pt
-    # Figure height in inches
+    # figure size in inches
+    fig_width_in  = fig_width_pt * inches_per_pt
     fig_height_in = fig_width_in * golden_ratio * (subplots[0] / subplots[1])
 
     return fig_width_in, fig_height_in
-
-
-
 
 
 # ------------------------------------------------------------------------------
@@ -210,7 +207,7 @@ def get_elems(line):
 
     return ret
 
-plt.figure(figsize=set_size(250))
+plt.figure(figsize=set_size())
 plt.locator_params(axis='y', nbins=5)
 plt.locator_params(axis='x', nbins=5)
 
@@ -359,7 +356,7 @@ for src in srcs:
       #     print('    %2d: %s' % (i, e))
         raise
 
-    plt.legend(ncol=2, fancybox=True, loc='upper right')
+    plt.legend(ncol=2, fancybox=True)  # , loc='upper right')
 
     # if TITLE   : plt.title(TITLE)
     if LOG_X   : plt.xscale('log')
