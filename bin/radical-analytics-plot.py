@@ -9,30 +9,51 @@ N_BINS      = 50
 # ------------------------------------------------------------------------------
 #
 import sys
-import time
 import optparse
 
-import numpy             as np
 import matplotlib
-# matplotlib.use('module://drawilleplot')
-
 import matplotlib.pyplot as plt
+import radical.analytics as ra
+import numpy             as np
+
+plt.style.use(ra.get_style('radical_mpl'))
 
 
-font = {# 'family' : 'normal',
-          'weight' : 'bold',
-          'size'   : 26}
+# ------------------------------------------------------------------------------
+#
+def set_size(width, fraction=1, subplots=(1, 1)):
+    """ Set aesthetic figure dimensions to avoid scaling in latex.
 
-plt.rcParams['axes.titlesize']   = 26
-plt.rcParams['axes.labelsize']   = 26
-plt.rcParams['axes.linewidth']   =  4
-plt.rcParams['xtick.labelsize']  = 26
-plt.rcParams['ytick.labelsize']  = 26
-plt.rcParams['lines.markersize'] = 26
-plt.rcParams['lines.linewidth']  =  4
-plt.rcParams['lines.color']      = 'r'
+    Parameters
+    ----------
+    width   : float
+              Width in pts
+    fraction: float
+              Fraction of the width which you wish the figure to occupy
 
-plt.rc('font', **font)
+    Returns
+    -------
+    fig_dim : tuple
+              Dimensions of figure in inches
+    """
+    # Width of figure
+    fig_width_pt = width * fraction
+
+    # Convert from pt to inches
+    inches_per_pt = 1 / 72.27
+
+    # Golden ratio to set aesthetic figure height
+    golden_ratio = (5 ** 0.5 - 1) / 2
+
+    # Figure width in inches
+    fig_width_in = fig_width_pt * inches_per_pt
+    # Figure height in inches
+    fig_height_in = fig_width_in * golden_ratio * (subplots[0] / subplots[1])
+
+    return fig_width_in, fig_height_in
+
+
+
 
 
 # ------------------------------------------------------------------------------
@@ -189,7 +210,7 @@ def get_elems(line):
 
     return ret
 
-plt.figure(figsize=SIZE)
+plt.figure(figsize=set_size(250))
 plt.locator_params(axis='y', nbins=5)
 plt.locator_params(axis='x', nbins=5)
 
