@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-import pprint
+import time
 import optparse
 
 import numpy             as np
@@ -25,26 +25,28 @@ plt.rc('font', **font)
 
 # ------------------------------------------------------------------------------
 #
-TITLE     = None
-DELIM     = ''
-COLUMN_X  =  0
-COLUMNS_Y = [1]
+TITLE     = ''
+DELIM     = ','
+MATCH     = None
+COLUMN_X  = 'count'
+COLUMNS_Y = ['1']
 LEGEND    = []
-LABEL_X   = None
-LABEL_Y   = None
+LABEL_X   = ''
+LABEL_Y   = ''
 TICKS_X   = []
 TICKS_Y   = []
 LOG_X     = False
 LOG_Y     = False
+LOG       = ''
 SIZE      = (20, 14)
-STYLE     = 'line'  # 'point', 'line'
+STYLE     = 'line'  # 'point', 'line', 'step', 'bar', 'hist'
 GRID      = True    # True, False
 SAVE_AS   = 'x11'   # 'svg', 'png', 'x11'
 
 
 # ------------------------------------------------------------------------------
 #
-def usage(parser, msg=None):
+def usage(msg=None):
 
     ret = 0
     if msg:
@@ -53,21 +55,23 @@ def usage(parser, msg=None):
 
     print('''
 
-    usage  : quick_plot.py [<src>] [options]
-    example: quick_plot.py experiment.dat -t 'title' --log 'x,y'
-    source : space separated datatable (read from stdin if not specified)
+    usage  : radical-analytics-plot [<src>] [options]
+    example: radical-analytics-plot experiment.dat -t 'title' --log 'x,y'
+    source : space separated data file (read from stdin if not specified)
     options:
         -h, --help                             : this message
         -t, --title      <title>               : plot title
         -X, --x-label    <label>               : x-axis label
         -Y, --y-label    <label>               : y-axis label
         -d, --delim      <char>                : column delimiter
+        -m, --match      <pattern>             : use lines matching pattern
         -x, --x-column   <col>                 : source column for x-values
         -y, --y-columns  <col_1,col_2,...>     : list of columns columns to plot
         -L, --legend     <label_1,label_2,...> : name of plots specified in '-y'
         -u, --x-ticks    <tick_1,tick_2,...>   : not yet supported
         -v, --y-ticks    <tick_1,tick_2,...>   : not yet supported
-        -s, --style      <points | line>       : line style
+        -s, --style      <point | line | step | bar | hist>
+                                               : plot type
         -z, --size       <20,14>               : canvas size
         -l, --log        <x | y | x,y>         : log-scale for x and/or y axis
         -a, --save-as    <png | svg | x11>     : save fig in format (x11: show)
@@ -85,6 +89,7 @@ parser.add_option('-t', '--title',     dest='title')
 parser.add_option('-X', '--x-label',   dest='xlabel')
 parser.add_option('-Y', '--y-label',   dest='ylabel')
 parser.add_option('-d', '--delimiter', dest='delim')
+parser.add_option('-m', '--match',     dest='match')
 parser.add_option('-x', '--x-column',  dest='xcol')
 parser.add_option('-y', '--y-columns', dest='ycols')
 parser.add_option('-u', '--x-ticks',   dest='xticks')
@@ -98,33 +103,39 @@ parser.add_option('-h', '--help',      dest='help', action="store_true")
 
 options, args = parser.parse_args()
 if len(args) > 1:
-    usage(parser, "Too many arguments (%s)" % args)
+    usage("Too many arguments (%s)" % args)
 
 if len(args) < 1:
     src = None
 else:
     src = args[0]
 
-if options.help   : usage(parser)
-if options.title  : TITLE        =  str (options.title)
-if options.delim  : DELIM        =  str (options.delim)
-if options.xcol   : COLUMN_X     =  int (options.xcol)
-if options.ycols  : COLUMNS_Y    = [int (x) for x in options.ycols .split(',')]
-if options.xlabel : LABEL_X      =  str (options.xlabel)
-if options.ylabel : LABEL_Y      =  str (options.ylabel)
-if options.xticks : TICKS_X      = [str (x) for x in options.xticks.split(',')]
-if options.yticks : TICKS_Y      = [str (x) for x in options.yticks.split(',')]
-if options.legend : LEGEND       = [str (x) for x in options.legend.split(',')]
-if options.log    : LOG_X, LOG_Y = [bool(int(x)) for x in options.log   .split(',')]
-if options.style  : STYLE        =  str (options.style)
-if options.size   : SIZE         = [int (x) for x in options.size  .split(',')]
-if options.save   : SAVE_AS      =  str (options.save)
+if options.help   : usage()
+if options.title  : TITLE        =  str(options.title)
+if options.delim  : DELIM        =  str(options.delim)
+if options.match  : MATCH        =  str(options.match)
+if options.xcol   : COLUMN_X     =  str(options.xcol)
+if options.ycols  : COLUMNS_Y    = [str(x) for x in options.ycols .split(',')]
+if options.xlabel : LABEL_X      =  str(options.xlabel)
+if options.ylabel : LABEL_Y      =  str(options.ylabel)
+if options.xticks : TICKS_X      = [str(x) for x in options.xticks.split(',')]
+if options.yticks : TICKS_Y      = [str(x) for x in options.yticks.split(',')]
+if options.legend : LEGEND       = [str(x) for x in options.legend.split(',')]
+if options.size   : SIZE         = [int(x) for x in options.size  .split(',')]
+if options.log    : LOG          =  str(options.log)
+if options.style  : STYLE        =  str(options.style)
+if options.save   : SAVE_AS      =  str(options.save)
 
+if 'x' in LOG: LOG_X = True
+if 'y' in LOG: LOG_Y = True
+
+if COLUMN_X not in ['count']:
+    COLUMN_X = int(COLUMN_X)
 
 if SAVE_AS not in ['x11', 'png', 'svg']:
     raise ValueError('invalid save_as value: %s' % SAVE_AS)
 
-if STYLE not in ['point', 'line', 'step']:
+if STYLE not in ['point', 'line', 'step', 'bar', 'hist']:
     raise ValueError('invalid style: %s' % STYLE)
 
 
@@ -144,10 +155,11 @@ def get_lines():
                 yield line
 
 
+# ------------------------------------------------------------------------------
 def get_elems(line):
     if DELIM:
         elems = [e.strip() for e in line.split(DELIM)]
-        print(elems)
+      # print(elems)
     else:
         elems = line.split()
 
@@ -161,6 +173,7 @@ def get_elems(line):
     return ret
 
 
+# ------------------------------------------------------------------------------
 rows = list()
 for line in get_lines():
 
@@ -179,7 +192,16 @@ for line in get_lines():
                     LEGEND[idx] = elem
 
     else:
+        if MATCH and MATCH not in line:
+            continue
         rows.append(get_elems(line))
+
+    if not LABEL_X:
+        LABEL_X = COLUMN_X
+
+if not rows:
+    raise ValueError('no matching data')
+
 
 # ------------------------------------------------------------------------------
 # invert rows to actual data layout
@@ -191,6 +213,10 @@ for idx in range(ncols):
 for row in rows:
     for col in range(ncols):
         data[col].append(row[col])
+
+if STYLE == 'hist':
+    if COLUMN_X and COLUMN_X != 'count':
+        raise ValueError('histogram plots should specify `-y`, not `-x`')
 
 # ------------------------------------------------------------------------------
 # plot data
@@ -204,12 +230,31 @@ try:
         else     : label = str(cnum)
         cnum += 1
 
-        data_x = np.array(data[COLUMN_X])
-        data_y = np.array(data[col])
+        if COLUMN_X == 'count':
+            data_x = list(range(len(data[0])))
+        else:
+            data_x = np.array(data[COLUMN_X])
+
+        if '+' in col:
+            cols = col.split('+', 1)
+            cols = [int(cols[0]), int(cols[1])]
+            data_y = np.array(data[cols[0]]) + np.array(data[cols[0]])
+
+        elif '-' in col:
+            cols = col.split('-', 1)
+            cols = [int(cols[0]), int(cols[1])]
+            data_y = np.array(data[cols[0]]) - np.array(data[cols[0]])
+
+        else:
+            col = int(col)
+            time.sleep(1)
+            data_y = np.array(data[col])
 
         if   STYLE == 'point': plt.scatter(data_x, data_y, label=label, s=10)
         elif STYLE == 'line' : plt.plot   (data_x, data_y, 'b', label=label)
         elif STYLE == 'step' : plt.step   (data_x, data_y, 'b', label=label)
+        elif STYLE == 'bar'  : plt.bar    (data_x, data_y, label=label)
+        elif STYLE == 'hist' : plt.hist   (data_y,  150,   label=label)
 
 except IndexError:
     print('index error')
