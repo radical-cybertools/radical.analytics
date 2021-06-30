@@ -16,7 +16,8 @@ import shutil
 
 import subprocess as sp
 
-from setuptools import setup, Command, find_packages
+
+from setuptools import setup, Command, find_namespace_packages
 
 
 # ------------------------------------------------------------------------------
@@ -210,7 +211,7 @@ setup_args = {
         'Operating System :: POSIX',
         'Operating System :: Unix'
     ],
-    'packages'           : find_packages('src'),
+    'packages'           : find_namespace_packages('src', include=['radical.*']),
     'package_dir'        : {'': 'src'},
     'scripts'            : [
                             'bin/radical-analytics-check',
