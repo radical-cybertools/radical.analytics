@@ -85,21 +85,21 @@ p_trans = [
 t_trans = [
            [{1: 'schedule_ok'}           , 'idle'       , 'schedule'   ],
            [{1: 'exec_start'}            , 'schedule'   , 'exec_rp'    ],
-           [{1: 't_exec_start'}          , 'exec_rp'    , 'exec_cmd'   ],
+           [{1: 'task_exec_start'}       , 'exec_rp'    , 'exec_cmd'   ],
            [{1: 'unschedule_stop'}       , 'exec_cmd'   , 'idle'       ]
           ]
 
 m_trans = [
            [{1: 'schedule_ok'}           , 'idle'       , 'schedule'   ],
            [{1: 'exec_start'}            , 'schedule'   , 'exec_rp'    ],
-           [{1: 't_exec_start'}          , 'exec_rp'    , 'exec_master'],
+           [{1: 'task_exec_start'}       , 'exec_rp'    , 'exec_master'],
            [{1: 'unschedule_stop'}       , 'exec_master', 'idle'       ]
           ]
 
 w_trans = [
            [{1: 'schedule_ok'}           , 'idle'       , 'schedule'   ],
            [{1: 'exec_start'}            , 'schedule'   , 'exec_rp'    ],
-           [{1: 't_exec_start'}          , 'exec_rp'    , 'exec_worker'],
+           [{1: 'task_exec_start'}       , 'exec_rp'    , 'exec_worker'],
            # request
            [{1: 'unschedule_stop'}       , 'exec_worker', 'idle'       ]
           ]
@@ -394,7 +394,7 @@ for pilot in pilots.get():
     plt.subplots_adjust(hspace=.0)
     fig.suptitle('%s - %s resources usage' % (name, pilot.uid))
     fname = '%s.%s.util.jpg' % (name, pilot.uid)
-  # fname = 'util.jpg'
+    fname = 'util.jpg'
     fig.savefig(fname)
   # plt.show()
 
