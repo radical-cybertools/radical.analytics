@@ -1,12 +1,16 @@
+
+# ------------------------------------------------------------------------------
 def set_size(width, fraction=1, subplots=(1, 1)):
     """ Set aesthetic figure dimensions to avoid scaling in latex.
 
     Parameters
     ----------
     width   : float
-              Width in pts
+              Width in points (pts)
     fraction: float
               Fraction of the width which you wish the figure to occupy
+    subplots: tuple
+              Number of raws and number of columns of the plot
 
     Returns
     -------
@@ -24,6 +28,7 @@ def set_size(width, fraction=1, subplots=(1, 1)):
 
     # Figure width in inches
     fig_width_in = fig_width_pt * inches_per_pt
+
     # Figure height in inches
     fig_height_in = fig_width_in * golden_ratio * (subplots[0] / subplots[1])
 

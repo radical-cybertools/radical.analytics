@@ -49,6 +49,7 @@ Content
    utilization.rst
    inspection.rst
    apidoc.rst
+   plotting.rst
 
 .. Indices and tables
 .. ------------------
