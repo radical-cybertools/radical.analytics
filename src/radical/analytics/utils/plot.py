@@ -1,6 +1,10 @@
+import sys
+import glob
+
 
 # ------------------------------------------------------------------------------
-def set_size(width, fraction=1, subplots=(1, 1)):
+#
+def get_plotsize(width, fraction=1, subplots=(1, 1)):
     """ Set aesthetic figure dimensions to avoid scaling in latex.
 
     Parameters
@@ -33,3 +37,14 @@ def set_size(width, fraction=1, subplots=(1, 1)):
     fig_height_in = fig_width_in * golden_ratio * (subplots[0] / subplots[1])
 
     return fig_width_in, fig_height_in
+
+# ------------------------------------------------------------------------------
+#
+def get_mplstyle(name):
+
+    path  = os.path.dirname(sys.executable)
+    path += '/../share/radical.analytics/styles'
+
+    for path in glob.glob('%s/*.txt' % path):
+        if path.endswith('/%s.txt' % name):
+            return os.path.normpath(path)
