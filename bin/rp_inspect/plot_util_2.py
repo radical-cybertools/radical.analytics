@@ -19,32 +19,25 @@ import radical.analytics as ra
 resrc = ['cpu', 'gpu']
 
 # pick and choose what contributions to plot
-to_stack = [  # metric,      ,
-                'boot'       ,
-                'setup'      ,
-                'agent'      ,
-                'schedule'   ,
-                'exec_master',
-                'exec_cmd'   ,
-                'workload'   ,
-                'exec_worker',
-              # 'exec_req'   ,
-                'idle'       ,
-                'term'       ,
-           ]
-to_plot  = {  # metric,      line color, alpha, fill color, alpha
-                'boot'       : ['#0000AA',  0.3,   '#0000AA',  0.3],
-                'setup'      : ['#00AA00',  0.3,   '#00AA00',  0.3],
-                'agent'      : ['#00AAAA',  0.3,   '#00AAAA',  0.3],
-                'schedule'   : ['#AAAA00',  0.3,   '#AAAA00',  0.3],
-                'exec_master': ['#AA0000',  0.3,   '#AA0000',  0.3],
-                'workload'   : ['#AA0000',  1.0,   '#AA0000',  1.0],
-              # 'exec_req'   : ['#AAAA00',  0.3,   '#AAAA00',  0.3],
-                'exec_cmd'   : ['#990000',  0.3,   '#990000',  0.3],
-                'exec_worker': ['#CC0000',  0.3,   '#CC0000',  0.3],
-                'idle'       : ['#333333',  0.1,   '#000000',  0.1],
-                'term'       : ['#AA00AA',  0.3,   '#AA00AA',  0.3],
-}
+metrics  = [  #   metric,      line color, alpha, fill color, alpha
+                ['boot'       , ['#0000AA',  0.1,   '#0000AA',  0.5]],
+                ['setup'      , ['#00AA00',  0.1,   '#00AA00',  0.5]],
+                ['agent'      , ['#00AAAA',  0.1,   '#00AAAA',  0.5]],
+              # ['exec_master', ['#AA0000',  0.1,   '#AA0000',  0.5]],
+              # ['workload'   , ['#AA0000',  1.1,   '#AA0000',  1.5]],
+              # ['exec_req'   , ['#AAAA00',  0.1,   '#AAAA00',  0.5]],
+                ['exec_cmd'   , ['#990000',  0.1,   '#990000',  0.5]],
+              # ['exec_worker', ['#CC0000',  0.1,   '#CC0000',  0.5]],
+                ['schedule'   , ['#AAAA00',  0.1,   '#AAAA00',  0.5]],
+                ['idle'       , ['#333333',  0.1,   '#000000',  0.5]],
+                ['term'       , ['#AA00AA',  0.1,   '#AA00AA',  0.5]],
+]
+
+to_stack = [m[0]       for m in metrics]
+to_plot  = {m[0]: m[1] for m in metrics}
+
+# pprint.pprint(to_plot)
+# pprint.pprint(to_stack)
 
 use_percent = True
 
@@ -146,7 +139,7 @@ tasks  = session.filter(etype=['task', 'master', 'worker'], inplace=False)
 # one plot per pilot
 for pilot in pilots.get():
 
-    print(pilot.uid)
+  # print(pilot.uid)
 
     # get total pilot resources and runtime
     p_resrc = {'cpu': pilot.cfg['cores'],
@@ -160,7 +153,7 @@ for pilot in pilots.get():
     x_min  = 0
     x_max  = t_span + 0.05 * t_span
 
-    print(pilot.uid, t_min, t_max, x_min, x_max)
+  # print(pilot.uid, t_min, t_max, x_min, x_max)
 
     # derive the pilot resource transition points from the metrics
     rpp = rp.utils.prof_utils
@@ -206,6 +199,7 @@ for pilot in pilots.get():
             except:
                 if 'request' not in entity.uid:
                     print('guess resources for %s' % entity.uid)
+
                 if pilot in entity.uid:
                     t_resrc = {'cpu': 1024 * 40,
                                'gpu': 1024 *  8}
@@ -324,16 +318,15 @@ for pilot in pilots.get():
         prev    = list()
 
         # for each metric, copy the metric column and add all previous colums
-        fout = open('t', 'w')
+      # fout = open('t', 'w')
         for m in to_stack:
             stacked[m] = merged[m]
             for p in prev:
                 stacked[m] += merged[p]
 
-            fout.write('%-10s : %s\n' % (m, prev))
+      #     fout.write('%-10s : %s\n' % (m, prev))
             prev.append(m)
-        fout.close()
-
+      # fout.close()
 
         # plot individual metrics
         prev_m  = None
