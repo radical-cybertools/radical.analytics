@@ -30,8 +30,6 @@ logger.info('radical.analytics    version: %s' % version_detail)
 
 # ------------------------------------------------------------------------------
 #
-__all__ = ('Experiment','Session','Entity','Plotter',)
-
-
-# ------------------------------------------------------------------------------
+__all__ = ('Experiment','Session','Entity','Plotter', 'get_plotsize',
+           'get_mplstyle')
 
