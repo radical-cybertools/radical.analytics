@@ -20,17 +20,17 @@ resrc = ['cpu', 'gpu']
 
 # pick and choose what contributions to plot
 metrics  = [  #   metric,      line color, alpha, fill color, alpha
-                ['boot'       , ['#0000AA',  0.1,   '#0000AA',  0.5]],
-                ['setup'      , ['#00AA00',  0.1,   '#00AA00',  0.5]],
-                ['agent'      , ['#00AAAA',  0.1,   '#00AAAA',  0.5]],
-              # ['exec_master', ['#AA0000',  0.1,   '#AA0000',  0.5]],
-              # ['workload'   , ['#AA0000',  1.1,   '#AA0000',  1.5]],
-              # ['exec_req'   , ['#AAAA00',  0.1,   '#AAAA00',  0.5]],
-                ['exec_cmd'   , ['#990000',  0.1,   '#990000',  0.5]],
-              # ['exec_worker', ['#CC0000',  0.1,   '#CC0000',  0.5]],
-                ['schedule'   , ['#AAAA00',  0.1,   '#AAAA00',  0.5]],
-                ['idle'       , ['#333333',  0.1,   '#000000',  0.5]],
-                ['term'       , ['#AA00AA',  0.1,   '#AA00AA',  0.5]],
+                ['boot'       , ['#0000AA',  0.0,   '#0000AA',  0.3]],
+                ['setup'      , ['#00AA00',  0.0,   '#00AA00',  0.3]],
+                ['agent'      , ['#00AAAA',  0.0,   '#00AAAA',  0.3]],
+                ['exec_cmd'   , ['#990000',  0.0,   '#990000',  0.7]],
+                ['term'       , ['#AA00AA',  0.0,   '#AA00AA',  0.3]],
+                ['idle'       , ['#333333',  0.0,   '#000000',  0.3]],
+                ['schedule'   , ['#AAAA00',  0.0,   '#AAAA00',  0.3]],
+              # ['exec_master', ['#AA0000',  0.0,   '#AA0000',  0.3]],
+              # ['workload'   , ['#AA0000',  0.0,   '#AA0000',  1.0]],
+              # ['exec_req'   , ['#AAAA00',  0.0,   '#AAAA00',  0.3]],
+              # ['exec_worker', ['#CC0000',  0.0,   '#CC0000',  0.3]],
 ]
 
 to_stack = [m[0]       for m in metrics]
@@ -221,9 +221,9 @@ for pilot in pilots.get():
             for r in resrc:
                 try:
                     amount = t_resrc[r]
-                    t = ts[0] - t_min
                     if amount == 0:
                         continue
+                    t = (ts[0] - t_min)
                     contribs[r][p_from].append([t, -amount])
                     contribs[r][p_to  ].append([t, +amount])
                 except Exception as e:
@@ -347,21 +347,21 @@ for pilot in pilots.get():
 
             # plot the (stacked) line
             line, = ax.step(stacked['time'], stacked[m], where='post', label=m,
-                            color=lcol, alpha=lalpha, linewidth=1)
+                            color=lcol, alpha=lalpha, linewidth=1.0)
 
             # fill first metric toward 0, all others towards previous line
             if not prev_m:
                 patch = ax.fill_between(stacked['time'], stacked[m],
-                                        step='post', label=m,
+                                        step='post', label=m, linewidth=0.0,
                                         color=pcol, alpha=palpha)
 
             else:
                 patch = ax.fill_between(stacked['time'], stacked[m],
-                        stacked[prev_m], step='post', label=m,
+                        stacked[prev_m], step='post', label=m, linewidth=0.0,
                                         color=pcol, alpha=palpha)
 
             # remember lines and patches for legend
-            lines.append(line)
+          # lines.append(line)
             legend.append(m)
             patches.append(patch)
 
@@ -386,8 +386,8 @@ for pilot in pilots.get():
 
     plt.subplots_adjust(hspace=.0)
     fig.suptitle('%s - %s resources usage' % (name, pilot.uid))
-    fname = '%s.%s.util.jpg' % (name, pilot.uid)
-    fname = 'util.jpg'
+    fname = '%s.%s.util.png' % (name, pilot.uid)
+  # fname = 'util.png'
     fig.savefig(fname)
   # plt.show()
 
