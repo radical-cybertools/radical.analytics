@@ -12,7 +12,7 @@ from .plotter    import Plotter
 
 # ------------------------------------------------------------------------------
 #
-from .utils import set_size
+from .utils import get_plotsize, get_mplstyle
 
 # ------------------------------------------------------------------------------
 #
