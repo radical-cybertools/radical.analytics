@@ -19,7 +19,10 @@ import numpy             as np
 plt.style.use(ra.get_style('radical_mpl'))
 plt.rcParams['axes.autolimit_mode'] = 'data'
 
-
+colors = ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78', '#2ca02c',
+          '#98df8a', '#d62728', '#ff9896', '#9467bd', '#c5b0d5',
+          '#8c564b', '#c49c94', '#e377c2', '#f7b6d2', '#7f7f7f',
+          '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5']
 # ------------------------------------------------------------------------------
 #
 def set_size(width=250, fraction=1, subplots=(1, 1)):
@@ -211,7 +214,6 @@ plt.figure(figsize=set_size())
 plt.locator_params(axis='y', nbins=5)
 plt.locator_params(axis='x', nbins=5)
 
-
 import os
 if 'XLIM' in os.environ:
     xmin, xmax = os.environ['XLIM'].split(':')
@@ -331,24 +333,32 @@ for src in srcs:
                 tmp    = [x * scale for x in data[col]]
                 data_y = np.array(tmp)
 
-            if   STYLE == 'point': plt.scatter(data_x, data_y, label=label, s=10)
-            elif STYLE == 'line' : plt.plot   (data_x, data_y, 'b', label=label)
+            color = colors[col]
+
+            if   STYLE == 'point': plt.scatter(data_x, data_y, label=label,
+                                               s=10, color=color)
+            elif STYLE == 'line' : plt.plot   (data_x, data_y, 'b', label=label,
+                                               color=color)
             elif STYLE == 'step' : plt.step   (data_x, data_y, 'b', label=label,
-                                               where='post')
-            elif STYLE == 'bar'  : plt.bar    (data_x, data_y, label=label)
+                                               where='post', color=color)
+            elif STYLE == 'bar'  : plt.bar    (data_x, data_y, label=label,
+                                               color=color)
             elif STYLE == 'hist' :
 
                 if LOG_X:
                     hist, bins, _ = plt.hist(data_y, bins=N_BINS)
                     logbins       = np.logspace(np.log10(bins[0]),
                                                 np.log10(bins[-1]), len(bins))
-                    plt.hist(data_y, bins=logbins, label=label, histtype='bar')
+                    plt.hist(data_y, bins=logbins, label=label, histtype='bar',
+                             color=color)
                 else:
                     if xmin is not None and xmax is not None:
                         bins = list(range(xmin, xmax, N_BINS))
-                        plt.hist(data_y, bins=bins, label=label, histtype='bar')
+                        plt.hist(data_y, bins=bins, label=label, histtype='bar',
+                                 color=color)
                     else:
-                        plt.hist(data_y, label=label, histtype='bar')
+                        plt.hist(data_y, label=label, histtype='bar',
+                                 color=color)
 
     except IndexError:
         print('index error')
