@@ -30,7 +30,6 @@ logger.info('radical.analytics    version: %s' % version_detail)
 #
 def get_style(name):
 
-    import os
     import sys
     import glob
 
