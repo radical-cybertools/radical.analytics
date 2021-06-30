@@ -19,28 +19,42 @@ The following assume the use of Matplotlib to create a plot that needs to be add
 
     \documentclass{<your_style_eg_IEEEtran>}
 
+    \newcommand{\recordvalue}[1]{%
+      \typeout{%
+        === Value of \detokenize{#1}: \the#1%
+      }%
+    }
+
     \begin{document}
-
-    % gives the width of the current document in pts
-    \showthe\textwidth
-    \showthe\columnwidth
-
+      % gives the width of the current document in pts
+      \recordvalue{\textwidth}
+      \recordvalue{\columnwidth}
     \end{document}
 
-#. Compile your LaTeX document---e.g., pdlatex your_document---and note down the size of the text and of the column expressed in points (pts).
-#. Use the RADICAL style for Matplotlib. First find where the style has been installed by RA:
 
-   .. code-block:: bash
+#. Compile your LaTeX document---e.g., pdlatex your_document---and note down the size of the text and of the column expressed in points (pts).  An example output is shown below (shortened):
 
-    $ python3 -c 'import radical.analytics as ra; print(ra.get_style("radical_mpl"))'
-    /path/to/radical.analytics/styles/radical_mpl.txt
+   .. code-block:: shell
 
-   then use that path to load the style into Matplotlib:
+    $ pdflatex test.tex
+    This is pdfTeX, [...]
+    [...]
+    === Value of \textwidth  : 252.0pt
+    === Value of \columnwidth: 516.0pt
+    (./test.aux) )
+    No pages of output.
+    Transcript written on test.log.
+
+
+#. Use the RADICAL style for Matplotlib:
 
    .. code-block:: python
 
     import matplotlib.pyplot as plt
-    plt.style.use('/path/to/radical.analytics/styles/radical_mpl.txt')
+    import radical.analytics as ra
+
+    plt.style.use(ra.get_style("radical_mpl")
+
 
 #. Use ``ra.set_size()`` to compute the exact size of your plot. For a plot with a single figure that span the width of a IEEtran LaTeX column:
 
