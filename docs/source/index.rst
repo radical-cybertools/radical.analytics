@@ -48,8 +48,8 @@ Content
    concurrency.rst
    utilization.rst
    inspection.rst
-   apidoc.rst
    plotting.rst
+   apidoc.rst
 
 .. Indices and tables
 .. ------------------
