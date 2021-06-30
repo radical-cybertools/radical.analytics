@@ -28,6 +28,20 @@ The following assume the use of Matplotlib to create a plot that needs to be add
     \end{document}
 
 #. Compile your LaTeX document---e.g., pdlatex your_document---and note down the size of the text and of the column expressed in points (pts).
+#. Use the RADICAL style for Matplotlib. First find where the style has been installed by RA:
+
+.. code-block:: bash
+
+    $ python3 -c 'import radical.analytics as ra; print(ra.get_style("radical_mpl"))'
+    /path/to/radical.analytics/styles/radical_mpl.txt
+
+then use that path to load the style into Matplotlib:
+
+.. code-block:: python
+
+    import matplotlib.pyplot as plt
+    plt.style.use('/path/to/radical.analytics/styles/radical_mpl.txt')
+
 #. Use ``ra.utils.plot.set_size`` to compute the exact size of your plot. For a plot with a single figure that span the width of a IEEtran LaTeX column:
 
 .. code-block:: python
