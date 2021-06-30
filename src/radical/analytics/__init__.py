@@ -10,6 +10,9 @@ from .session    import Session
 from .entity     import Entity
 from .plotter    import Plotter
 
+# ------------------------------------------------------------------------------
+#
+from .utils import set_size
 
 # ------------------------------------------------------------------------------
 #
