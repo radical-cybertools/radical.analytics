@@ -42,16 +42,16 @@ The following assume the use of Matplotlib to create a plot that needs to be add
     import matplotlib.pyplot as plt
     plt.style.use('/path/to/radical.analytics/styles/radical_mpl.txt')
 
-#. Use ``ra.utils.plot.set_size`` to compute the exact size of your plot. For a plot with a single figure that span the width of a IEEtran LaTeX column:
+#. Use ``ra.set_size()`` to compute the exact size of your plot. For a plot with a single figure that span the width of a IEEtran LaTeX column:
 
    .. code-block:: python
 
-    fig, ax = plt.subplots(figsize=set_size(252))
+    fig, ax = plt.subplots(figsize=ra.set_size(252))
 
    for plot with 1 row and 3 subplots that spans the whole width of a IEEtran LaTeX page:
 
    .. code-block:: python
 
-    fig, axarr = plt.subplots(1, 3, figsize=(set_size(516)))
+    fig, axarr = plt.subplots(1, 3, figsize=(ra.set_size(516)))
 
 
