@@ -39,6 +39,7 @@ def get_plotsize(width, fraction=1, subplots=(1, 1)):
 
     return fig_width_in, fig_height_in
 
+
 # ------------------------------------------------------------------------------
 #
 def get_mplstyle(name):
@@ -49,3 +50,4 @@ def get_mplstyle(name):
     for path in glob.glob('%s/*.txt' % path):
         if path.endswith('/%s.txt' % name):
             return os.path.normpath(path)
+
