@@ -176,8 +176,9 @@ class RunTwine(Command):
 # It needs the MANIFEST.in entries to work.
 share = 'share/%s' % name
 df    = [
-    ('%s/examples' % share, glob.glob('examples/[01]*.py')),
-    ('bin/rp_inspect/',     glob.glob('bin/rp_inspect/*')),
+    ('%s/styles/'   % share, glob.glob('styles/*.txt')),
+    ('%s/examples/' % share, glob.glob('examples/[01]*.py')),
+    ('bin/rp_inspect/',      glob.glob('bin/rp_inspect/*')),
 ]
 
 
