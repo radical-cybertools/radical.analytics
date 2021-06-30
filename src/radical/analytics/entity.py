@@ -24,15 +24,12 @@ class Entity(object):
         assert(_uid)
         assert(_profile)
 
-      # if 'pilot' in _uid:
-      #     pprint.pprint(_details)
-
         self._uid         = _uid
         self._etype       = _etype
         self._details     = _details
         self._description = self._details.get('description', dict())
         self._cfg         = self._details.get('cfg',         dict())
-        self._resources   = self._cfg.get('resources',   dict())
+        self._resources   = self._details.get('resources',   dict())
 
         # FIXME: this should be sorted out on RP level
         self._cfg['hostid'] = self._details['hostid']
