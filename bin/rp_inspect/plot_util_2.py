@@ -134,7 +134,7 @@ rep.ok('ok')
 #     print(uid)
 
 pilots = session.filter(etype='pilot',  inplace=False)
-tasks  = session.filter(etype=['task', 'master', 'worker'], inplace=False)
+# tasks  = session.filter(etype=['task', 'master', 'worker'], inplace=False)
 
 # one plot per pilot
 for pilot in pilots.get():
@@ -200,7 +200,7 @@ for pilot in pilots.get():
                 if 'request' not in entity.uid:
                     print('guess resources for %s' % entity.uid)
 
-                if pilot in entity.uid:
+                if 'pilot' in entity.uid:
                     t_resrc = {'cpu': 1024 * 40,
                                'gpu': 1024 *  8}
                 else:
