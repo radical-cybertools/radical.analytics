@@ -34,7 +34,7 @@ LOG_X     = False
 LOG_Y     = False
 LOG       = ''
 STYLE     = 'line'  # 'point', 'line', 'step', 'bar', 'hist'
-GRID      = True    # True, False
+GRID      = False   # True, False
 FNAME     = None
 SAVE_AS   = 'x11'   # 'svg', 'png', 'x11', 'pdf'
 WIDTH     = 252
@@ -71,6 +71,7 @@ def usage(msg=None):
                                                : plot type
         -w, --width      <252>                 : canvas width
         -l, --log        <x | y | x,y>         : log-scale for x and/or y axis
+        -g, --grid                             : grid lines (default: no)
         -a, --save-as    <png | svg | x11>     : save fig in format (x11: show)
         -f, --file-name  <filename>            : name to save to (w/o ext)
 
@@ -97,9 +98,10 @@ parser.add_option('-L', '--legend',    dest='legend')
 parser.add_option('-s', '--style',     dest='style')
 parser.add_option('-w', '--width',     dest='width')
 parser.add_option('-l', '--log',       dest='log')
+parser.add_option('-g', '--grid',      dest='grid', action='store_true')
 parser.add_option('-a', '--save-as',   dest='save')
 parser.add_option('-f', '--file-name', dest='fname')
-parser.add_option('-h', '--help',      dest='help', action="store_true")
+parser.add_option('-h', '--help',      dest='help', action='store_true')
 
 options, args = parser.parse_args()
 if len(args) > 1:
@@ -123,6 +125,7 @@ if options.yticks : TICKS_Y      = [str(x) for x in options.yticks.split(',')]
 if options.legend : LEGEND       = [str(x) for x in options.legend.split(',')]
 if options.width  : WIDTH        =  int(options.width)
 if options.log    : LOG          =  str(options.log)
+if options.grid   : GRID         =  str(options.grid)
 if options.style  : STYLE        =  str(options.style)
 if options.save   : SAVE_AS      =  str(options.save)
 if options.fname  : FNAME        =  str(options.fname)
@@ -283,10 +286,6 @@ try:
 
 
 
-    ax.yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
-
-
-
 except IndexError:
     print('index error')
     for i,e in enumerate(data[0]):
@@ -294,10 +293,9 @@ except IndexError:
     raise
 
 if LEGEND != ['-']:
-    print('===', LEGEND)
-    plt.legend(ncol=1, fancybox=True, loc='upper left')
+    plt.legend(ncol=1, fancybox=True)
 
-if TITLE   : ax.set_title(TITLE)
+if TITLE   : ax.set_title(TITLE, loc='center')
 if LOG_X   : ax.set_xscale('log')
 if LOG_Y   : ax.set_yscale('log')
 if LABEL_X : ax.set_xlabel(LABEL_X)
