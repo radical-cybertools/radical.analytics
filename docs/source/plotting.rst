@@ -53,14 +53,14 @@ The following assume the use of Matplotlib to create a plot that needs to be add
     import matplotlib.pyplot as plt
     import radical.analytics as ra
 
-    plt.style.use(ra.get_style("radical_mpl")
+    plt.style.use(ra.get_mplstyle("radical_mpl")
 
 
 #. Use ``ra.set_size()`` to compute the exact size of your plot. For a plot with a single figure that span the width of a IEEtran LaTeX column:
 
    .. code-block:: python
 
-    fig, ax = plt.subplots(figsize=ra.set_size(252))
+    fig, ax = plt.subplots(figsize=ra.get_plotsize(252))
 
    for plot with 1 row and 3 subplots that spans the whole width of a IEEtran LaTeX page:
 

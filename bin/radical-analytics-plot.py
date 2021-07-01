@@ -8,88 +8,14 @@ import optparse
 import numpy             as np
 import matplotlib        as mpl
 import matplotlib.pyplot as plt
+import radical.analytics as ra
 
 
 # ----------------------------------------------------------------------------
 # Global configurations
 # ----------------------------------------------------------------------------
 # matplotlib style
-plt.style.use('seaborn-ticks')
-
-# use LaTeX and its body font for the diagrams' text.
-# mpl.rcParams['text.usetex'] = True
-
-# mpl.rcParams['text.latex.unicode'] = True
-mpl.rcParams['font.serif']  = ['Nimbus Roman Becker No9L']
-# mpl.rcParams['font.family'] = 'serif'
-
-
-# font sizes
-SIZE = 30
-plt.rc('font'  , size      = SIZE    )
-plt.rc('axes'  , titlesize = SIZE    )
-plt.rc('axes'  , labelsize = SIZE    )
-plt.rc('xtick' , labelsize = SIZE    )
-plt.rc('ytick' , labelsize = SIZE    )
-plt.rc('legend', fontsize  = SIZE - 0)
-plt.rc('figure', titlesize = SIZE    )
-
-# thinner lines for axes to avoid distractions.
-mpl.rcParams['axes.linewidth']    = 1.00
-mpl.rcParams['xtick.major.width'] = 0.75
-mpl.rcParams['xtick.minor.width'] = 0.75
-mpl.rcParams['ytick.major.width'] = 0.75
-mpl.rcParams['ytick.minor.width'] = 0.75
-mpl.rcParams['lines.linewidth']   = 2.00
-
-# do not use a box for the legend to avoid distractions.
-mpl.rcParams['legend.frameon'] = False
-
-# restore part of matplotlib 1.5 behavior
-mpl.rcParams['patch.force_edgecolor'] = True
-mpl.rcParams['patch.edgecolor']       = 'black'
-mpl.rcParams['errorbar.capsize']      = 3
-
-# Use coordinated colors. These are the "Tableau 20" colors as
-# RGB. Each pair is strong/light. For a theory of color
-tableau20 = [( 31, 119, 180), (174, 199, 232),  # blue        [ 0,1 ]
-             (255, 127,  14), (255, 187, 120),  # orange      [ 2,3 ]
-             ( 44, 160,  44), (152, 223, 138),  # green       [ 4,5 ]
-             (214,  39,  40), (255, 152, 150),  # red         [ 6,7 ]
-             (148, 103, 189), (197, 176, 213),  # purple      [ 8,9 ]
-             (140,  86,  75), (196, 156, 148),  # brown       [10,11]
-             (227, 119, 194), (247, 182, 210),  # pink        [12,13]
-             (188, 189,  34), (219, 219, 141),  # yellow      [14,15]
-             ( 23, 190, 207), (158, 218, 229),  # cyan        [16,17]
-             ( 65,  68,  81), ( 96,  99, 106),  # gray        [18,19]
-             (127, 127, 127), (143, 135, 130),  # gray        [20,21]
-             (165, 172, 175), (199, 199, 199),  # gray        [22,23]
-             (207, 207, 207)]                   # gray        [24]
-
-# Scale the RGB values to the [0, 1] range, which is the format
-# matplotlib accepts.
-for i in range(len(tableau20)):
-    r, g, b = tableau20[i]
-    tableau20[i] = (round(r / 255.,1), round(g / 255.,1), round(b / 255.,1))
-
-
-# Return a single plot without right and top axes, spanning one column text.
-def fig_setup(figsize=None):
-
-    if not figsize:
-        figsize = (13,7)
-
-    fig = plt.figure(figsize=figsize)
-    ax  = fig.add_subplot(111)
-
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-
-    ax.get_xaxis().tick_bottom()
-    ax.get_yaxis().tick_left()
-
-    return fig, ax
-
+plt.style.use(ra.get_mplstyle("radical_mpl"))
 
 # ------------------------------------------------------------------------------
 #
@@ -107,11 +33,11 @@ RANGE     = [None, None, None, None]
 LOG_X     = False
 LOG_Y     = False
 LOG       = ''
-SIZE      = (20, 14)
 STYLE     = 'line'  # 'point', 'line', 'step', 'bar', 'hist'
 GRID      = True    # True, False
 FNAME     = None
-SAVE_AS   = 'x11'   # 'svg', 'png', 'x11'
+SAVE_AS   = 'x11'   # 'svg', 'png', 'x11', 'pdf'
+WIDTH     = 252
 
 
 # ------------------------------------------------------------------------------
@@ -143,7 +69,7 @@ def usage(msg=None):
         -r, --range      <xmin,xmax,ymin,ymax> : axis range
         -s, --style      <point | line | step | bar | hist>
                                                : plot type
-        -z, --size       <20,14>               : canvas size
+        -w, --width      <252>                 : canvas width
         -l, --log        <x | y | x,y>         : log-scale for x and/or y axis
         -a, --save-as    <png | svg | x11>     : save fig in format (x11: show)
         -f, --file-name  <filename>            : name to save to (w/o ext)
@@ -169,7 +95,7 @@ parser.add_option('-v', '--y-ticks',   dest='yticks')
 parser.add_option('-r', '--range',     dest='range')
 parser.add_option('-L', '--legend',    dest='legend')
 parser.add_option('-s', '--style',     dest='style')
-parser.add_option('-z', '--size',      dest='size')
+parser.add_option('-w', '--width',     dest='width')
 parser.add_option('-l', '--log',       dest='log')
 parser.add_option('-a', '--save-as',   dest='save')
 parser.add_option('-f', '--file-name', dest='fname')
@@ -195,7 +121,7 @@ if options.ylabel : LABEL_Y      =  str(options.ylabel)
 if options.xticks : TICKS_X      = [str(x) for x in options.xticks.split(',')]
 if options.yticks : TICKS_Y      = [str(x) for x in options.yticks.split(',')]
 if options.legend : LEGEND       = [str(x) for x in options.legend.split(',')]
-if options.size   : SIZE         = [int(x) for x in options.size  .split(',')]
+if options.width  : WIDTH        =  int(options.width)
 if options.log    : LOG          =  str(options.log)
 if options.style  : STYLE        =  str(options.style)
 if options.save   : SAVE_AS      =  str(options.save)
@@ -215,7 +141,7 @@ if 'y' in LOG: LOG_Y = True
 if COLUMN_X not in ['count']:
     COLUMN_X = int(COLUMN_X)
 
-if SAVE_AS not in ['x11', 'png', 'svg']:
+if SAVE_AS not in ['x11', 'png', 'svg', 'pdf']:
     raise ValueError('invalid save_as value: %s' % SAVE_AS)
 
 if STYLE not in ['point', 'line', 'step', 'bar', 'hist']:
@@ -305,7 +231,7 @@ if STYLE == 'hist':
 # pprint.pprint(data)
 try:
 
-    fig, ax = fig_setup()
+    fig, ax = plt.subplots(figsize=ra.get_plotsize(WIDTH))
     cnum    = 0
     for col in COLUMNS_Y:
 
@@ -343,10 +269,11 @@ try:
             time.sleep(1)
             data_y = np.array(data[col])
 
-        color = tableau20[cnum]
+        colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+        color = colors[cnum]
 
-        if cnum == 3:
-            color = tableau20[4]
+        # if cnum == 3:
+        #     color = colors[4]
 
         if   STYLE == 'point': ax.scatter(data_x, data_y,      c=color, label=label, s=10)
         elif STYLE == 'line' : ax.plot   (data_x, data_y, 'b', c=color, label=label)
@@ -391,6 +318,8 @@ if not FNAME:
     FNAME = FNAME.replace('__', '_')
 if   SAVE_AS == 'png': fig.savefig('%s.png' % FNAME, bbox_inches="tight")
 elif SAVE_AS == 'svg': fig.savefig('%s.svg' % FNAME, bbox_inches="tight")
+elif SAVE_AS == 'pdf': fig.savefig('%s.pdf' % FNAME, dpi=300,
+                                              bbox_inches="tight")
 elif SAVE_AS == 'x11': fig.show()
 
 
