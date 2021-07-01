@@ -979,7 +979,7 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def utilization(self, metrics):
+    def utilization(self, metrics, udurations=None):
 
         if self._stype != 'radical.pilot':
             raise ValueError('session utilization is only available on '
@@ -988,7 +988,7 @@ class Session(object):
         import radical.pilot as rp
 
         provided  = rp.utils.get_provided_resources(self)
-        consumed  = rp.utils.get_consumed_resources(self)
+        consumed  = rp.utils.get_consumed_resources(self, udurations)
         stats_abs = {'total':   0.0}
         stats_rel = {'total': 100.0}
         total     = 0.0

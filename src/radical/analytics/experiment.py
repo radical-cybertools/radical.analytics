@@ -45,9 +45,9 @@ class Experiment(object):
 
     # --------------------------------------------------------------------------
     #
-    def utilization(self, metrics):
+    def utilization(self, metrics, udurations=None):
         '''
-        return five dictionaries: 
+        return five dictionaries:
           - provided resources
           - consumed resources
           - absolute stats
@@ -110,7 +110,7 @@ class Experiment(object):
         for session in self._sessions:
 
             sid = session.uid
-            p, c, sa, sr, i = session.utilization(metrics)
+            p, c, sa, sr, i = session.utilization(metrics, udurations)
 
             provided [sid] = p
             consumed [sid] = c
