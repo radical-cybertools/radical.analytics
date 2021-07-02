@@ -22,57 +22,30 @@ Default Color Cycler of RADICAL-Analytics Style
 .. role:: raw-html(raw)
    :format: html
 
-+------------+-----------------------------------------------------------------------+
-| Hex        | Color                                                                 |
-+============+=======================================================================+
-| #1a80b2    |:raw-html:`<span style="background-color:#1a80b2">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #b2cce6    |:raw-html:`<span style="background-color:#b2cce6">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #ff801a    |:raw-html:`<span style="background-color:#ff801a">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #ffb280    |:raw-html:`<span style="background-color:#ffb280">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #339933    |:raw-html:`<span style="background-color:#339933">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #99e680    |:raw-html:`<span style="background-color:#99e680">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #cc3333    |:raw-html:`<span style="background-color:#cc3333">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #ff9999    |:raw-html:`<span style="background-color:#ff9999">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #9966b2    |:raw-html:`<span style="background-color:#9966b2">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #ccb2cc    |:raw-html:`<span style="background-color:#ccb2cc">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #804c4c    |:raw-html:`<span style="background-color:#804c4c">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #cc9999    |:raw-html:`<span style="background-color:#cc9999">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #e680cc    |:raw-html:`<span style="background-color:#e680cc">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #ffb2cc    |:raw-html:`<span style="background-color:#ffb2cc">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #b2b21a    |:raw-html:`<span style="background-color:#b2b21a">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #e6e699    |:raw-html:`<span style="background-color:#e6e699">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #1ab2cc    |:raw-html:`<span style="background-color:#1ab2cc">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #99e6e6    |:raw-html:`<span style="background-color:#99e6e6">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #4c4c4c    |:raw-html:`<span style="background-color:#4c4c4c">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #666666    |:raw-html:`<span style="background-color:#666666">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #808080    |:raw-html:`<span style="background-color:#808080">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #998080    |:raw-html:`<span style="background-color:#998080">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #99b2b2    |:raw-html:`<span style="background-color:#99b2b2">...............</td>`|
-+------------+-----------------------------------------------------------------------+
-| #cccccc    |:raw-html:`<span style="background-color:#cccccc">...............</td>`|
-+------------+-----------------------------------------------------------------------+
+01. :raw-html:`<span style="display:inline-block;width:100px;background-color:#1a80b2">#1a80b2</span>`
+02. :raw-html:`<span style="display:inline-block;width:100px;background-color:#b2cce6">#b2cce6</span>`
+03. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ff801a">#ff801a</span>`
+04. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ffb280">#ffb280</span>`
+05. :raw-html:`<span style="display:inline-block;width:100px;background-color:#339933">#339933</span>`
+06. :raw-html:`<span style="display:inline-block;width:100px;background-color:#99e680">#99e680</span><br>`
+07. :raw-html:`<span style="display:inline-block;width:100px;background-color:#cc3333">#cc3333</span>`
+08. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ff9999">#ff9999</span>`
+09. :raw-html:`<span style="display:inline-block;width:100px;background-color:#9966b2">#9966b2</span>`
+10. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ccb2cc">#ccb2cc</span>`
+11. :raw-html:`<span style="display:inline-block;width:100px;background-color:#804c4c">#804c4c</span>`
+12. :raw-html:`<span style="display:inline-block;width:100px;background-color:#cc9999">#cc9999</span><br>`
+13. :raw-html:`<span style="display:inline-block;width:100px;background-color:#e680cc">#e680cc</span>`
+14. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ffb2cc">#ffb2cc</span>`
+15. :raw-html:`<span style="display:inline-block;width:100px;background-color:#b2b21a">#b2b21a</span>`
+16. :raw-html:`<span style="display:inline-block;width:100px;background-color:#e6e699">#e6e699</span>`
+17. :raw-html:`<span style="display:inline-block;width:100px;background-color:#1ab2cc">#1ab2cc</span>`
+18. :raw-html:`<span style="display:inline-block;width:100px;background-color:#99e6e6">#99e6e6</span><br>`
+19. :raw-html:`<span style="display:inline-block;width:100px;background-color:#4c4c4c">#4c4c4c</span>`
+20. :raw-html:`<span style="display:inline-block;width:100px;background-color:#666666">#666666</span>`
+21. :raw-html:`<span style="display:inline-block;width:100px;background-color:#808080">#808080</span>`
+22. :raw-html:`<span style="display:inline-block;width:100px;background-color:#998080">#998080</span>`
+23. :raw-html:`<span style="display:inline-block;width:100px;background-color:#99b2b2">#99b2b2</span>`
+24. :raw-html:`<span style="display:inline-block;width:100px;background-color:#cccccc">#cccccc</span>`
 
 Plotting for Latex Documents
 ----------------------------
@@ -129,3 +102,44 @@ The following assume the use of Matplotlib to create a plot that needs to be add
     fig, axarr = plt.subplots(1, 3, figsize=(ra.set_size(516)))
 
 
+Plotting Resource Utilization
+-----------------------------
+
+RADICAL-Analytics offers helper functions to plot resource utilizations. Currently, RA recognizes two type of resources: cpus and gpus. Given a RADICAL-Pilot session, RA helper functions take one resource type as input and return utilization, patches and legends for that type of resource. If you need to plot the utilization for both types of resources, you will need to create two separate plots. If needed, plots can be stacked.
+
+#. Define the metrics you want to use for resource utilization. RADICAL-Analytics will calculate the utilization for each metric:
+
+   .. code-block:: python
+
+    metrics = [
+        ['Pilot Startup', ['boot', 'setup_1']                         , '#1a80b2'],
+        ['Warmup',        ['warm' ]                                   , '#b2cce6'],
+        ['Exec RP',       ['exec_rp', 'exec_sh', 'term_sh', 'term_rp'], '#ccb2cc'],
+        ['Exec Cmd',      ['exec_cmd']                                , '#9966b2'],
+        ['Draining',      ['drain']                                   , '#339933']
+    ]
+
+   One can use more or fewer metrics, depending on the information that the plot needs to convey. For example, using only 'Exec Cmd' will show the time for which each resource was utilized to execute a given task.
+
+   Find the list of all available metrics in ``rp.utils.PILOT_DURATIONS``; ``rp.utils.TASK_DURATIONS_DEFAULT``; ``rp.utils.TASK_DURATIONS_APP``; ``rp.utils.TASK_DURATIONS_PRTE``; ``rp.utils.ASK_DURATIONS_PRTE_APP``.
+
+#. Create an ``ra.Experiment`` object and derive the provided and consumed resources for each metric:
+
+   .. code-block:: python
+
+    # Type of resource we want to plot: cpu or gpu
+    rtype='gpu'
+
+    # List of sessions of an experiment
+    sessions = [
+        '../data/raw/incite2021/re.session.login1.lei.018775.0008',
+        '../data/raw/incite2021/re.session.login1.lei.018775.0007',
+        '../data/raw/incite2021/re.session.login1.lei.018775.0004',
+        '../data/raw/incite2021/re.session.login1.lei.018775.0005'
+    ]
+
+    # Get the resource utilization of the experiment for each metics
+    exp = ra.Experiment(sessions, stype='radical.pilot')
+    provided, consumed, stats_abs, stats_rel, info = exp.utilization(metrics=metrics, rtype=rtype)
+
+   ``stats_abs``, ``stats_rel``, ``info`` contain information that can be used to summarize resource utilization for each session of the experiment.
