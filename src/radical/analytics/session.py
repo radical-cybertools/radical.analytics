@@ -411,7 +411,7 @@ class Session(object):
         entities.
 
         RA knows exactly 4 properties:
-          - uid   (entity idetifiers)
+          - uid   (entity identifiers)
           - etype (type of entities)
           - event (names of events)
           - state (state identifiers)
@@ -873,13 +873,13 @@ class Session(object):
         This method accepts the same parameters as the `timestamps()` method: it
         will count all matching events and state transitions as given, and will
         return a time series of the rate of how many of those events and/or
-        transitions occured per second.
+        transitions occurred per second.
 
         The additional parameter `sampling` determines the exact points in time
         for which the rate is computed, and thus determines the sampling rate
         for the returned time series.  If not specified, the time series will
-        contain all points at which and event occured, and the rate value will
-        only be determined by the time passed between two consequtuve events.
+        contain all points at which and event occurred, and the rate value will
+        only be determined by the time passed between two consecutive events.
         If specified, it is interpreted as second (float) interval at which,
         after the starting point (begin of first event matching the filters) the
         rate is computed.
@@ -979,7 +979,7 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def utilization(self, metrics, udurations=None):
+    def utilization(self, metrics, rtype='cpu', udurations=None):
 
         if self._stype != 'radical.pilot':
             raise ValueError('session utilization is only available on '
@@ -987,8 +987,8 @@ class Session(object):
 
         import radical.pilot as rp
 
-        provided  = rp.utils.get_provided_resources(self)
-        consumed  = rp.utils.get_consumed_resources(self, udurations)
+        provided  = rp.utils.get_provided_resources(self, rtype)
+        consumed  = rp.utils.get_consumed_resources(self, rtype, udurations)
         stats_abs = {'total':   0.0}
         stats_rel = {'total': 100.0}
         total     = 0.0
