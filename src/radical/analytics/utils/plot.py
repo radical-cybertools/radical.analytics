@@ -1,6 +1,7 @@
 import os
 import sys
 import glob
+import matplotlib as mpl
 
 
 # ------------------------------------------------------------------------------
@@ -50,6 +51,7 @@ def get_mplstyle(name):
     for path in glob.glob('%s/*.txt' % path):
         if path.endswith('/%s.txt' % name):
             return os.path.normpath(path)
+
 
 # ------------------------------------------------------------------------------
 #
@@ -216,3 +218,69 @@ def get_pilot_series(session, pilots, tmap, resrc):
                     series[r][m].append([c[0], 0])
 
     return p_resrc, series, x_min, x_max
+
+
+# ------------------------------------------------------------------------------
+#
+def get_plot_utilization(metrics, consumed, p_zeros, sid):
+    # return legend, patches
+
+    step = 1.0 / (len(metrics) + 1)
+    this = step / 1.0
+    legend = list()
+
+    x_min = None
+    x_max = None
+    y_min = None
+    y_max = None
+
+    patches = []
+
+    for metric in metrics:
+
+        color = metric[2]
+
+        legend.append(mpl.lines.Line2D([0], [0], color=color, lw=6))
+
+        if isinstance(metric, list):
+            name = metric[0]
+            parts = metric[1]
+        else:
+            name = metric
+            parts = [metric]
+
+        for part in parts:
+            for uid in consumed[sid][part]:
+                for block in consumed[sid][part][uid]:
+                    orig_x = block[0] - p_zeros[sid]
+                    orig_y = block[2] - 0.5
+                    width  = block[1] - block[0]
+                    height = block[3] - block[2] + 1.0
+
+                    if x_min is None:
+                        x_min = orig_x
+                    if x_max is None:
+                        x_max = orig_x + width
+                    if y_min is None:
+                        y_min = orig_x
+                    if y_max is None:
+                        y_max = orig_x + height
+
+                    x_min = min(x_min, orig_x)
+                    y_min = min(y_min, orig_y)
+                    x_max = max(x_max, orig_x + width)
+                    y_max = max(y_max, orig_y + height)
+
+                    patch = mpl.patches.Rectangle((orig_x, orig_y),
+                                                  width, height,
+                                                  facecolor=color,
+                                                  edgecolor='black',
+                                                  fill=True, lw=0.0)
+
+                    patches.append(patch)
+                    # ax.add_patch(patch)
+
+    x = {'min': x_min, 'max': x_max}
+    y = {'min': y_min, 'max': y_max}
+    return legend, patches, x, y
+
