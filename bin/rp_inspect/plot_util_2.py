@@ -187,25 +187,35 @@ for pilot in pilots.get():
             continue
 
         transitions = tmap.get(entity.etype, [])
+        if not transitions:
+            # we are not interested in this entity
+            continue
+
+        try:
+            t_resrc = {'cpu': entity.resources['cpu'],
+                       'gpu': entity.resources['gpu']}
+            if 'task' in entity.uid:
+                td = entity.description
+                cores = td['cpu_processes'] * td['cpu_threads']
+                gpus  = td['cpu_processes'] * td['gpu_processes']
+                t_resrc = {'cpu': cores,
+                           'gpu': gpus}
+        except:
+            if 'request' not in entity.uid:
+                print('guess resources for %s' % entity.uid)
+
+            if 'pilot' in entity.uid:
+                t_resrc = {'cpu': 1024 * 40,
+                           'gpu': 1024 *  8}
+            else:
+                t_resrc = {'cpu': 1,
+                           'gpu': 0}
+
         for trans in transitions:
 
             event  = trans[0]
             p_from = trans[1]
             p_to   = trans[2]
-
-            try:
-                t_resrc = {'cpu': entity.resources['cpu'],
-                           'gpu': entity.resources['gpu']}
-            except:
-                if 'request' not in entity.uid:
-                    print('guess resources for %s' % entity.uid)
-
-                if 'pilot' in entity.uid:
-                    t_resrc = {'cpu': 1024 * 40,
-                               'gpu': 1024 *  8}
-                else:
-                    t_resrc = {'cpu': 1,
-                               'gpu': 0}
 
             # we need to work around the fact that sub-agents have no separate
             # entity type, but belong to the pilot.  So instead we assign them
