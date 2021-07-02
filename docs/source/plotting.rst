@@ -3,6 +3,77 @@ Plotting
 
 RADICAL-Analytics does not provide plotting primitives. Instead, it offers helper methods that can be used with 3rd party plotting libraries.
 
+Matplotlib
+----------
+
+RADICAL-Analytics provides a style for Matplotlib. Loading it guarantees an uniform look&feel across plots. The style is located at ``styles/radical_mpl.txt``.
+
+Loading RADICAL-Analytics Style
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. code-block:: python
+
+    import matplotlib.pyplot as plt
+    import radical.analytics as ra
+
+    plt.style.use(ra.get_mplstyle("radical_mpl")
+
+Default Color Cycler of RADICAL-Analytics Style
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. role:: raw-html(raw)
+   :format: html
+
++------------+-----------------------------------------------------------------------+
+| Hex        | Color                                                                 |
++============+=======================================================================+
+| #1a80b2    |:raw-html:`<span style="background-color:#1a80b2">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #b2cce6    |:raw-html:`<span style="background-color:#b2cce6">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #ff801a    |:raw-html:`<span style="background-color:#ff801a">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #ffb280    |:raw-html:`<span style="background-color:#ffb280">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #339933    |:raw-html:`<span style="background-color:#339933">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #99e680    |:raw-html:`<span style="background-color:#99e680">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #cc3333    |:raw-html:`<span style="background-color:#cc3333">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #ff9999    |:raw-html:`<span style="background-color:#ff9999">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #9966b2    |:raw-html:`<span style="background-color:#9966b2">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #ccb2cc    |:raw-html:`<span style="background-color:#ccb2cc">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #804c4c    |:raw-html:`<span style="background-color:#804c4c">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #cc9999    |:raw-html:`<span style="background-color:#cc9999">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #e680cc    |:raw-html:`<span style="background-color:#e680cc">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #ffb2cc    |:raw-html:`<span style="background-color:#ffb2cc">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #b2b21a    |:raw-html:`<span style="background-color:#b2b21a">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #e6e699    |:raw-html:`<span style="background-color:#e6e699">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #1ab2cc    |:raw-html:`<span style="background-color:#1ab2cc">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #99e6e6    |:raw-html:`<span style="background-color:#99e6e6">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #4c4c4c    |:raw-html:`<span style="background-color:#4c4c4c">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #666666    |:raw-html:`<span style="background-color:#666666">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #808080    |:raw-html:`<span style="background-color:#808080">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #998080    |:raw-html:`<span style="background-color:#998080">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #99b2b2    |:raw-html:`<span style="background-color:#99b2b2">...............</td>`|
++------------+-----------------------------------------------------------------------+
+| #cccccc    |:raw-html:`<span style="background-color:#cccccc">...............</td>`|
++------------+-----------------------------------------------------------------------+
+
 Plotting for Latex Documents
 ----------------------------
 
@@ -44,17 +115,6 @@ The following assume the use of Matplotlib to create a plot that needs to be add
     (./test.aux) )
     No pages of output.
     Transcript written on test.log.
-
-
-#. Use the RADICAL style for Matplotlib:
-
-   .. code-block:: python
-
-    import matplotlib.pyplot as plt
-    import radical.analytics as ra
-
-    plt.style.use(ra.get_mplstyle("radical_mpl")
-
 
 #. Use ``ra.set_size()`` to compute the exact size of your plot. For a plot with a single figure that span the width of a IEEtran LaTeX column:
 
