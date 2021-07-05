@@ -1,3 +1,5 @@
+.. _chapter_plotting:
+
 Plotting
 ========
 
@@ -109,7 +111,7 @@ RADICAL-Analytics offers helper functions to plot resource utilizations. Current
 
 #. Define the metrics you want to use for resource utilization. RADICAL-Analytics will calculate the utilization for each metric:
 
-   .. code-block:: python
+   .. code-block::
 
     metrics = [
         ['Pilot Startup', ['boot', 'setup_1']                         , '#1a80b2'],
@@ -125,21 +127,133 @@ RADICAL-Analytics offers helper functions to plot resource utilizations. Current
 
 #. Create an ``ra.Experiment`` object and derive the provided and consumed resources for each metric:
 
-   .. code-block:: python
+   .. code-block::
 
     # Type of resource we want to plot: cpu or gpu
     rtype='gpu'
 
     # List of sessions of an experiment
-    sessions = [
-        '../data/raw/incite2021/re.session.login1.lei.018775.0008',
-        '../data/raw/incite2021/re.session.login1.lei.018775.0007',
-        '../data/raw/incite2021/re.session.login1.lei.018775.0004',
-        '../data/raw/incite2021/re.session.login1.lei.018775.0005'
-    ]
+    sessions = ['../data/raw/incite2021/re.session.login1.lei.018775.0005']
 
     # Get the resource utilization of the experiment for each metics
     exp = ra.Experiment(sessions, stype='radical.pilot')
-    provided, consumed, stats_abs, stats_rel, info = exp.utilization(metrics=metrics, rtype=rtype)
+    provided, consumed, stats_abs, stats_rel, info = exp.utilization(
+      metrics=metrics, rtype=rtype)
 
    ``stats_abs``, ``stats_rel``, ``info`` contain information that can be used to summarize resource utilization for each session of the experiment.
+
+#. Plot the resource utilization with Matplotlib:
+
+   .. code-block::
+
+    # LaTeX document column size (see RA Plotting Chapter)
+    csize = 252
+    fig, ax = plt.subplots(figsize=(ra.get_plotsize(csize)))
+
+    # Get the start time of each pilot
+    p_zeros = ra.get_pilots_zeros(exp)
+
+    # Plot legend, patched, X and Y axes objects (here we know we have only 1
+    # pilot)
+    legend, patches, x, y = ra.get_plot_utilization(metrics, consumed, p_zeros,
+                                                    sinfo['sid'],
+                                                    sinfo['pid'][0])
+
+    # Place all the patches, one for each metric, on the axes
+    for patch in patches:
+      ax.add_patch(patch)
+
+    # Title of the plot. Facultative, requires info about session (see RA Info
+    # Chapter)
+    ax.set_title('%s Tasks - %s Nodes' % (sinfo['ntask'], int(sinfo['nnodes'])))
+
+    # Format axes
+    ax.set_xlim([x['min'], x['max']])
+    ax.set_ylim([y['min'], y['max']])
+    ax.yaxis.set_major_locator(MaxNLocator(5))
+    ax.xaxis.set_major_locator(MaxNLocator(5))
+
+    # Add legend
+    fig.legend(legend, [m[0] for m in metrics],
+               loc='upper center', bbox_to_anchor=(0.5, 1.15), ncol=3)
+
+    # Add axes labels
+    fig.text(-0.02, 0.5, '%ss' % rtype.upper(), va='center',
+             rotation='vertical')
+    fig.text(0.5, -0.02, 'Time (s)', ha='center')
+
+    # Save a publication quality plot
+    plt.savefig('figures/incite_2021_ru.pdf', dpi=300, bbox_inches='tight')
+    plt.savefig('figures/incite_2021_ru.png', dpi=300, bbox_inches='tight')
+
+#. With multiple sessions added to the variable ``sessions``, we can utilize subplots to create a single figure with multiple resource utilization plots:
+
+   .. code-block::
+
+    # sessions you want to plot
+    splot = [os.path.basename(s) for s in sids_pruned]
+    nsids = len(splot)
+
+    # Create figure and 1 subplot for each session
+    # Use LaTeX document page size (see RA Plotting Chapter)
+    fwidth, fhight = ra.get_plotsize(516, subplots=(1, nsids))
+    fig, axarr = plt.subplots(1, nsids, sharex='col', figsize=(fwidth, fhight))
+
+    # Avoid overlapping between Y-axes ticks and sub-figures
+    plt.subplots_adjust(wspace=0.45)
+
+    # Generate the subplots with labels
+    i = 0
+    j = 'a'
+    legend = None
+    for sid in splot:
+
+        # Use a single plot if we have a single session
+        if nsids > 1:
+            ax = axarr[i]
+            ax.set_xlabel('(%s)' % j, labelpad=10)
+        else:
+            ax = axarr
+
+        # Get the start time of each pilot
+        p_zeros = ra.get_pilots_zeros(exp)
+
+        # Plot legend, patched, X and Y axes objects (here we know we have only 1 pilot)
+        legend, patches, x, y = ra.get_plot_utilization(metrics, consumed, p_zeros, sid, ss[sid]['p'].list('uid')[0])
+
+        # Place all the patches, one for each metric, on the axes
+        for patch in patches:
+            ax.add_patch(patch)
+
+        # Title of the plot. Facultative, requires info about session (see RA Info Chapter)
+        ax.set_title('%s Tasks - %s Nodes' % (ss[sid]['ntask'], int(ss[sid]['nnodes'])))
+
+        # Format axes
+        ax.set_xlim([x['min'], x['max']])
+        ax.set_ylim([y['min'], y['max']])
+        ax.yaxis.set_major_locator(MaxNLocator(5))
+        ax.xaxis.set_major_locator(MaxNLocator(5))
+
+        i = i+1
+        j = chr(ord(j) + 1)
+
+    # Add legend
+    fig.legend(legend, [m[0] for m in metrics],
+              loc='upper center', bbox_to_anchor=(0.5, 1.25), ncol=5)
+
+    # Add axes labels
+    fig.text( 0.05,  0.5, '%ss' % rtype.upper(), va='center', rotation='vertical')
+    fig.text( 0.5 , -0.2, 'Time (s)', ha='center')
+
+    # Save a publication quality plot
+    plt.savefig('figures/incite_2021_ru.pdf', dpi=300, bbox_inches='tight')
+    plt.savefig('figures/incite_2021_ru.png', dpi=300, bbox_inches='tight')
+
+The code above produces the following plots:
+
+.. image:: images/ru_v1.png
+    :width: 600
+    :alt: Single resource utilization plot
+
+.. image:: images/ru_v1_multi.png
+   :alt: Figure with multiple resource utilization plots

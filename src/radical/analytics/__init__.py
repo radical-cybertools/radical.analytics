@@ -12,7 +12,7 @@ from .plotter    import Plotter
 
 # ------------------------------------------------------------------------------
 #
-from .utils import get_plotsize, get_mplstyle, stack_transitions, get_pilot_series, get_plot_utilization
+from .utils import get_plotsize, get_mplstyle, stack_transitions, get_pilot_series, get_plot_utilization, get_pilots_zeros
 
 # ------------------------------------------------------------------------------
 #
@@ -32,5 +32,5 @@ logger.info('radical.analytics    version: %s' % version_detail)
 #
 __all__ = ('Experiment','Session','Entity','Plotter', 'get_plotsize',
            'get_mplstyle', 'stack_transitions', 'get_pilot_series',
-           'get_plot_utilization')
+           'get_plot_utilization', 'get_pilots_zeros')
 

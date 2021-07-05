@@ -2,6 +2,8 @@ import os
 import sys
 import glob
 import matplotlib as mpl
+import radical.utils as ru
+import radical.pilot as rp
 
 
 # ------------------------------------------------------------------------------
@@ -99,7 +101,7 @@ def stack_transitions(series):
 
 # ------------------------------------------------------------------------------
 #
-def get_pilot_series(session, pilots, tmap, resrc):
+def get_pilot_series(session, pilot, tmap, resrc):
 
     # get total pilot resources and runtime
     p_resrc = {'cpu': pilot.cfg['cores'],
@@ -150,7 +152,6 @@ def get_pilot_series(session, pilots, tmap, resrc):
             try:
                 t_resrc = {'cpu': entity.resources['cpu'],
                            'gpu': entity.resources['gpu']}
-                display(entity.resources)
 
             except:
                 if 'request' not in entity.uid:
@@ -165,7 +166,7 @@ def get_pilot_series(session, pilots, tmap, resrc):
 
             # we need to work around the fact that sub-agents have no separate
             # entity type, but belong to the pilot.  So instead we assign them
-            # resources of 1 node.  We tage those data from the pilot.
+            # resources of 1 node.  We take those data from the pilot.
             if 'agent' in str(event):
                 t_resrc = {'cpu': pilot.cfg['cores_per_node'],
                            'gpu': pilot.cfg['gpus_per_node' ]}
@@ -210,8 +211,6 @@ def get_pilot_series(session, pilots, tmap, resrc):
                     if use_percent:
                         rel = value / p_resrc[r] * 100
                         series[r][m].append([c[0], rel])
-                      # if rel > 100:
-                      #     print(r, m, c, rel)
                     else:
                         series[r][m].append([c[0], value])
                 else:
@@ -220,13 +219,25 @@ def get_pilot_series(session, pilots, tmap, resrc):
     return p_resrc, series, x_min, x_max
 
 
+#
+#
+def get_pilots_zeros(ra_exp_obj):
+
+    p_zeros = {}
+    for session in ra_exp_obj.sessions:
+        p_zeros[session.uid] = {}
+        for pilot in session.get(etype='pilot'):
+            p_zeros[session.uid][pilot.uid] = pilot.timestamps(
+                event={ru.EVENT: 'bootstrap_0_start'})[0]
+
+    return p_zeros
+
+
+
 # ------------------------------------------------------------------------------
 #
-def get_plot_utilization(metrics, consumed, p_zeros, sid):
-    # return legend, patches
+def get_plot_utilization(metrics, consumed, p_zeros, sid, pid):
 
-    step = 1.0 / (len(metrics) + 1)
-    this = step / 1.0
     legend = list()
 
     x_min = None
@@ -243,16 +254,14 @@ def get_plot_utilization(metrics, consumed, p_zeros, sid):
         legend.append(mpl.lines.Line2D([0], [0], color=color, lw=6))
 
         if isinstance(metric, list):
-            name = metric[0]
             parts = metric[1]
         else:
-            name = metric
             parts = [metric]
 
         for part in parts:
             for uid in consumed[sid][part]:
                 for block in consumed[sid][part][uid]:
-                    orig_x = block[0] - p_zeros[sid]
+                    orig_x = block[0] - p_zeros[sid][pid]
                     orig_y = block[2] - 0.5
                     width  = block[1] - block[0]
                     height = block[3] - block[2] + 1.0
@@ -278,7 +287,6 @@ def get_plot_utilization(metrics, consumed, p_zeros, sid):
                                                   fill=True, lw=0.0)
 
                     patches.append(patch)
-                    # ax.add_patch(patch)
 
     x = {'min': x_min, 'max': x_max}
     y = {'min': y_min, 'max': y_max}
