@@ -83,7 +83,7 @@ To measure that duration, first, we filter the session object so to keep only th
     duration = pilots.duration(event=rp.utils.PILOT_DURATIONS_DEBUG['p_agent_runtime'])
     print(duration)
 
-.. note:: This works for a set of pilots, including the corner case in which we have a single pilot. If we have a single pilot, the cumulative active time of all the pilots is equal to the active time of the only available pilot.
+.. note:: This works for a set of pilots, including the case in which we have a single pilot. If we have a single pilot, the cumulative active time of all the pilots is equal to the active time of the only available pilot.
 
 If we have more than one pilot and we want to measure the active time of one of them, then we need to perform a local analysis. A rapid way to get a list of all the pilot entities in the session and, for example, see their unique identifiers (uid) is:
 
