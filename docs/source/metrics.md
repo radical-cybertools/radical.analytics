@@ -48,7 +48,7 @@ Pictorially, we represent this profile the following glyphs:
 
   * Start/End: '|'
   * Idling: '.'
-  * Staging: '-' 
+  * Staging: '-'
   * Running: '='
 
 and the following diagram:
@@ -148,12 +148,12 @@ Mathematically, we can calculate TTX_C of (1), (2) and (3):
 (1)
 
 
-  TTX_C =  D(1-8)   + D(9-10)  + D(11-30) + D(31-33) + D(34-41) + D(42-51)  + 
+  TTX_C =  D(1-8)   + D(9-10)  + D(11-30) + D(31-33) + D(34-41) + D(42-51)  +
            D(60-61) + D(62-70) + D(71-77) + D(78-80) + D(81-88) + D(89-100)
         =  8 + 2 + 20 + 3 + 8 + 10 +
            2 + 9 + 7  + 3 + 8 + 12
         =  51 + 41 = 92s
-``` 
+```
 
 Note that:
 - The projection of all states of C_0 and C_0 are contiguous but not overlapping;
@@ -197,7 +197,7 @@ optimization of C should minimize. For case (1), C idles for:
 ```
   Idling_C =  D(1-8)   + D(31-33) +
               D(60-61) + D(78-80)
-           =  8 + 3 + 
+           =  8 + 3 +
               2 + 3
            =  16s
 ```
@@ -326,18 +326,18 @@ Example:
 
     A resource R consists of 2 cores [R_0, R_1].  R is available for T_r = 1h.
     The allocation A is 2 core-hours (120 core minutes.
-    
+
     An application A consists of tasks [A_0, ..., A_3] which use 2 cores, thus
     R_a = 2.  Each task runs for T_a = 10 min.
-    
+
     The runtime system consists of 2 components [S_0, S_1].  Each uses 1 core
     (R_s), and uses that core for 2 min (T_s).
-    
+
     Overall allocation:
         A_r  =    R       * T_r
              =    2 cores * 60 min
              =  120 core-min
-        
+
     Allocation used by the application:
         A_0  = R_a0       * T_a0
              =    2 cores * 10 min
@@ -345,7 +345,7 @@ Example:
         A_a  = sum(A_n)                    # integration
              =  A_0 + A_1 + A_2 + A_3
              =   80 core_min
-        
+
     Allocation used by the system:
         A_0  = R_s0       * T_s0
              =    1 cores * 2 min
@@ -353,22 +353,22 @@ Example:
         A_s  = sum(S_n)                    # integration
              =  A_0 + A_1
              =    4 core_min
-             
+
     Utilization (resource use by application integrated over time)
         U    = A_a * 100% / A_r
              = 80 core-min * 100 % / 120 core_min
              = 66.6%
-             
+
     Overhead (resource use by system over time)
         O    = A_s * 100 % / A_r
              = 4 core-min * 100 % / 120 core_min
              = 3.33 %
-             
+
     Idle time (resource unused by application and system)
         I    = 100 % - U - O
              = 100 % - 66.66 % - 3.33 %
              =  30 %
-    
+
 Sometimes, idle times can be attributed to a cause.  For example, a resource can
 be idle because a system stalls on a global operation on a different resource,
 or it has a core reserved for an application use but did not manage to start the
