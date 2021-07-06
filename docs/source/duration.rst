@@ -3,12 +3,12 @@
 Durations
 =========
 
-In RA, `duration` is a generl term to indicate a measure of the time spent by an instace of an entity (local analyses) or a set of instances of an entity (global analyses) between two timestamps. For example, staging, scheduling, pre-execute, execute time of one or more compute units; description, submission and execution time of one or more pipelines or stages; and runtime of one or more pilots.
+In RA, ``duration`` is a general term to indicate a measure of the time spent by an instance of an entity (local analyses) or a set of instances of an entity (global analyses) between two timestamps. For example, staging, scheduling, pre-execute, execute time of one or more compute tasks; description, submission and execution time of one or more pipelines or stages; and runtime of one or more pilots.
 
 Default Durations
 -----------------
 
-Currently, we offer a set of default durations for the entity types Pilot and Compute Unit that:
+Currently, we offer a set of default durations for the entity types Pilot and Task that:
 
 .. code-block:: python
    :linenos:
@@ -20,11 +20,11 @@ Currently, we offer a set of default durations for the entity types Pilot and Co
     import radical.analytics as ra
 
     pd_debug = rp.utils.PILOT_DURATIONS_DEBUG
-    ud_debug = rp.utils.UNIT_DURATIONS_DEBUG
+    ud_debug = rp.utils.TASK_DURATIONS_DEBUG
 
     print('Default pilot debug durations: %s' %
         [pd_debug[x].keys() for x in pd_debug])
-    print('Default unit debug durations: %s' %
+    print('Default task debug durations: %s' %
         [ud_debug[x].keys() for x in ud_debug])
 
 That code produce the following lists of durations::
@@ -37,29 +37,29 @@ Most of those durations are meant for **debugging** as they are as granular as p
 
 - **p_agent_runtime**: the amount of time for which one or more pilots (i.e., RP Agent) were active.
 - **p_pmngr_scheduling**: the amount of time one or more pilots waited in the queue of the HPC batch system.
-- **u_agent_stage_in**: the amount of time taken to stage the input data of one or more units.
-- **u_agent_schedule**: the amount of time taken to schedule of one or more units.
-- **u_agent_cu_pre_execute**: the amount of time taken to execute the ``pre_exec`` of one or more units.
-- **u_agent_cu_execute**: the amount of time taken to execute the executable of one or more units.
-- **u_agent_cu_stage_out**: the amount of time taken to stage the output data of one or more units.
+- **u_agent_stage_in**: the amount of time taken to stage the input data of one or more tasks.
+- **u_agent_schedule**: the amount of time taken to schedule of one or more tasks.
+- **u_agent_t_pre_execute**: the amount of time taken to execute the ``pre_exec`` of one or more tasks.
+- **u_agent_t_execute**: the amount of time taken to execute the executable of one or more tasks.
+- **u_agent_t_stage_out**: the amount of time taken to stage the output data of one or more tasks.
 
 Arbitrary Durations
 -------------------
 
-RA enables the **arbitrary** definition of durations. What duration you need, depends on why you need a certain measure. For example, given an experiment to charaterize the performance of one of RP executors, it might be useful to measure the amount of time spent by each compute unit in the Executor component. Correctly defining that duration requires a detailed understanding of both `RP architecture <https://github.com/radical-cybertools/radical.pilot/wiki/Architecture>`_ and `event model <https://github.com/radical-cybertools/radical.pilot/blob/devel/docs/source/events.md>`_. Once we acquired that understanding, we can define our duration as:
+RA enables the **arbitrary** definition of durations. What duration you need, depends on why you need a certain measure. For example, given an experiment to charaterize the performance of one of RP executors, it might be useful to measure the amount of time spent by each compute task in the Executor component. Correctly defining that duration requires a detailed understanding of both `RP architecture <https://github.com/radical-cybertools/radical.pilot/wiki/Architecture>`_ and `event model <https://github.com/radical-cybertools/radical.pilot/blob/devel/docs/source/events.md>`_. Once we acquired that understanding, we can define our duration as:
 
 .. code-block:: python
 
-    u_executor = [{ru.EVENT: 'state', ru.STATE: rps.AGENT_EXECUTING},
+    t_executor = [{ru.EVENT: 'state', ru.STATE: rps.AGENT_EXECUTING},
                   {ru.EVENT: 'exec_stop', ru.STATE: None}]
 
-We have to recognize that ``u_executor`` contains the time spent executing the compute unit's executable. If our goal is to isolate the time spent by each unit in the executor module, then we will have to:
+We have to recognize that ``u_executor`` contains the time spent executing the compute task's executable. If our goal is to isolate the time spent by each task in the executor module, then we will have to:
 
 .. code-block:: python
 
-    u_executor_lifetime = u_executor - u_agent_cu_execute
+    t_executor_lifetime = t_executor - t_agent_t_execute
 
-At this point, we can calculate ``u_executor_lifetime`` for each unit and, say, plot the boxplot of the time spent by the compute units in the executor.
+At this point, we can calculate ``u_executor_lifetime`` for each task and, say, plot the boxplot of the time spent by the compute tasks in the executor.
 
 Analyses Based on Durations
 ---------------------------
@@ -71,9 +71,9 @@ Every analysis with RA requires to load the traces produced by RADICAL-Pilot (RP
     src = 'path/to/client_sanbox'
     session = ra.Session.create(src, stype)
 
-As seen above, durations measure the time spent by an instance of an entity (local analyses) or a set of instances of an entity (global analyses) between two timestamps. For example, staging, scheduling, pre-execute, execute time of one or more compute units; description, submission and execution time of one or more pipelines or stages; and runtime of one or more pilots.
+As seen above, durations measure the time spent by an instance of an entity (local analyses) or a set of instances of an entity (global analyses) between two timestamps. For example, staging, scheduling, pre-execute, execute time of one or more compute tasks; description, submission and execution time of one or more pipelines or stages; and runtime of one or more pilots.
 
-We starts with a global analysis to measure for how long all the pilots of our run have been active. Looking at the `event model <https://github.com/radical-cybertools/radical.pilot/blob/devel/docs/source/events.md#bootstrap_0sh>`__ of the entity of type ``pilot`` and to ``rp.utils.PILOT_DURATIONS_DEBUG``, we know that a pilot is active between the event ``UMGR_STAGING_OUTPUT`` and one of the final events ``DONE``, ``CANCELED`` or ``FAILED``. We also know that we have a default duration with those events: ``p_agent_runtime``.
+We starts with a global analysis to measure for how long all the pilots of our run have been active. Looking at the `event model <https://github.com/radical-cybertools/radical.pilot/blob/devel/docs/source/events.md#bootstrap_0sh>`__ of the entity of type ``pilot`` and to ``rp.utils.PILOT_DURATIONS_DEBUG``, we know that a pilot is active between the event ``TMGR_STAGING_OUTPUT`` and one of the final events ``DONE``, ``CANCELED`` or ``FAILED``. We also know that we have a default duration with those events: ``p_agent_runtime``.
 
 To measure that duration, first, we filter the session object so to keep only the entities of type Pilot; and, second, we get the **cumulative** amount of time for which all the pilot were active:
 
@@ -100,17 +100,17 @@ Once we know the ID of the pilot we want to analyze, first we filter the session
     duration = pilot.duration(event=rp.utils.PILOT_DURATIONS_DEBUG['p_agent_runtime'])
     print(duration)
 
-The same approach and both global and local analyses can be performed for every type of entity supported by RA (currently, Pilot, Unit, Pipeline, Stage and Task).
+The same approach and both global and local analyses can be performed for every type of entity supported by RA (currently, Pilot, Task, Pipeline, Stage and Task).
 
 Danger of Duration-Based Analyses
 ---------------------------------
 
-Most of the time, the durations of **global analyses** are **NOT** additive. This means that, for example, the sum of the total time taken by RP Agent to manage all the compute units and the total amount of time taken to execute all those compute units is **greater** than the time taken to execute all the workload. This is because RP is a distributed system that performs multiple operations at the same time on multiple resources. Thus, while RP Agent manages a compute unit, it might be executing another compute unit.
+Most of the time, the durations of **global analyses** are **NOT** additive. This means that, for example, the sum of the total time taken by RP Agent to manage all the compute tasks and the total amount of time taken to execute all those compute tasks is **greater** than the time taken to execute all the workload. This is because RP is a distributed system that performs multiple operations at the same time on multiple resources. Thus, while RP Agent manages a compute task, it might be executing another compute task.
 
 Consider three durations:
 
-1. **u_agent_cu_load**: the time from when RP Agent receives a compute unit to the time in which the compute unit's executable is launched.
-2. **u_agent_cu_execute**: default duration for the time taken by a compute unit's executable to execute.
-3. **u_agent_cu_load**: the time from when a compute unit's executable finishes to execute to when RP Agent mark the compute unit with a final state (DONE, CANCELED or FAILED).
+1. **t_agent_t_load**: the time from when RP Agent receives a compute task to the time in which the compute task's executable is launched.
+2. **t_agent_t_execute**: default duration for the time taken by a compute task's executable to execute.
+3. **t_agent_t_load**: the time from when a compute task's executable finishes to execute to when RP Agent mark the compute task with a final state (DONE, CANCELED or FAILED).
 
-For a single compute unit, ``u_agent_cu_load``, ``u_agent_cu_execute`` and ``u_agent_cu_load`` are contagious and therefore additive. A single compute unit cannot be loaded by RP Agent while it is also executed. For multiple compute units, this does not apply: one compute units might be loaded by RP Agent while another compute unit is being executed.
+For a single compute task, ``t_agent_t_load``, ``t_agent_t_execute`` and ``t_agent_t_load`` are contagious and therefore additive. A single compute task cannot be loaded by RP Agent while it is also executed. For multiple compute tasks, this does not apply: one compute tasks might be loaded by RP Agent while another compute task is being executed.
