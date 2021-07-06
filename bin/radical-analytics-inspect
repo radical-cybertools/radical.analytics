@@ -121,12 +121,12 @@ for session in $ARGS
 do
     sid=$(basename $session)
     echo -n "$sid "
-    $bin/rp_inspect/plot_state.py  "$session" && echo -n .
-    $bin/rp_inspect/plot_dur.py    "$session" && echo -n .
-    $bin/rp_inspect/plot_conc.py   "$session" && echo -n .
-    $bin/rp_inspect/plot_rate.py   "$session" && echo -n .
-    $bin/rp_inspect/plot_util.py   "$session" && echo -n .
-    $bin/rp_inspect/plot_util_2.py "$session" && echo -n .
+    print('STATE:'); $bin/rp_inspect/plot_state.py  "$session" && echo -n .
+    print('DUR  :'); $bin/rp_inspect/plot_dur.py    "$session" && echo -n .
+    print('CONC :'); $bin/rp_inspect/plot_conc.py   "$session" && echo -n .
+    print('RATE :'); $bin/rp_inspect/plot_rate.py   "$session" && echo -n .
+    print('UTIL :'); $bin/rp_inspect/plot_util.py   "$session" && echo -n .
+    print('UTIL2:'); $bin/rp_inspect/plot_util_2.py "$session" && echo -n .
     echo " done"
 done
 
