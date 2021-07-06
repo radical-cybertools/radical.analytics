@@ -396,8 +396,7 @@ for pilot in pilots.get():
 
     plt.subplots_adjust(hspace=.0)
     fig.suptitle('%s - %s resources usage' % (name, pilot.uid))
-    fname = '%s.%s.util.png' % (name, pilot.uid)
-  # fname = 'util.png'
+    fname = '%s.%s.util2.png' % (name, pilot.uid)
     fig.savefig(fname)
   # plt.show()
 
