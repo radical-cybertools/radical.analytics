@@ -1,6 +1,8 @@
 import os
 import sys
 import glob
+import functools
+import pandas as pd
 import matplotlib as mpl
 import radical.utils as ru
 import radical.pilot as rp
@@ -57,7 +59,7 @@ def get_mplstyle(name):
 
 # ------------------------------------------------------------------------------
 #
-def stack_transitions(series):
+def stack_transitions(series, tresource, to_stack):
     '''create data frames for each metric and combine them into one data frame
     for alignment. Since transitions obviously happen at arbitrary times, the
     timestamps for metric A may see no transitions for metric B.  When using a
@@ -67,8 +69,8 @@ def stack_transitions(series):
     transition happens.
     '''
 
-    dfs = [pd.DataFrame(series[r][m], columns=['time', m])
-            for m in series[r]]
+    dfs = [pd.DataFrame(series[tresource][m], columns=['time', m])
+            for m in series[tresource]]
 
     # merge them into one data frame, creating a common time-line
     merged = functools.reduce(lambda left, right:
@@ -84,12 +86,12 @@ def stack_transitions(series):
 
     # stacked plotting and area filling don't play well together in
     # matplotlib, so instead we use normal (unstacked) plot routines and
-    # fill inbetween.  We thus manually compute the stacked numbers:
+    # fill in between.  We thus manually compute the stacked numbers:
     # copy the timeline to a new data frame
     stacked = merged[['time']].copy()
     prev    = list()
 
-    # for each metric, copy the metric column and add all previous colums
+    # for each metric, copy the metric column and add all previous columns
     for m in to_stack:
         stacked[m] = merged[m]
         for p in prev:
@@ -101,7 +103,7 @@ def stack_transitions(series):
 
 # ------------------------------------------------------------------------------
 #
-def get_pilot_series(session, pilot, tmap, resrc):
+def get_pilot_series(session, pilot, tmap, resrc, use_percent=True):
 
     # get total pilot resources and runtime
     p_resrc = {'cpu': pilot.cfg['cores'],
@@ -115,8 +117,10 @@ def get_pilot_series(session, pilot, tmap, resrc):
     x_min  = 0
     x_max  = t_span + 0.05 * t_span
 
-    # derive the pilot resource transition points from the metrics
-    rpp = rp.utils.prof_utils
+    # derive the pilot resource transition points from the metrics. Metrics
+    # might be pulled from rp.utils but should be consistent with those used for
+    # RU v.1.
+    # rpp = rp.utils.prof_utils
 
     # get all contributions
     metrics = list()
@@ -152,17 +156,26 @@ def get_pilot_series(session, pilot, tmap, resrc):
             try:
                 t_resrc = {'cpu': entity.resources['cpu'],
                            'gpu': entity.resources['gpu']}
+                if 'task' in entity.uid:
+                    td = entity.description
+                    cores = td['cpu_processes'] * td['cpu_threads']
+                    gpus  = td['cpu_processes'] * td['gpu_processes']
+                    t_resrc = {'cpu': cores,
+                            'gpu': gpus}
 
             except:
-                if 'request' not in entity.uid:
-                    print('guess resources for %s' % entity.uid)
+                # if 'request' not in entity.uid:
+                #     print('guess resources for %s' % entity.uid)
 
-                if 'pilot' in entity.uid:
-                    t_resrc = {'cpu': 1024 * 40,
-                               'gpu': 1024 *  8}
-                else:
-                    t_resrc = {'cpu': 1,
-                               'gpu': 0}
+                # if 'pilot' in entity.uid:
+                #     t_resrc = {'cpu': 1024 * 40,
+                #                'gpu': 1024 *  8}
+                # else:
+                #     t_resrc = {'cpu': 1,
+                #                'gpu': 0}
+                raise RuntimeError(entity.uid + 'is missing resource '
+                    ' information. RA cannot know how many cores/GPUs were'
+                    ' requested. Session is likely corrupted. Aborting.')
 
             # we need to work around the fact that sub-agents have no separate
             # entity type, but belong to the pilot.  So instead we assign them
@@ -216,10 +229,12 @@ def get_pilot_series(session, pilot, tmap, resrc):
                 else:
                     series[r][m].append([c[0], 0])
 
-    return p_resrc, series, x_min, x_max
+    x = {'min': x_min, 'max': x_max}
+
+    return p_resrc, series, x
 
 
-#
+# ------------------------------------------------------------------------------
 #
 def get_pilots_zeros(ra_exp_obj):
 
