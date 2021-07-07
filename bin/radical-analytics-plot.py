@@ -8,13 +8,15 @@ import optparse
 import numpy             as np
 import matplotlib.pyplot as plt
 import radical.analytics as ra
+import radical.analytics as ra
+
+from ra.utils import to_latex
 
 
 # ----------------------------------------------------------------------------
-# Global configurations
-# ----------------------------------------------------------------------------
-# matplotlib style
+#
 plt.style.use(ra.get_mplstyle("radical_mpl"))
+
 
 # ------------------------------------------------------------------------------
 #
@@ -36,7 +38,7 @@ STYLE     = 'line'  # 'point', 'line', 'step', 'bar', 'hist'
 GRID      = False   # True, False
 FNAME     = None
 SAVE_AS   = 'x11'   # 'svg', 'png', 'x11', 'pdf'
-WIDTH     = 252
+WIDTH     = 500
 
 
 # ------------------------------------------------------------------------------
@@ -237,8 +239,8 @@ try:
     cnum    = 0
     for col in COLUMNS_Y:
 
-        if LEGEND: label = LEGEND[cnum]
-        else     : label = str(cnum)
+        if LEGEND: label = to_latex(LEGEND[cnum])
+        else     : label = to_latex(str(cnum))
         cnum += 1
 
         if COLUMN_X == 'count':
@@ -297,8 +299,8 @@ if LEGEND != ['-']:
 if TITLE   : ax.set_title(TITLE, loc='center')
 if LOG_X   : ax.set_xscale('log')
 if LOG_Y   : ax.set_yscale('log')
-if LABEL_X : ax.set_xlabel(LABEL_X)
-if LABEL_Y : ax.set_ylabel(LABEL_Y)
+if LABEL_X : ax.set_xlabel(to_latex(LABEL_X))
+if LABEL_Y : ax.set_ylabel(to_latex(LABEL_Y))
 if TICKS_X : ax.set_xticks([int(t) for t in TICKS_X], TICKS_X)
 if TICKS_Y : ax.set_yticks([int(t) for t in TICKS_Y], TICKS_Y)
 if GRID    : ax.grid(True)
@@ -313,6 +315,7 @@ if not FNAME:
     FNAME = TITLE.lower().replace(' ', '_')
     FNAME = FNAME.replace(':', '_-_')
     FNAME = FNAME.replace('__', '_')
+
 if   SAVE_AS == 'png': fig.savefig('%s.png' % FNAME, bbox_inches="tight")
 elif SAVE_AS == 'svg': fig.savefig('%s.svg' % FNAME, bbox_inches="tight")
 elif SAVE_AS == 'pdf': fig.savefig('%s.pdf' % FNAME, dpi=300,

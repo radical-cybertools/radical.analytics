@@ -12,6 +12,16 @@ import radical.utils     as ru
 import radical.pilot     as rp
 import radical.analytics as ra
 
+from radical.analytics.utils import to_latex
+
+
+# ----------------------------------------------------------------------------
+#
+plt.style.use(ra.get_mplstyle("radical_mpl"))
+
+
+# ----------------------------------------------------------------------------
+#
 states  = [
            [rp.NEW                          , '#660000'],
          # [rp.TMGR_SCHEDULING_PENDING      , '#000000'],
@@ -61,22 +71,22 @@ if __name__ == '__main__':
     src = sys.argv[1]
     session = ra.Session.create(src, 'radical.pilot')
 
-    data = {metric: session.concurrency(event=metrics[metric], sampling=10.0)
+    data = {metric: session.concurrency(event=metrics[metric], sampling=1.0)
             for metric in metrics}
 
     # prep figure
-    fig  = plt.figure(figsize=(10,7))
-    ax   = fig.add_subplot(111)
+    fig, ax = plt.subplots(figsize=ra.get_plotsize(500))
 
     for metric in data:
         x = [e[0] for e in data[metric]]
         y = [e[1] for e in data[metric]]
-        plt.step(x, y, color=colors[metric], label=metric, where='post')
+        plt.step(x, y, color=colors[metric], label=to_latex(metric),
+                       where='post')
 
-    ax.legend(list(data.keys()), ncol=3, loc='upper center',
-                                 bbox_to_anchor=(0.5,1.11))
-    plt.xlabel('time [s]')
-    plt.ylabel('concurrency (#tasks)')
+    ax.legend(to_latex(list(data.keys())))
+    # FIXME: why is the x-axis label gone?
+    plt.xlabel(to_latex('time [s]'))
+    plt.ylabel(to_latex('concurrency (#tasks)'))
 
     fig.savefig('%s_conc.png' % session.uid)
   # plt.show()

@@ -80,7 +80,7 @@ We now have everything we need to plot the resource utilization with Matplotlib:
         # Plot legend, patched, X and Y axes objects (assume one pilot)
         pid = sinfo['pid'][0]
         legend, patches, x, y = ra.get_plot_utilization(metrics,
-                        consumed, p_zeros[sid][pid], sinfo['sid'], pid)
+                        consumed, p_zeros[sid][pid], sinfo['sid'])
 
         # Place all the CPU and GPU patches, one for each metric,
         # on the respective axes
@@ -174,7 +174,7 @@ With multiple sessions added to the variable ``sessions``, we can utilize subplo
 
             # Plot legend, patched, X and Y axes objects
             legend, patches, x, y = ra.get_plot_utilization(metrics, consumed,
-                            p_zeros[sid][pid], sid, pid)
+                            p_zeros[sid][pid], sid)
 
             # Place all the patches, one for each metric, on the axes
             for patch in patches:
@@ -264,7 +264,7 @@ The definition of metrics needs to be accompanied by the explicit definition of 
             [{5: 'PMGR_ACTIVE'}           , 'bootstrap'  , 'idle'       ],
             [{1: 'cmd', 6: 'cancel_pilot'}, 'idle'       , 'term'       ],
             [{1: 'bootstrap_0_stop'}      , 'term'       , 'system'     ],
-            [{1: 'sub_agent_start'}       , 'idle'       ,'agent'       ],
+            [{1: 'sub_agent_start'}       , 'idle'       , 'agent'      ],
             [{1: 'sub_agent_stop'}        , 'agent'      , 'term'       ]
             ]
 
@@ -315,7 +315,7 @@ Currently, aggregated resource utilization does not support ``ra.Experiment``. T
     sid     = '../data/raw/incite2021/re.session.login1.lei.018775.0005'
     sname   = os.path.basename(sid)
     session = ra.Session.create(src=sid, stype='radical.pilot')
-    pilots  = session.filter(etype='pilot', inplace=False)
+    pilot   = session.get(etype='pilot')[0]
 
 
 Durations and Stacking
@@ -325,106 +325,103 @@ Durations and Stacking
    :linenos:
 
     # metrics to stack and to plot
-    to_stack = [m[0] for m in metrics]
+    to_stack = [m[0]       for m in metrics]
     to_plot  = {m[0]: m[1] for m in metrics}
 
     # Use to set Y-axes to % of resource utilization
     use_percent = True
 
-    # one plot per pilot
-    for pilot in pilots.get():
+    # Derive pilot and task timeseries of a session for each metric
+    p_resrc, series, x = ra.get_pilot_series(session, pilot, tmap, resrc, use_percent)
 
-        # Derive pilot and task timeseries of a session for each metric
-        p_resrc, series, x = ra.get_pilot_series(session, pilot, tmap, resrc, use_percent)
+    # #plots = # of resource types (e.g., CPU/GPU = 2 resource types = 2 plots)
+    n_plots = 0
+    for r in p_resrc:
+        if p_resrc[r]:
+            n_plots += 1
 
-        # #plots = # of resource types (e.g., CPU/GPU = 2 resource types = 2 plots)
-        n_plots = 0
-        for r in p_resrc:
-            if p_resrc[r]:
-                n_plots += 1
+    # sub-plots for each resource type, legend on first, x-axis shared
+    fig = plt.figure(figsize=(ra.get_plotsize(252)))
+    gs  = mpl.gridspec.GridSpec(n_plots, 1)
 
-        # sub-plots for each resource type, legend on first, x-axis shared
-        fig = plt.figure(figsize=(ra.get_plotsize(252)))
-        gs  = mpl.gridspec.GridSpec(n_plots, 1)
+    for plot_id, r in enumerate(resrc):
 
-        for plot_id, r in enumerate(resrc):
+        if not p_resrc[r]:
+            continue
 
-            if not p_resrc[r]:
+        # create sub-plot
+        ax = plt.subplot(gs[plot_id])
+
+        # stack timeseries for each metrics into areas
+        areas = ra.stack_transitions(series, r, to_stack)
+
+        # plot individual metrics
+        prev_m  = None
+        lines   = list()
+        patches = list()
+        legend  = list()
+        for num, m in enumerate(areas.keys()):
+
+            if m not in to_plot:
+                if m != 'time':
+                    print('skip', m)
                 continue
 
-            # create sub-plot
-            ax = plt.subplot(gs[plot_id])
+            lcol   = to_plot[m][0]
+            lalpha = to_plot[m][1]
+            pcol   = to_plot[m][2]
+            palpha = to_plot[m][3]
 
-            # stack timeseries for each metrics into areas
-            areas = ra.stack_transitions(series, r, to_stack)
+            # plot the (stacked) areas
+            line, = ax.step(areas['time'], areas[m], where='post', label=m,
+                            color=lcol, alpha=lalpha, linewidth=1.0)
 
-            # plot individual metrics
-            prev_m  = None
-            lines   = list()
-            patches = list()
-            legend  = list()
-            for num, m in enumerate(areas.keys()):
+            # fill first metric toward 0, all others towards previous line
+            if not prev_m:
+                patch = ax.fill_between(areas['time'], areas[m],
+                                        step='post', label=m, linewidth=0.0,
+                                        color=pcol, alpha=palpha)
 
-                if m not in to_plot:
-                    if m != 'time':
-                        print('skip', m)
-                    continue
-
-                lcol   = to_plot[m][0]
-                lalpha = to_plot[m][1]
-                pcol   = to_plot[m][2]
-                palpha = to_plot[m][3]
-
-                # plot the (stacked) areas
-                line, = ax.step(areas['time'], areas[m], where='post', label=m,
-                                color=lcol, alpha=lalpha, linewidth=1.0)
-
-                # fill first metric toward 0, all others towards previous line
-                if not prev_m:
-                    patch = ax.fill_between(areas['time'], areas[m],
-                                            step='post', label=m, linewidth=0.0,
-                                            color=pcol, alpha=palpha)
-
-                else:
-                    patch = ax.fill_between(areas['time'], areas[m], areas[prev_m],
-                                            step='post', label=m, linewidth=0.0,
-                                            color=pcol, alpha=palpha)
-
-                # remember lines and patches for legend
-                legend.append(m.replace('_', '-'))
-                patches.append(patch)
-
-                # remember this line to fill against
-                prev_m = m
-
-            ax.set_xlim([x['min'], x['max']])
-            if use_percent:
-                ax.set_ylim([0, 110])
             else:
-                ax.set_ylim([0, p_resrc[r]])
+                patch = ax.fill_between(areas['time'], areas[m], areas[prev_m],
+                                        step='post', label=m, linewidth=0.0,
+                                        color=pcol, alpha=palpha)
 
-            ax.set_xlabel('time (s)')
-            ax.set_ylabel('%s (%s)' % (r, '\%'))
+            # remember lines and patches for legend
+            legend.append(m.replace('_', '-'))
+            patches.append(patch)
 
+            # remember this line to fill against
+            prev_m = m
 
-            # first sub-plot gets legend
-            if plot_id == 0:
-                ax.legend(patches, legend, loc='upper center', ncol=4,
-                        bbox_to_anchor=(0.5, 1.8), fancybox=True, shadow=True)
-
-        for ax in fig.get_axes():
-            ax.label_outer()
-
-        # Title of the plot
-        if ss[sname]['npilot'] == 1:
-            fig.suptitle('%s Tasks - %s Nodes' % (ss[sname]['ntask'], ss[sname]['nnodes']))
+        ax.set_xlim([x['min'], x['max']])
+        if use_percent:
+            ax.set_ylim([0, 110])
         else:
-            fig.suptitle('%s: %s Tasks - %s Nodes' % (pilot.uid, ss[sname]['ntask'], int(ss[sname]['nnodes'])))
+            ax.set_ylim([0, p_resrc[r]])
 
-        # Save a publication quality plot
-        fname = '%s_%s_incite_2021_ru_area' % (sname, pilot.uid)
-        fig.savefig('figures/%s.pdf' % fname, dpi=300, bbox_inches='tight')
-        fig.savefig('figures/%s.png' % fname, dpi=300, bbox_inches='tight')
+        ax.set_xlabel('time (s)')
+        ax.set_ylabel('%s (%s)' % (r, '\%'))
+
+
+        # first sub-plot gets legend
+        if plot_id == 0:
+            ax.legend(patches, legend, loc='upper center', ncol=4,
+                    bbox_to_anchor=(0.5, 1.8), fancybox=True, shadow=True)
+
+    for ax in fig.get_axes():
+        ax.label_outer()
+
+    # Title of the plot
+    if ss[sname]['npilot'] == 1:
+        fig.suptitle('%s Tasks - %s Nodes' % (ss[sname]['ntask'], ss[sname]['nnodes']))
+    else:
+        fig.suptitle('%s: %s Tasks - %s Nodes' % (pilot.uid, ss[sname]['ntask'], int(ss[sname]['nnodes'])))
+
+    # Save a publication quality plot
+    fname = '%s_%s_incite_2021_ru_area' % (sname, pilot.uid)
+    fig.savefig('figures/%s.pdf' % fname, dpi=300, bbox_inches='tight')
+    fig.savefig('figures/%s.png' % fname, dpi=300, bbox_inches='tight')
 
 
 The code of the steps above produces the following plot:

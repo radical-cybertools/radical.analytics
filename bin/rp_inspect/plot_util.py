@@ -12,6 +12,14 @@ import matplotlib.pyplot as plt
 import radical.utils     as ru
 import radical.analytics as ra
 
+from radical.analytics.utils import to_latex
+
+
+# ----------------------------------------------------------------------------
+#
+plt.style.use(ra.get_mplstyle("radical_mpl"))
+
+
 
 # This script plots the core utilization of a set of RP sessions in a stacked
 # barplot, where the stacked elements represent how the cores were (or were not)
@@ -91,6 +99,14 @@ metrics_default = [
 
 metrics = metrics_default
 
+metrics = [
+    ['Bootstrap', ['boot', 'setup_1']                         , '#c6dbef'],
+    ['Warmup'   , ['warm' ]                                   , '#f0f0f0'],
+    ['Schedule' , ['exec_queue','exec_prep', 'unschedule']    , '#c994c7'],
+    ['Exec RP'  , ['exec_rp', 'exec_sh', 'term_sh', 'term_rp'], '#fdbb84'],
+    ['Exec Cmd' , ['exec_cmd']                                , '#e31a1c'],
+    ['Cooldown' , ['drain']                                   , '#addd8e']
+]
 
 # ------------------------------------------------------------------------------
 #
@@ -102,95 +118,71 @@ if __name__ == '__main__':
 
     src = sys.argv[1]
 
-    if len(sys.argv) == 2: stype = 'radical.pilot'
-    else                 : stype = sys.argv[2]
+    if len(sys.argv) == 3: stype = sys.argv[2]
+    else                 : stype = 'radical.pilot'
 
-    session = ra.Session.create(src, stype)
+    fig, axes = plt.subplots(2, figsize=ra.get_plotsize(500))
+    session   = ra.Session(src, stype=stype)
+
+    # this script only works for one pilot
+    pilots = session.get(etype='pilot')
+    assert(len(pilots) == 1), len(pilots)
+
     sid     = session.uid
+    p_zero  = pilots[0].timestamps(event={ru.EVENT: 'bootstrap_0_start'})[0]
+    p_size  = pilots[0].description['cores']
+    n_nodes = int(p_size / pilots[0].cfg['cores_per_node'])
     n_tasks = len(session.get(etype='task'))
-    p_size  = 0
-    p_zero  = None
-    for pilot in session.get(etype='pilot'):
-        p_size += pilot.description['cores']
-        p_zero  = pilot.timestamps(event={ru.EVENT: 'bootstrap_0_start'})[0]
 
-    # get utilization information
-    prov, cons, stats_abs, stats_rel, info = session.utilization(metrics)
+    legend = None
+    rtypes = ['cpu', 'gpu']
+    for i, rtype in enumerate(rtypes):
 
-    with open('%s.stats' % sid, 'w') as fout:
-        fout.write('\n%s\n\n' % info)
+        # get utilization information
+        prov, consumed, stats_abs, stats_rel, info = session.utilization(metrics, rtype)
 
-  # import pprint
-  # pprint.pprint(prov)
-  # pprint.pprint(cons)
-  # pprint.pprint(stats_abs)
-  # pprint.pprint(stats_rel)
+        with open('%s.stats' % sid, 'w') as fout:
+            fout.write('\n%s\n\n' % info)
 
-    cmap = mpl.cm.get_cmap('tab20c')
+      # import pprint
+      # pprint.pprint(prov)
+      # pprint.pprint(consumed)
+      # pprint.pprint(stats_abs)
+      # pprint.pprint(stats_rel)
 
-    # --------------------------------------------------------------------------
-    # core utilization over time (box plot)
-    fig  = plt.figure(figsize=(10,7))
-    ax   = fig.add_subplot(111)
+        legend, patches, x, y = ra.get_plot_utilization(metrics,
+                {sid: consumed}, p_zero, sid, 'pilot.0000')
 
-    step   = 1.0  / (len(metrics) + 1)
-    this   = step / 1.0
-    legend = list()
+        for patch in patches:
+            axes[i].add_patch(patch)
 
-    x_min = None
-    x_max = None
-    y_min = None
-    y_max = None
+        # Format axes
+        axes[i].set_xlim([x['min'], x['max']])
+        axes[i].set_ylim([y['min'], y['max']])
 
-    for metric in metrics:
+        axes[i].yaxis.set_major_locator(plt.MaxNLocator(5))
+        axes[i].xaxis.set_major_locator(plt.MaxNLocator(5))
 
-        color = cmap(this)
-        this += step
+        # Resource-type dependend labels
+        axes[i].set_ylabel('%ss' % rtype.upper())
+        axes[i].set_xlabel('time (s)')
 
-        legend.append(mpl.lines.Line2D([0], [0], color=color, lw=6))
+    # Do not repeat the X-axes label in the topmost plot
+    for ax in fig.get_axes():
+        ax.label_outer()
 
-        if isinstance(metric, list):
-            name  = metric[0]
-            parts = metric[1]
-        else:
-            name  = metric
-            parts = [metric]
+    # Title of the plot. Facultative, requires info about session
+    # (see RA Info Chapter)
+    axes[0].set_title('%s Tasks - %s Nodes' % (n_tasks, n_nodes))
 
-        for part in parts:
-            for uid in sorted(cons[part]):
-                for block in cons[part][uid]:
-                    orig_x = block[0] - p_zero
-                    orig_y = block[2] - 0.5
-                    width  = block[1] - block[0]
-                    height = block[3] - block[2] + 1.0
+    # Add legend for both plots
+    # FIXME: why don't we get a legend?
+    fig.legend(legend, [m[0] for m in metrics], ncol=3,
+              loc='upper center', bbox_to_anchor=(0.5, 1.10))
 
-                    if x_min is None: x_min = orig_x
-                    if x_max is None: x_max = orig_x + width
-                    if y_min is None: y_min = orig_y
-                    if y_max is None: y_max = orig_y + height
 
-                    x_min = min(x_min, orig_x)
-                    y_min = min(y_min, orig_y)
-                    x_max = max(x_max, orig_x + width)
-                    y_max = max(y_max, orig_y + height)
-
-                    patch = mpl.patches.Rectangle((orig_x, orig_y),
-                                                  width, height,
-                                                  facecolor=color,
-                                                  edgecolor='black',
-                                                  fill=True, lw=0.0)
-                    ax.add_patch(patch)
-
-    ax.legend(legend, [m[0] for m in metrics], ncol=5, loc='upper center',
-                                               bbox_to_anchor=(0.5,1.11))
-    plt.xlabel('runtime [s]')
-    plt.ylabel('resource slot (index)')
-
-    print([x_min, x_max])
-    plt.xlim([x_min, x_max])
-    plt.ylim([y_min, y_max])
   # plt.xticks(list(range(int(x_min)-1, int(x_max)+1)))
-    fig.savefig('%s_util.png' % sid)
+    fig.savefig('%s_util.png' % sid, bbox_inches="tight")
   # plt.show()
 
 

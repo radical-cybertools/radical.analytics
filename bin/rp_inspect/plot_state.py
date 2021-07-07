@@ -13,6 +13,13 @@ import radical.analytics as ra
 import matplotlib.pyplot as plt
 import numpy             as np
 
+from radical.analytics.utils import to_latex
+
+
+# ----------------------------------------------------------------------------
+#
+plt.style.use(ra.get_mplstyle("radical_mpl"))
+
 
 # We plot timelines for all events listed in `event_list` for all entities of
 # type `event_entity`..  Before plotting, we sort those entities by the
@@ -106,17 +113,17 @@ if __name__ == '__main__':
 
     np_data = np.array(sorted_data)
 
-    plt.figure(figsize=(10,7))
-    for e_idx in range(len(event_list)):
-        plt.plot(np_data[:,0], np_data[:,(1 + e_idx)],
-                 label=ru.event_to_label(event_list[e_idx]))
-    plt.xlabel('task ID')
-    plt.ylabel('time [sec]')
+    fig, ax = plt.subplots(figsize=ra.get_plotsize(500))
 
-    plt.xlabel('task (sorted by %s)' % order)
-    plt.ylabel('time / sec')
-    plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),
-               ncol=2, fancybox=True, shadow=True)
+    for e_idx in range(len(event_list)):
+        ax.plot(np_data[:,0], np_data[:,(1 + e_idx)],
+                 label=to_latex(ru.event_to_label(event_list[e_idx])))
+
+    plt.xlabel(to_latex('task (sorted by %s)' % order))
+    plt.ylabel(to_latex('time [sec]'))
+
+    # FIXME: how to do the legend now?  With the large font size, I don't see
+    plt.legend()
     plt.savefig('%s.state.png' % session.uid)
   # plt.show()
 

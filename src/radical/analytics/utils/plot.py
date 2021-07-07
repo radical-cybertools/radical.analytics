@@ -68,6 +68,9 @@ def get_mplstyle(name):
             return os.path.normpath(path)
 
 
+    raise RuntimeError('style %s not found' % name)
+
+
 # ------------------------------------------------------------------------------
 #
 def stack_transitions(series, tresource, to_stack):
