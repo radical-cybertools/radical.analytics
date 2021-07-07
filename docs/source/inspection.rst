@@ -5,10 +5,12 @@ Inspection
 
 RADICAL-Analytics enables deriving information about an RCT session. For example, session ID, number of tasks, number of pilots, final state of the tasks and pilots, duration of each task and pilot, etc.
 
-RADICAL-Pilot Session
----------------------
+RCT Session
+-----------
 
-Information commonly used when analyzing and plotting one or more sessions of RADICAL-Pilot
+Information commonly used when analyzing and plotting one or more RCT session.
+
+.. note:: In the following example we use a session produced by EnTK but we pass 'radical.pilot' to the ra.Session constructor. We are not interested in using EnTK events and a EnTK session holds all the RADICAL-Pilot events. Thus, we can use the radical.pilot constructor and load onl the events we care about.
 
 Single Session
 ^^^^^^^^^^^^^^
@@ -16,7 +18,7 @@ Single Session
 .. code-block:: python
    :linenos:
 
-    # RTC session, pilot and task objects
+    # RCT session, pilot and task objects
     raw  = '../data/raw/incite2021/re.session.login1.lei.018775.0005'
     sobj = ra.Session(raw, 'radical.pilot')
     pobj = sobj.filter(etype='pilot', inplace=False)
