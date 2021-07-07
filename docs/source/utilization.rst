@@ -66,9 +66,13 @@ We now have everything we need to plot the resource utilization with Matplotlib:
 .. code-block:: python
    :linenos:
 
+
+    # '252': LaTeX document column size (see RA Plotting Chapter)
+    fig, axarr = plt.subplots(2, 1, figsize=(ra.get_plotsize(252)))
+
     # Type of resource we want to plot and service data structures
     rtypes = ['cpu', 'gpu']
-    for rtype in rtypes:
+    for i, rtype in enumerate(rtypes):
 
         # Resource resource provided and consumed: CPU and GPU
         _ , consumed, _, _, _ = exp.utilization(metrics=metrics, rtype=rtype)
@@ -76,7 +80,7 @@ We now have everything we need to plot the resource utilization with Matplotlib:
         # Plot legend, patched, X and Y axes objects (assume one pilot)
         pid = sinfo['pid'][0]
         legend, patches, x, y = ra.get_plot_utilization(metrics,
-                        consumed, p_zeros[sid][uid], sinfo['sid'], pid)
+                        consumed, p_zeros[sid][pid], sinfo['sid'], pid)
 
         # Place all the CPU and GPU patches, one for each metric,
         # on the respective axes
@@ -98,8 +102,6 @@ We now have everything we need to plot the resource utilization with Matplotlib:
         # Resource-type dependend labels
         axarr[i].set_ylabel('%ss' % rtype.upper())
         axarr[i].set_xlabel('time (s)')
-
-        i = i + 1
 
     # Do not repeat the X-axes label in the topmost plot
     for ax in fig.get_axes():
@@ -160,14 +162,12 @@ With multiple sessions added to the variable ``sessions``, we can utilize subplo
 
     # Generate the subplots with labels
     legend = None
-    k      = 0
-    for rtype in rtypes:
+    for k, rtype in enumerate(rtypes):
 
         _, consumed, _, _, _ = exp.utilization(metrics=metrics, rtype=rtype)
 
-        i = 0
         j = 'a'
-        for sid in splot:
+        for i, sid in enumerate(splot):
 
             # we know we have only 1 pilot
             pid = ss[sid]['p'].list('uid')[0]
@@ -207,11 +207,7 @@ With multiple sessions added to the variable ``sessions``, we can utilize subplo
                 axarr[k][i].set_xlabel('(%s)' % j, labelpad=10)
 
             # update session id and raw identifier letter
-            i = i + 1
             j = chr(ord(j) + 1)
-
-        # Update resource type
-        k = k+1
 
 
     # Add legend
