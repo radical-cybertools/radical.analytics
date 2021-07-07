@@ -175,9 +175,6 @@ for pilot in pilots.get():
 
     for entity in session.get():
 
-        if not trans:
-            continue
-
         uid = entity.uid
         td  = entity.description
 
@@ -187,6 +184,7 @@ for pilot in pilots.get():
             continue
 
         transitions = tmap.get(entity.etype, [])
+
         if not transitions:
             # we are not interested in this entity
             continue
