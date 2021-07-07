@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
 
-import os
 import sys
-import functools
 
-import pandas            as pd
 import matplotlib        as mpl
 import matplotlib.pyplot as plt
 
-import radical.utils     as ru
-import radical.pilot     as rp
 import radical.analytics as ra
 
 from radical.analytics.utils import to_latex
@@ -106,16 +101,12 @@ def main():
 
     session = ra.Session.create(src=src, stype=stype)
 
-    fig, axes = plt.subplots(2, figsize=ra.get_plotsize(500))
-    session   = ra.Session(src, stype=stype)
-
     # this script only works for one pilot
     pilots = session.get(etype='pilot')
     assert(len(pilots) == 1), len(pilots)
 
     pilot   = pilots[0]
     sid     = session.uid
-    p_zero  = pilots[0].timestamps(event={ru.EVENT: 'bootstrap_0_start'})[0]
     p_size  = pilots[0].description['cores']
     n_nodes = int(p_size / pilots[0].cfg['cores_per_node'])
     n_tasks = len(session.get(etype='task'))
@@ -146,10 +137,9 @@ def main():
 
         # plot individual metrics
         prev_m  = None
-        lines   = list()
         patches = list()
         legend  = list()
-        for num, m in enumerate(areas.keys()):
+        for m in areas:
 
             if m not in to_plot:
                 if m != 'time':
@@ -162,8 +152,8 @@ def main():
             palpha = to_plot[m][3]
 
             # plot the (stacked) areas
-            line, = ax.step(areas['time'], areas[m], where='post', label=m,
-                            color=lcol, alpha=lalpha, linewidth=1.0)
+            ax.step(areas['time'], areas[m], where='post', label=m,
+                    color=lcol, alpha=lalpha, linewidth=1.0)
 
             # fill first metric toward 0, all others towards previous line
             if not prev_m:
@@ -176,8 +166,8 @@ def main():
                                         step='post', label=m, linewidth=0.0,
                                         color=pcol, alpha=palpha)
 
-            # remember lines and patches for legend
-            legend.append(m.replace('_', '-'))
+            # remember patches for legend
+            legend.append(to_latex(m))
             patches.append(patch)
 
             # remember this line to fill against
@@ -189,9 +179,8 @@ def main():
         else:
             ax.set_ylim([0, p_resrc[r]])
 
-        ax.set_xlabel('time (s)')
-        ax.set_ylabel('%s (%s)' % (r, '\%'))
-
+        ax.set_xlabel(to_latex('time (s)'))
+        ax.set_ylabel(to_latex('%s (%%)' % r))
 
         # first sub-plot gets legend
         if plot_id == 0:
@@ -202,7 +191,7 @@ def main():
         ax.label_outer()
 
     # Title of the plot
-    fig.suptitle('%s Tasks - %s Nodes' % (n_tasks, n_nodes))
+    fig.suptitle(to_latex('%s Tasks - %s Nodes' % (n_tasks, n_nodes)))
 
     # Save a publication quality plot
     fig.savefig('%s.util2.png' % sid, dpi=300, bbox_inches='tight')

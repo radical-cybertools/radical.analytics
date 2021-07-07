@@ -8,9 +8,8 @@ import optparse
 import numpy             as np
 import matplotlib.pyplot as plt
 import radical.analytics as ra
-import radical.analytics as ra
 
-from ra.utils import to_latex
+from radical.analytics.utils import to_latex
 
 
 # ----------------------------------------------------------------------------

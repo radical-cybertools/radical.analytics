@@ -425,7 +425,7 @@ def get_plot_utilization(metrics, consumed, t_zero, sid):
 def to_latex(data):
     '''
     Transform the input string(s) so that it can be used as latex compiled plot
-    label, title etc.  This method escapes characters like `%` and `_` with `\`.
+    label, title etc.  This method escapes special characters with `\\`.
 
     Parameters
     ----------
@@ -442,9 +442,9 @@ def to_latex(data):
 
     else:
         assert(isinstance(data, str)), type(data)
-        return data.replace('%', '\%') \
-                   .replace('#', '\#') \
-                   .replace('_', '\_')
+        return data.replace('%', '\\%') \
+                   .replace('#', '\\#') \
+                   .replace('_', '\\_')
 
 
 # ------------------------------------------------------------------------------

@@ -6,7 +6,6 @@ __license__   = 'MIT'
 
 import sys
 
-import matplotlib        as mpl
 import matplotlib.pyplot as plt
 
 import radical.utils     as ru
@@ -164,8 +163,8 @@ if __name__ == '__main__':
         axes[i].xaxis.set_major_locator(plt.MaxNLocator(5))
 
         # Resource-type dependend labels
-        axes[i].set_ylabel('%ss' % rtype.upper())
-        axes[i].set_xlabel('time (s)')
+        axes[i].set_ylabel(to_latex('%ss' % rtype.upper()))
+        axes[i].set_xlabel(to_latex('time (s)'))
 
     # Do not repeat the X-axes label in the topmost plot
     for ax in fig.get_axes():
@@ -173,12 +172,12 @@ if __name__ == '__main__':
 
     # Title of the plot. Facultative, requires info about session
     # (see RA Info Chapter)
-    axes[0].set_title('%s Tasks - %s Nodes' % (n_tasks, n_nodes))
+    axes[0].set_title(to_latex('%s Tasks - %s Nodes' % (n_tasks, n_nodes)))
 
     # Add legend for both plots
-    # FIXME: why don't we get a legend?
-    fig.legend(legend, [m[0] for m in metrics], ncol=3,
-              loc='upper center', bbox_to_anchor=(0.5, 1.10))
+    fig.legend([to_latex(l) for l in legend],
+               [m[0] for m in metrics], ncol=3,
+               loc='upper center', bbox_to_anchor=(0.5, 1.10))
 
 
   # plt.xticks(list(range(int(x_min)-1, int(x_max)+1)))
