@@ -6,7 +6,6 @@ __license__   = 'MIT'
 
 import sys
 
-import matplotlib        as mpl
 import matplotlib.pyplot as plt
 
 import radical.utils     as ru

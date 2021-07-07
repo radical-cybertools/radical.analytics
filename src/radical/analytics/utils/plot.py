@@ -5,7 +5,6 @@ import functools
 import pandas as pd
 import matplotlib as mpl
 import radical.utils as ru
-import radical.pilot as rp
 
 
 # ------------------------------------------------------------------------------
@@ -259,9 +258,8 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
                     t = (ts[0] - t_min)
                     contribs[r][p_from].append([t, -amount])
                     contribs[r][p_to  ].append([t, +amount])
-                except Exception as e:
+                except Exception:
                     pass
-
 
     # we now have, for all metrics, a list of resource changes, in the form of
     #
@@ -324,7 +322,6 @@ def get_pilots_zeros(ra_exp_obj):
                 event={ru.EVENT: 'bootstrap_0_start'})[0]
 
     return p_zeros
-
 
 
 # ------------------------------------------------------------------------------

@@ -2,7 +2,6 @@
 
 import os
 import sys
-import pprint
 import functools
 
 import pandas            as pd
@@ -236,9 +235,8 @@ for pilot in pilots.get():
                     t = (ts[0] - t_min)
                     contribs[r][p_from].append([t, -amount])
                     contribs[r][p_to  ].append([t, +amount])
-                except Exception as e:
+                except Exception:
                     pass
-                  # print('skip %s: %s' % (trans, repr(e)))
 
 
   # pprint.pprint('contribs')

@@ -5,7 +5,6 @@ __license__   = 'MIT'
 
 
 import sys
-import pprint
 
 import radical.utils     as ru
 import radical.analytics as ra
@@ -20,8 +19,7 @@ import numpy             as np
 # sub-durations.  For each entity, we plot the times derived that way.
 #
 event_entity = 'task'
-event_list   = \
-    [
+event_list   = [
     # {ru.STATE: 'NEW'                          , ru.EVENT: 'state'           },
     # {ru.STATE: 'TMGR_SCHEDULING_PENDING'      , ru.EVENT: 'state'           },
     # {ru.STATE: 'TMGR_SCHEDULING'              , ru.EVENT: 'state'           },
@@ -45,7 +43,7 @@ event_list   = \
     # {ru.STATE: 'TMGR_STAGING_OUTPUT'          , ru.EVENT: 'state'           },
     # {ru.STATE: 'AGENT_STAGING_OUTPUT'         , ru.EVENT: 'state'           },
     # {ru.STATE: 'DONE'                         , ru.EVENT: 'state'           },
-    ]
+]
 
 # ------------------------------------------------------------------------------
 #
