@@ -57,7 +57,8 @@ class Session(object):
                     raise ValueError('cannot handle extension %s' % ext)
 
             except Exception as e:
-                raise RuntimeError('Cannot extract tarball: %s' % repr(e))
+                raise RuntimeError(
+                    'Cannot extract tarball: %s' % repr(e)) from e
 
         self._sid   = sid
         self._src   = src
@@ -98,10 +99,10 @@ class Session(object):
 
             try:
                 import radical.pilot.utils as rpu
-            except:
+            except Exception as e:
                 raise RuntimeError('radical.analytics requires the '
                                    'radical.pilot module to analyze this '
-                                   'session - please install it.')
+                                   'session - please install it.') from e
 
             self._profile, accuracy, hostmap \
                               = rpu.get_session_profile    (sid=sid, src=self._src)
@@ -115,10 +116,10 @@ class Session(object):
 
             try:
                 import radical.entk.utils as reu
-            except:
+            except Exception as e:
                 raise RuntimeError('radical.analytics requires the '
                                    'radical.entk module to analyze this '
-                                   'session - please install it.')
+                                   'session - please install it.') from e
 
             self._profile, accuracy, hostmap \
                               = reu.get_session_profile    (sid=sid, src=self._src)
