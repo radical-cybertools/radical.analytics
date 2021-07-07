@@ -16,7 +16,7 @@ Single Session
 .. code-block:: python
    :linenos:
 
-    # RTC session, pilot and task objects
+    # RCT session, pilot and task objects
     raw  = '../data/raw/incite2021/re.session.login1.lei.018775.0005'
     sobj = ra.Session(raw, 'radical.pilot')
     pobj = sobj.filter(etype='pilot', inplace=False)
