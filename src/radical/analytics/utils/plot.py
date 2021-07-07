@@ -326,7 +326,7 @@ def get_pilots_zeros(ra_exp_obj):
 
 # ------------------------------------------------------------------------------
 #
-def get_plot_utilization(metrics, consumed, p_zeros, sid, pid):
+def get_plot_utilization(metrics, consumed, t_zero, sid, pid):
     """Calculates the resources utilized by a set of metrics. Utilization is
     calculated for each resource without stacking and aggregation. May take
     hours or days with >100K tasks, 100K resource items. Use get_pilot_series
@@ -341,8 +341,8 @@ def get_plot_utilization(metrics, consumed, p_zeros, sid, pid):
               min-max timestamp and resource id range for each metric and
               pilot. E.g., {'boot': {'pilot.0000': [[2347.582849740982,
               2365.6164498329163, 0, 167]}.
-    p_zeros : dict
-              Start timestamp for each pilot.
+    t_zero  : float
+              Start timestamp for the pilot.
     sid     : string
               Identifier of a ra.Session object.
     pid     : string
@@ -386,7 +386,7 @@ def get_plot_utilization(metrics, consumed, p_zeros, sid, pid):
         for part in parts:
             for uid in consumed[sid][part]:
                 for block in consumed[sid][part][uid]:
-                    orig_x = block[0] - p_zeros[sid][pid]
+                    orig_x = block[0] - t_zero
                     orig_y = block[2] - 0.5
                     width  = block[1] - block[0]
                     height = block[3] - block[2] + 1.0
@@ -415,5 +415,35 @@ def get_plot_utilization(metrics, consumed, p_zeros, sid, pid):
 
     x = {'min': x_min, 'max': x_max}
     y = {'min': y_min, 'max': y_max}
+
     return legend, patches, x, y
 
+
+# ------------------------------------------------------------------------------
+#
+def to_latex(data):
+    '''
+    Transform the input string(s) so that it can be used as latex compiled plot
+    label, title etc.  This method escapes characters like `%` and `_` with `\`.
+
+    Parameters
+    ----------
+    data : list or str
+           an individual string or a list of strings to transform
+
+    Returns
+    -------
+    data : transformed string
+    '''
+
+    if isinstance(data, list):
+        return [to_latex(x) for x in data]
+
+    else:
+        assert(isinstance(data, str)), type(data)
+        return data.replace('%', '\%') \
+                   .replace('#', '\#') \
+                   .replace('_', '\_')
+
+
+# ------------------------------------------------------------------------------

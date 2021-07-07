@@ -49,10 +49,10 @@ Construct an ``ra.Experiment`` object and calculate the starting point of each p
    :linenos:
 
     # List of sessions of an experiment
-    sessions = ['../data/raw/incite2021/re.session.login1.lei.018775.0005']
+    sids = ['../data/raw/incite2021/re.session.login1.lei.018775.0005']
 
     # Get the resource utilization of the experiment for each metics
-    exp = ra.Experiment(sessions, stype='radical.pilot')
+    exp = ra.Experiment(sids, stype='radical.pilot')
 
     # Get the start time of each pilot
     p_zeros = ra.get_pilots_zeros(exp)
@@ -67,33 +67,26 @@ We now have everything we need to plot the resource utilization with Matplotlib:
    :linenos:
 
     # Type of resource we want to plot and service data structures
-    rtypes=['cpu', 'gpu']
-
-    consumed  = {}
-    legend    = {}
-    patches   = {}
-    x         = {}
-    y         = {}
-    i         = 0
-
+    rtypes = ['cpu', 'gpu']
     for rtype in rtypes:
 
         # Resource resource provided and consumed: CPU and GPU
-        _ , consumed[rtype], _, _, _ = exp.utilization(metrics=metrics, rtype=rtype)
+        _ , consumed, _, _, _ = exp.utilization(metrics=metrics, rtype=rtype)
 
-        # Plot legend, patched, X and Y axes objects (here we know we have only 1
-        pilot)
-        legend[rtype], patches[rtype], x[rtype], \
-                y[rtype] = ra.get_plot_utilization(metrics, consumed[rtype],
-                        p_zeros, sinfo['sid'], sinfo['pid'][0])
+        # Plot legend, patched, X and Y axes objects (assume one pilot)
+        pid = sinfo['pid'][0]
+        legend, patches, x, y = ra.get_plot_utilization(metrics,
+                        consumed, p_zeros[sid][uid], sinfo['sid'], pid)
 
-        # Place all the CPU and GPU patches, one for each metric, on the respective
-        axes for patch in patches[rtype]:
+        # Place all the CPU and GPU patches, one for each metric,
+        # on the respective axes
+        for patch in patches[rtype]:
             axarr[i].add_patch(patch)
 
         # Format axes
-        axarr[i].set_xlim([x[rtype]['min'], x[rtype]['max']])
-        axarr[i].set_ylim([y[rtype]['min'], int(y[rtype]['max'])])
+        axarr[i].set_xlim([x['min'], int(x['max'])])
+        axarr[i].set_ylim([y['min'], int(y['max'])])
+
         axarr[i].yaxis.set_major_locator(MaxNLocator(5))
         axarr[i].xaxis.set_major_locator(MaxNLocator(5))
 
@@ -106,27 +99,26 @@ We now have everything we need to plot the resource utilization with Matplotlib:
         axarr[i].set_ylabel('%ss' % rtype.upper())
         axarr[i].set_xlabel('time (s)')
 
-        i = i+1
+        i = i + 1
 
     # Do not repeat the X-axes label in the topmost plot
     for ax in fig.get_axes():
             ax.label_outer()
 
-    # Title of the plot. Facultative, requires info about session (see RA Info
-    Chapter)
+    # Title of the plot. Facultative, requires info about session
+    # (see RA Info Chapter)
     axarr[0].set_title('%s Tasks - %s Nodes' % (sinfo['ntask'],
-            int(sinfo['nnodes'])))
+                       int(sinfo['nnodes'])))
 
     # Add legend for both plots
-    fig.legend(legend[rtype], [m[0] for m in metrics],
-            loc='upper center', bbox_to_anchor=(0.5, 1.15), ncol=3)
+    fig.legend(legend, [m[0] for m in metrics],
+               loc='upper center', bbox_to_anchor=(0.5, 1.15), ncol=3)
 
     # Save a publication-quality plot
     plt.savefig('figures/ru_single.pdf', dpi=300, bbox_inches='tight')
-    plt.savefig('figures/ru_single.png', dpi=300, bbox_inches='tight')
 
 
-The code of the steps above produces the following plot:
+The code of the steps above produces the following plot (as png):
 
 .. image:: images/ru_v1.png
     :width: 600
@@ -152,16 +144,7 @@ With multiple sessions added to the variable ``sessions``, we can utilize subplo
     # Type of resource we want to plot: cpu or gpu
     rtypes=['cpu', 'gpu']
 
-    consumed  = {}
-    legend    = {}
-    patches   = {}
-    x         = {}
-    y         = {}
-
     exp = ra.Experiment(sids, stype='radical.pilot')
-
-    for rtype in rtypes:
-        _, consumed[rtype], _, _, _ = exp.utilization(metrics=metrics, rtype=rtype)
 
     # Get the start time of each pilot
     p_zeros = ra.get_pilots_zeros(exp)
@@ -176,20 +159,25 @@ With multiple sessions added to the variable ``sessions``, we can utilize subplo
     plt.subplots_adjust(wspace=0.45)
 
     # Generate the subplots with labels
-    k = 0
+    legend = None
+    k      = 0
     for rtype in rtypes:
+
+        _, consumed, _, _, _ = exp.utilization(metrics=metrics, rtype=rtype)
 
         i = 0
         j = 'a'
         for sid in splot:
 
-            # Plot legend, patched, X and Y axes objects (here we know we have only 1 pilot)
-            legend[rtype], patches[rtype], x[rtype], \
-                    y[rtype] = ra.get_plot_utilization(metrics, consumed[rtype],
-                            p_zeros, sid, ss[sid]['p'].list('uid')[0])
+            # we know we have only 1 pilot
+            pid = ss[sid]['p'].list('uid')[0]
+
+            # Plot legend, patched, X and Y axes objects
+            legend, patches, x, y = ra.get_plot_utilization(metrics, consumed,
+                            p_zeros[sid][pid], sid, pid)
 
             # Place all the patches, one for each metric, on the axes
-            for patch in patches[rtype]:
+            for patch in patches:
                 axarr[k][i].add_patch(patch)
 
             # Title of the plot. Facultative, requires info about session (see RA
@@ -199,15 +187,15 @@ With multiple sessions added to the variable ``sessions``, we can utilize subplo
                         int(ss[sid]['nnodes'])))
 
             # Format axes
-            axarr[k][i].set_xlim([x[rtype]['min'], x[rtype]['max']])
-            axarr[k][i].set_ylim([y[rtype]['min'], int(y[rtype]['max'])])
+            axarr[k][i].set_xlim([x['min'],     x['max']])
+            axarr[k][i].set_ylim([y['min'], int(y['max'])])
             axarr[k][i].yaxis.set_major_locator(MaxNLocator(4))
             axarr[k][i].xaxis.set_major_locator(MaxNLocator(4))
 
             if rtype == 'cpu':
                 # Specific to Summit when using SMT=4 (default)
                 axarr[k][i].yaxis.set_major_formatter(
-                        mticker.FuncFormatter(lambda x, pos: int(x/4)))
+                        mticker.FuncFormatter(lambda z, pos: int(z/4)))
 
             # Y label per subplot. We keep only the 1st for each raw.
             if i == 0:
@@ -219,7 +207,7 @@ With multiple sessions added to the variable ``sessions``, we can utilize subplo
                 axarr[k][i].set_xlabel('(%s)' % j, labelpad=10)
 
             # update session id and raw identifier letter
-            i = i+1
+            i = i + 1
             j = chr(ord(j) + 1)
 
         # Update resource type
@@ -227,7 +215,7 @@ With multiple sessions added to the variable ``sessions``, we can utilize subplo
 
 
     # Add legend
-    fig.legend(legend[rtype], [m[0] for m in metrics],
+    fig.legend(legend, [m[0] for m in metrics],
             loc='upper center', bbox_to_anchor=(0.5, 1.25), ncol=5)
 
     # Add axes labels
