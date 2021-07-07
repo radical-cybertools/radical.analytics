@@ -326,7 +326,7 @@ def get_pilots_zeros(ra_exp_obj):
 
 # ------------------------------------------------------------------------------
 #
-def get_plot_utilization(metrics, consumed, t_zero, sid, pid):
+def get_plot_utilization(metrics, consumed, t_zero, sid):
     """Calculates the resources utilized by a set of metrics. Utilization is
     calculated for each resource without stacking and aggregation. May take
     hours or days with >100K tasks, 100K resource items. Use get_pilot_series
@@ -345,8 +345,6 @@ def get_plot_utilization(metrics, consumed, t_zero, sid, pid):
               Start timestamp for the pilot.
     sid     : string
               Identifier of a ra.Session object.
-    pid     : string
-              Identifier of a pilot ra.Entity object.
 
     Returns
     -------
