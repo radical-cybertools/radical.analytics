@@ -11,21 +11,21 @@ import radical.pilot as rp
 # ------------------------------------------------------------------------------
 #
 def get_plotsize(width, fraction=1, subplots=(1, 1)):
-    """ Set aesthetic figure dimensions to avoid scaling in latex.
+    """ Sets aesthetic figure dimensions to avoid scaling in latex.
 
     Parameters
     ----------
     width   : float
-              Width in points (pts)
+              Width in points (pts).
     fraction: float
-              Fraction of the width which you wish the figure to occupy
+              Fraction of the width which you wish the figure to occupy.
     subplots: tuple
-              Number of raws and number of columns of the plot
+              Number of raws and number of columns of the plot.
 
     Returns
     -------
     fig_dim : tuple
-              Dimensions of figure in inches
+              Dimensions of figure in inches.
     """
     # Width of figure
     fig_width_pt = width * fraction
@@ -48,6 +48,18 @@ def get_plotsize(width, fraction=1, subplots=(1, 1)):
 # ------------------------------------------------------------------------------
 #
 def get_mplstyle(name):
+    """Returns the installation path of a Matplotlib style.
+
+    Parameters
+    ----------
+    name: string
+          Filename ending in .txt.
+
+    Returns
+    -------
+    path : string
+           Normalized path.
+    """
 
     path  = os.path.dirname(sys.executable)
     path += '/../share/radical.analytics/styles'
@@ -60,13 +72,33 @@ def get_mplstyle(name):
 # ------------------------------------------------------------------------------
 #
 def stack_transitions(series, tresource, to_stack):
-    '''create data frames for each metric and combine them into one data frame
+    '''Creates data frames for each metric and combines them into one data frame
     for alignment. Since transitions obviously happen at arbitrary times, the
-    timestamps for metric A may see no transitions for metric B.  When using a
+    timestamps for metric A may see no transitions for metric B. When using a
     combined timeline, we end up with NaN entries for some metrics on most
-    timestamp, which in turn leads to gaps when plotting.  So we fill the NaN
+    timestamp, which in turn leads to gaps when plotting. So we fill the NaN
     values with the previous valid value, which in our case holds until the next
     transition happens.
+
+    Parameters
+    ----------
+    series   : dict
+               Pairs of timestamps for each metric of each type of
+               resource. E.g. series['cpu']['term'] = [[0.0, 0.0],
+               [302.4374113082886, 100.0], [304.6761999130249, 0.0]].
+    tresource: string
+               Type of resource. E.g., 'cpu' or 'gpu'.
+
+    to_stack : list
+               List of metrics to stack. E.g., ['bootstrap', 'exec_cmd',
+               'schedule', 'exec_rp', 'term', 'idle'].
+
+    Returns
+    -------
+    stacked : pandas.DataFrame
+              Columns: time and one for each metric. Rows: timestamp and
+              percentage / amount of resource utilization for each metric at
+              that point in time.
     '''
 
     dfs = [pd.DataFrame(series[tresource][m], columns=['time', m])
@@ -84,10 +116,10 @@ def stack_transitions(series, tresource, to_stack):
     # fill in missing values (carry over previous ones)
     merged.fillna(method='ffill', inplace=True)
 
-    # stacked plotting and area filling don't play well together in
-    # matplotlib, so instead we use normal (unstacked) plot routines and
-    # fill in between.  We thus manually compute the stacked numbers:
-    # copy the timeline to a new data frame
+    # stacked plotting and area filling don't play well together in matplotlib.
+    # Instead we use normal (unstacked) plot routines and fill in between, we
+    # manually compute the stacked numbers: copy the timeline to a new data
+    # frame.
     stacked = merged[['time']].copy()
     prev    = list()
 
@@ -103,7 +135,38 @@ def stack_transitions(series, tresource, to_stack):
 
 # ------------------------------------------------------------------------------
 #
-def get_pilot_series(session, pilot, tmap, resrc, use_percent=True):
+def get_pilot_series(session, pilot, tmap, resrc, percent=True):
+    """ Derives the series of pilot resource transition points from the metrics.
+
+    Parameters
+    ----------
+    session: ra.Session
+             The Session object of RADICAL-Analytics created from a RCT sandbox.
+    pilot  : ra.Entity
+             The pilot object of session.
+    tmap   : dict
+             Map events to transition points in which a metric changes its
+             owner. E.g., [{1: 'bootstrap_0_start'}, 'system', 'bootstrap']
+             defines bootstrap_0_start as the event in which resources pass
+             from the system to the bootstrapper.
+    resrc  : list
+             Type of resources. E.g., ['cpu', 'gpu'].
+    percent: bool
+             Whether we want to return resource utilization as percentage of
+             the total resources available or as count of a type of resource.
+
+    Returns
+    -------
+    p_resrc: dict
+             Amount of resources in the pilot.
+    series : dict
+             List of time series per metric and resource type. E.g.,
+             series['cpu']['term'] = [[0.0, 0.0], [302.4374113082886, 100.0],
+             [304.6761999130249, 0.0]].
+    x      : dict
+             Mix and max value of the X-axes.
+
+    """
 
     # get total pilot resources and runtime
     p_resrc = {'cpu': pilot.cfg['cores'],
@@ -221,7 +284,7 @@ def get_pilot_series(session, pilot, tmap, resrc, use_percent=True):
                 value += c[1]
                 # normalize to pilot resources to obtain percent
                 if p_resrc[r]:
-                    if use_percent:
+                    if percent:
                         rel = value / p_resrc[r] * 100
                         series[r][m].append([c[0], rel])
                     else:
@@ -237,6 +300,21 @@ def get_pilot_series(session, pilot, tmap, resrc, use_percent=True):
 # ------------------------------------------------------------------------------
 #
 def get_pilots_zeros(ra_exp_obj):
+    """Calculates when a set of pilots become available.
+
+    Parameters
+    ----------
+    ra_exp_obj: ra.Experiment
+                RADICAL-Analytics Experiment object with all the pilot entity
+                objects for which to calculate the starting timestamp.
+
+    Returns
+    -------
+    p_zeros: dict
+             Session ID, pilot ID and starting timestamp. E.g.,
+             {'re.session.login1.lei.018775.0005': {'pilot.0000':
+             2347.582849740982}}.
+    """
 
     p_zeros = {}
     for session in ra_exp_obj.sessions:
@@ -252,6 +330,41 @@ def get_pilots_zeros(ra_exp_obj):
 # ------------------------------------------------------------------------------
 #
 def get_plot_utilization(metrics, consumed, p_zeros, sid, pid):
+    """Calculates the resources utilized by a set of metrics. Utilization is
+    calculated for each resource without stacking and aggregation. May take
+    hours or days with >100K tasks, 100K resource items. Use get_pilot_series
+    and stack_transitions instead.
+
+    Parameters
+    ----------
+    metrics : list
+              Each element is a list with name, metrics and color. E.g.,
+              ['Bootstrap', ['boot', 'setup_1'], '#c6dbef'].
+    consumed: dict
+              min-max timestamp and resource id range for each metric and
+              pilot. E.g., {'boot': {'pilot.0000': [[2347.582849740982,
+              2365.6164498329163, 0, 167]}.
+    p_zeros : dict
+              Start timestamp for each pilot.
+    sid     : string
+              Identifier of a ra.Session object.
+    pid     : string
+              Identifier of a pilot ra.Entity object.
+
+    Returns
+    -------
+    legend : dict
+             keys: Type of resource ('cpu', 'gpu'); values: list of
+             matplotlib.lines.Line2D objects for the plot's legend.
+    patches: dict
+             keys: Type of resource ('cpu', 'gpu'); values: list of
+             matplotlib.patches.Rectangle. Each rectangle represents the
+             utilization for a set of resources.
+    x      : dict
+             Mix and max value of the X-axes.
+    y      : dict
+             Mix and max value of the Y-axes.
+    """
 
     legend = list()
 
