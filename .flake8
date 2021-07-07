@@ -34,4 +34,7 @@ ignore =
     # allow line breaks after binary operators
     W504,
     # allow lambda assignment (used for partial callbacks)
-    E731
+    E731,
+    # we can distinguish 'l' and '1'
+    E741
+
