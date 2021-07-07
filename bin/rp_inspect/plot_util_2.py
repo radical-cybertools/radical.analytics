@@ -18,7 +18,8 @@ import radical.analytics as ra
 resrc = ['cpu', 'gpu']
 
 # pick and choose what contributions to plot
-metrics  = [  #   metric,      line color, alpha, fill color, alpha
+#                metric,        line color,  alpha, fill color, alpha
+metrics  = [
                 ['boot'       , ['#0000AA',  0.0,   '#0000AA',  0.3]],
                 ['setup'      , ['#00AA00',  0.0,   '#00AA00',  0.3]],
                 ['agent'      , ['#00AAAA',  0.0,   '#00AAAA',  0.3]],
