@@ -225,7 +225,7 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
                     t_resrc = {'cpu': cores,
                             'gpu': gpus}
 
-            except:
+            except Exception as error:
                 # if 'request' not in entity.uid:
                 #     print('guess resources for %s' % entity.uid)
 
@@ -236,8 +236,9 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
                 #     t_resrc = {'cpu': 1,
                 #                'gpu': 0}
                 raise RuntimeError(entity.uid + 'is missing resource '
-                    ' information. RA cannot know how many cores/GPUs were'
-                    ' requested. Session is likely corrupted. Aborting.')
+                    'information. RA cannot know how many cores/GPUs were '
+                    'requested. Session is likely corrupted. '
+                    'Aborting.') from error
 
             # we need to work around the fact that sub-agents have no separate
             # entity type, but belong to the pilot.  So instead we assign them
