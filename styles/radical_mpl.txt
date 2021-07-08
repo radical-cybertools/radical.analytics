@@ -1,4 +1,3 @@
-axes.autolimit_mode         : round_numbers
 axes.axisbelow              : True
 axes.edgecolor              : .15
 axes.facecolor              : white
@@ -10,7 +9,6 @@ axes.linewidth              : .5
 axes.prop_cycle             : cycler('color', ['1a80b2', 'b2cce6', 'ff801a', 'ffb280', '339933', '99e680', 'cc3333', 'ff9999', '9966b2', 'ccb2cc', '804c4c', 'cc9999', 'e680cc', 'ffb2cc', 'b2b21a', 'e6e699', '1ab2cc', '99e6e6', '4c4c4c', '666666', '808080', '998080', '99b2b2', 'cccccc'])
 axes.spines.right           : False
 axes.spines.top             : False
-axes.titlelocation          : left
 axes.titlesize              : 8
 
 errorbar.capsize            : 3
@@ -24,6 +22,7 @@ font.size                   : 8
 
 grid.color                  : .8
 grid.linestyle              : -
+grid.linewidth              : .1
 
 image.cmap                  : Greys
 

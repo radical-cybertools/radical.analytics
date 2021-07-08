@@ -1,7 +1,53 @@
+.. _chapter_plotting:
+
 Plotting
 ========
 
 RADICAL-Analytics does not provide plotting primitives. Instead, it offers helper methods that can be used with 3rd party plotting libraries.
+
+Matplotlib
+----------
+
+RADICAL-Analytics provides a style for Matplotlib. Loading it guarantees an uniform look&feel across plots. The style is located at ``styles/radical_mpl.txt``.
+
+Loading RADICAL-Analytics Style
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. code-block:: python
+
+    import matplotlib.pyplot as plt
+    import radical.analytics as ra
+
+    plt.style.use(ra.get_mplstyle("radical_mpl")
+
+Default Color Cycler of RADICAL-Analytics Style
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. role:: raw-html(raw)
+   :format: html
+
+01. :raw-html:`<span style="display:inline-block;width:100px;background-color:#1a80b2">#1a80b2</span>`
+02. :raw-html:`<span style="display:inline-block;width:100px;background-color:#b2cce6">#b2cce6</span>`
+03. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ff801a">#ff801a</span>`
+04. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ffb280">#ffb280</span>`
+05. :raw-html:`<span style="display:inline-block;width:100px;background-color:#339933">#339933</span>`
+06. :raw-html:`<span style="display:inline-block;width:100px;background-color:#99e680">#99e680</span><br>`
+07. :raw-html:`<span style="display:inline-block;width:100px;background-color:#cc3333">#cc3333</span>`
+08. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ff9999">#ff9999</span>`
+09. :raw-html:`<span style="display:inline-block;width:100px;background-color:#9966b2">#9966b2</span>`
+10. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ccb2cc">#ccb2cc</span>`
+11. :raw-html:`<span style="display:inline-block;width:100px;background-color:#804c4c">#804c4c</span>`
+12. :raw-html:`<span style="display:inline-block;width:100px;background-color:#cc9999">#cc9999</span><br>`
+13. :raw-html:`<span style="display:inline-block;width:100px;background-color:#e680cc">#e680cc</span>`
+14. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ffb2cc">#ffb2cc</span>`
+15. :raw-html:`<span style="display:inline-block;width:100px;background-color:#b2b21a">#b2b21a</span>`
+16. :raw-html:`<span style="display:inline-block;width:100px;background-color:#e6e699">#e6e699</span>`
+17. :raw-html:`<span style="display:inline-block;width:100px;background-color:#1ab2cc">#1ab2cc</span>`
+18. :raw-html:`<span style="display:inline-block;width:100px;background-color:#99e6e6">#99e6e6</span><br>`
+19. :raw-html:`<span style="display:inline-block;width:100px;background-color:#4c4c4c">#4c4c4c</span>`
+20. :raw-html:`<span style="display:inline-block;width:100px;background-color:#666666">#666666</span>`
+21. :raw-html:`<span style="display:inline-block;width:100px;background-color:#808080">#808080</span>`
+22. :raw-html:`<span style="display:inline-block;width:100px;background-color:#998080">#998080</span>`
+23. :raw-html:`<span style="display:inline-block;width:100px;background-color:#99b2b2">#99b2b2</span>`
+24. :raw-html:`<span style="display:inline-block;width:100px;background-color:#cccccc">#cccccc</span>`
 
 Plotting for Latex Documents
 ----------------------------
@@ -45,27 +91,14 @@ The following assume the use of Matplotlib to create a plot that needs to be add
     No pages of output.
     Transcript written on test.log.
 
-
-#. Use the RADICAL style for Matplotlib:
-
-   .. code-block:: python
-
-    import matplotlib.pyplot as plt
-    import radical.analytics as ra
-
-    plt.style.use(ra.get_style("radical_mpl")
-
-
 #. Use ``ra.set_size()`` to compute the exact size of your plot. For a plot with a single figure that span the width of a IEEtran LaTeX column:
 
    .. code-block:: python
 
-    fig, ax = plt.subplots(figsize=ra.set_size(252))
+    fig, ax = plt.subplots(figsize=ra.get_plotsize(252))
 
    for plot with 1 row and 3 subplots that spans the whole width of a IEEtran LaTeX page:
 
    .. code-block:: python
 
     fig, axarr = plt.subplots(1, 3, figsize=(ra.set_size(516)))
-
-

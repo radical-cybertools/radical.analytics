@@ -109,10 +109,10 @@ if __name__ == '__main__':
 
 
     print()
-    print('  units   : %9d' % len(session.get(etype='unit')))
+    print('  tasks   : %9d' % len(session.get(etype='task')))
     uetypes = dict()
     states  = dict()
-    for u in session.get(etype='unit'):
+    for u in session.get(etype=['task', 'master', 'worker', 'request']):
         for e in u.events:
             t = e[ru.EVENT]
             if t not in uetypes: uetypes[t]  = 1
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     n_types += len(uetypes.keys())
 
     print()
-    smodel = session._description['entities']['unit']['state_model']
+    smodel = session._description['entities']['task']['state_model']
     for s in {k: v for k, v in sorted(smodel.items(), key=lambda item: item[1])}:
         print('            %9d : %s' % (states.get(s, 0), s))
 

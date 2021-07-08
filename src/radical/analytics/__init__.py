@@ -12,7 +12,10 @@ from .plotter    import Plotter
 
 # ------------------------------------------------------------------------------
 #
-from .utils import get_plotsize, get_mplstyle
+from .utils import get_plotsize, get_mplstyle, stack_transitions
+from .utils import get_pilot_series, get_plot_utilization, get_pilots_zeros
+from .utils import to_latex
+
 
 # ------------------------------------------------------------------------------
 #
@@ -28,8 +31,13 @@ version = version_short
 logger = ru.Logger('radical.analytics')
 logger.info('radical.analytics    version: %s' % version_detail)
 
+
 # ------------------------------------------------------------------------------
 #
 __all__ = ('Experiment','Session','Entity','Plotter', 'get_plotsize',
-           'get_mplstyle')
+           'get_mplstyle', 'stack_transitions', 'get_pilot_series',
+           'get_plot_utilization', 'get_pilots_zeros', 'to_latex')
+
+
+# ------------------------------------------------------------------------------
 
