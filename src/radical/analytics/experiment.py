@@ -48,7 +48,7 @@ class Experiment(object):
 
     # --------------------------------------------------------------------------
     #
-    def utilization(self, metrics):
+    def utilization(self, metrics, rtype='cpu', udurations=None):
         '''
         return five dictionaries:
           - provided resources
@@ -113,7 +113,7 @@ class Experiment(object):
         for session in self._sessions:
 
             sid = session.uid
-            p, c, sa, sr, i = session.utilization(metrics)
+            p, c, sa, sr, i = session.utilization(metrics, rtype, udurations)
 
             provided [sid] = p
             consumed [sid] = c

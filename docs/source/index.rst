@@ -44,10 +44,11 @@ Content
 
    introduction.rst
    installation.rst
+   inspection.rst
    duration.rst
    concurrency.rst
    utilization.rst
-   inspection.rst
+   plotting.rst
    apidoc.rst
 
 .. Indices and tables

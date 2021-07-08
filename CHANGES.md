@@ -4,6 +4,17 @@
 - For a list of open issues and known problems, see:
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
+1.6.7 Release                                                         2021-07-08
+--------------------------------------------------------------------------------
+
+- utils/plot.py: help functions for plotting with Matplotlib
+- style/radical_mpl.txt: default Matplotlib style for publication-grade plots.
+- Separate type of resources (e.g., 'cpu', 'gpu) in resource utilization plot
+- New utilization plot. aggregated utilization to improve performance and scale
+- Documentation: Resource utilization, renaming compute unit -> task
+- Tools: bin/rp_inspect/*.py plot 4 metrics for RP sessions
+- Various bug fixes
+
 1.5.0 Release                                                         2020-08-04
 --------------------------------------------------------------------------------
 

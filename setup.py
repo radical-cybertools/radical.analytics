@@ -16,7 +16,8 @@ import shutil
 
 import subprocess as sp
 
-from setuptools import setup, Command, find_packages
+
+from setuptools import setup, Command, find_namespace_packages
 
 
 # ------------------------------------------------------------------------------
@@ -175,8 +176,9 @@ class RunTwine(Command):
 # It needs the MANIFEST.in entries to work.
 share = 'share/%s' % name
 df    = [
-    ('%s/examples' % share, glob.glob('examples/[01]*.py')),
-    ('bin/rp_inspect/',     glob.glob('bin/rp_inspect/*')),
+    ('%s/styles/'   % share, glob.glob('styles/*.txt')),
+    ('%s/examples/' % share, glob.glob('examples/[01]*.py')),
+    ('bin/rp_inspect/',      glob.glob('bin/rp_inspect/*')),
 ]
 
 
@@ -210,7 +212,7 @@ setup_args = {
         'Operating System :: POSIX',
         'Operating System :: Unix'
     ],
-    'packages'           : find_packages('src'),
+    'packages'           : find_namespace_packages('src', include=['radical.*']),
     'package_dir'        : {'': 'src'},
     'scripts'            : [
                             'bin/radical-analytics-check',
@@ -222,7 +224,7 @@ setup_args = {
     'package_data'       : {'': ['*.txt', '*.sh', '*.json', '*.gz', '*.c',
                                  '*.md', 'VERSION', 'SDIST', sdist_name]},
   # 'setup_requires'     : ['pytest-runner'],
-    'install_requires'   : ['radical.utils>=1.4',
+    'install_requires'   : ['radical.utils>=1.6',
                             'matplotlib>=3.1.2',
                             'psutil',
                             'pandas',
@@ -235,6 +237,7 @@ setup_args = {
                             'flake8',
                             'coverage',
                             'mock==2.0.0.',
+                            'radical.pilo >= 1.6.7',
                            ],
     'test_suite'         : '%s.tests' % name,
     'zip_safe'           : False,

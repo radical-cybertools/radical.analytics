@@ -1,32 +1,26 @@
 #!/usr/bin/env python
 
+
 import sys
 import time
 import optparse
 
 import numpy             as np
 import matplotlib.pyplot as plt
+import radical.analytics as ra
 
-font = {'family' : 'normal',
-        'weight' : 'bold',
-        'size'   : 14}
+from radical.analytics.utils import to_latex
 
-plt.rcParams['axes.titlesize']   = 14
-plt.rcParams['axes.labelsize']   = 14
-plt.rcParams['axes.linewidth']   =  2
-plt.rcParams['xtick.labelsize']  = 14
-plt.rcParams['ytick.labelsize']  = 14
-plt.rcParams['lines.markersize'] = 14
-plt.rcParams['lines.linewidth']  =  2
-plt.rcParams['lines.color']      = 'r'
 
-plt.rc('font', **font)
+# ----------------------------------------------------------------------------
+#
+plt.style.use(ra.get_mplstyle("radical_mpl"))
 
 
 # ------------------------------------------------------------------------------
 #
 TITLE     = ''
-DELIM     = ','
+DELIM     = ''
 MATCH     = None
 COLUMN_X  = 'count'
 COLUMNS_Y = ['1']
@@ -35,13 +29,15 @@ LABEL_X   = ''
 LABEL_Y   = ''
 TICKS_X   = []
 TICKS_Y   = []
+RANGE     = [None, None, None, None]
 LOG_X     = False
 LOG_Y     = False
 LOG       = ''
-SIZE      = (20, 14)
 STYLE     = 'line'  # 'point', 'line', 'step', 'bar', 'hist'
-GRID      = True    # True, False
-SAVE_AS   = 'x11'   # 'svg', 'png', 'x11'
+GRID      = False   # True, False
+FNAME     = None
+SAVE_AS   = 'x11'   # 'svg', 'png', 'x11', 'pdf'
+WIDTH     = 500
 
 
 # ------------------------------------------------------------------------------
@@ -70,11 +66,14 @@ def usage(msg=None):
         -L, --legend     <label_1,label_2,...> : name of plots specified in '-y'
         -u, --x-ticks    <tick_1,tick_2,...>   : not yet supported
         -v, --y-ticks    <tick_1,tick_2,...>   : not yet supported
+        -r, --range      <xmin,xmax,ymin,ymax> : axis range
         -s, --style      <point | line | step | bar | hist>
                                                : plot type
-        -z, --size       <20,14>               : canvas size
+        -w, --width      <252>                 : canvas width
         -l, --log        <x | y | x,y>         : log-scale for x and/or y axis
+        -g, --grid                             : grid lines (default: no)
         -a, --save-as    <png | svg | x11>     : save fig in format (x11: show)
+        -f, --file-name  <filename>            : name to save to (w/o ext)
 
 ''')
 
@@ -94,12 +93,15 @@ parser.add_option('-x', '--x-column',  dest='xcol')
 parser.add_option('-y', '--y-columns', dest='ycols')
 parser.add_option('-u', '--x-ticks',   dest='xticks')
 parser.add_option('-v', '--y-ticks',   dest='yticks')
+parser.add_option('-r', '--range',     dest='range')
 parser.add_option('-L', '--legend',    dest='legend')
 parser.add_option('-s', '--style',     dest='style')
-parser.add_option('-z', '--size',      dest='size')
+parser.add_option('-w', '--width',     dest='width')
 parser.add_option('-l', '--log',       dest='log')
+parser.add_option('-g', '--grid',      dest='grid', action='store_true')
 parser.add_option('-a', '--save-as',   dest='save')
-parser.add_option('-h', '--help',      dest='help', action="store_true")
+parser.add_option('-f', '--file-name', dest='fname')
+parser.add_option('-h', '--help',      dest='help', action='store_true')
 
 options, args = parser.parse_args()
 if len(args) > 1:
@@ -121,10 +123,20 @@ if options.ylabel : LABEL_Y      =  str(options.ylabel)
 if options.xticks : TICKS_X      = [str(x) for x in options.xticks.split(',')]
 if options.yticks : TICKS_Y      = [str(x) for x in options.yticks.split(',')]
 if options.legend : LEGEND       = [str(x) for x in options.legend.split(',')]
-if options.size   : SIZE         = [int(x) for x in options.size  .split(',')]
+if options.width  : WIDTH        =  int(options.width)
 if options.log    : LOG          =  str(options.log)
+if options.grid   : GRID         =  str(options.grid)
 if options.style  : STYLE        =  str(options.style)
 if options.save   : SAVE_AS      =  str(options.save)
+if options.fname  : FNAME        =  str(options.fname)
+
+if options.range  :
+    RANGE = options.range .split(',')
+    RANGE = [float(x) if x else None for x in RANGE]
+
+LEGEND  = [s.strip() for s in LEGEND]
+TICKS_X = [s.strip() for s in TICKS_X]
+TICKS_Y = [s.strip() for s in TICKS_Y]
 
 if 'x' in LOG: LOG_X = True
 if 'y' in LOG: LOG_Y = True
@@ -132,7 +144,7 @@ if 'y' in LOG: LOG_Y = True
 if COLUMN_X not in ['count']:
     COLUMN_X = int(COLUMN_X)
 
-if SAVE_AS not in ['x11', 'png', 'svg']:
+if SAVE_AS not in ['x11', 'png', 'svg', 'pdf']:
     raise ValueError('invalid save_as value: %s' % SAVE_AS)
 
 if STYLE not in ['point', 'line', 'step', 'bar', 'hist']:
@@ -159,7 +171,6 @@ def get_lines():
 def get_elems(line):
     if DELIM:
         elems = [e.strip() for e in line.split(DELIM)]
-      # print(elems)
     else:
         elems = line.split()
 
@@ -220,14 +231,15 @@ if STYLE == 'hist':
 
 # ------------------------------------------------------------------------------
 # plot data
-plt.figure(figsize=SIZE)
 # pprint.pprint(data)
 try:
-    cnum = 0
+
+    fig, ax = plt.subplots(figsize=ra.get_plotsize(WIDTH))
+    cnum    = 0
     for col in COLUMNS_Y:
 
-        if LEGEND: label = LEGEND[cnum]
-        else     : label = str(cnum)
+        if LEGEND: label = to_latex(LEGEND[cnum])
+        else     : label = to_latex(str(cnum))
         cnum += 1
 
         if COLUMN_X == 'count':
@@ -238,23 +250,41 @@ try:
         if '+' in col:
             cols = col.split('+', 1)
             cols = [int(cols[0]), int(cols[1])]
-            data_y = np.array(data[cols[0]]) + np.array(data[cols[0]])
+            data_y = np.array(data[cols[0]]) + np.array(data[cols[1]])
 
         elif '-' in col:
             cols = col.split('-', 1)
             cols = [int(cols[0]), int(cols[1])]
-            data_y = np.array(data[cols[0]]) - np.array(data[cols[0]])
+            data_y = np.array(data[cols[0]]) - np.array(data[cols[1]])
+
+        elif '*' in col:
+            cols = col.split('*', 1)
+            cols = [int(cols[0]), int(cols[1])]
+            data_y = np.array(data[cols[0]]) * np.array(data[cols[1]])
+
+        elif '/' in col:
+            cols = col.split('/', 1)
+            cols = [int(cols[0]), int(cols[1])]
+            data_y = np.array(data[cols[0]]) / np.array(data[cols[1]])
 
         else:
             col = int(col)
             time.sleep(1)
             data_y = np.array(data[col])
 
-        if   STYLE == 'point': plt.scatter(data_x, data_y, label=label, s=10)
-        elif STYLE == 'line' : plt.plot   (data_x, data_y, 'b', label=label)
-        elif STYLE == 'step' : plt.step   (data_x, data_y, 'b', label=label)
-        elif STYLE == 'bar'  : plt.bar    (data_x, data_y, label=label)
-        elif STYLE == 'hist' : plt.hist   (data_y,  150,   label=label)
+        colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+        color = colors[cnum]
+
+        # if cnum == 3:
+        #     color = colors[4]
+
+        if   STYLE == 'point': ax.scatter(data_x, data_y,      c=color, label=label, s=10)
+        elif STYLE == 'line' : ax.plot   (data_x, data_y, 'b', c=color, label=label)
+        elif STYLE == 'step' : ax.step   (data_x, data_y, 'b', c=color, label=label)
+        elif STYLE == 'bar'  : ax.bar    (data_x, data_y,      c=color, label=label)
+        elif STYLE == 'hist' : ax.hist   (data_y,  150,        color=color, label=label)
+
+
 
 except IndexError:
     print('index error')
@@ -262,21 +292,34 @@ except IndexError:
         print('    %2d: %s' % (i, e))
     raise
 
-plt.legend(ncol=2, fancybox=True, loc='lower right')
+if LEGEND != ['-']:
+    plt.legend(ncol=1, fancybox=True)
 
-# if TITLE   : plt.title(TITLE)
-if LOG_X   : plt.xscale('log')
-if LOG_Y   : plt.yscale('log')
-if LABEL_X : plt.xlabel(LABEL_X)
-if LABEL_Y : plt.ylabel(LABEL_Y)
-if TICKS_X : plt.xticks([int(t) for t in TICKS_X], TICKS_X)
-if TICKS_Y : plt.yticks([int(t) for t in TICKS_Y], TICKS_Y)
-if GRID    : plt.grid(True)
+if TITLE   : ax.set_title(TITLE, loc='center')
+if LOG_X   : ax.set_xscale('log')
+if LOG_Y   : ax.set_yscale('log')
+if LABEL_X : ax.set_xlabel(to_latex(LABEL_X))
+if LABEL_Y : ax.set_ylabel(to_latex(LABEL_Y))
+if TICKS_X : ax.set_xticks([int(t) for t in TICKS_X], TICKS_X)
+if TICKS_Y : ax.set_yticks([int(t) for t in TICKS_Y], TICKS_Y)
+if GRID    : ax.grid(True)
 
-fbase = TITLE.lower()
-if   SAVE_AS == 'png': plt.savefig('%s.png' % (TITLE.lower()), bbox_inches="tight")
-elif SAVE_AS == 'svg': plt.savefig('%s.svg' % (TITLE.lower()), bbox_inches="tight")
-elif SAVE_AS == 'x11': plt.show()
+xmin, xmax, ymin, ymax = RANGE
+if xmin is not None: ax.set_xlim(left=0)
+if xmax is not None: ax.set_xlim(right=0)
+if ymin is not None: ax.set_ylim(left=0)
+if ymax is not None: ax.set_ylim(right=0)
+
+if not FNAME:
+    FNAME = TITLE.lower().replace(' ', '_')
+    FNAME = FNAME.replace(':', '_-_')
+    FNAME = FNAME.replace('__', '_')
+
+if   SAVE_AS == 'png': fig.savefig('%s.png' % FNAME, bbox_inches="tight")
+elif SAVE_AS == 'svg': fig.savefig('%s.svg' % FNAME, bbox_inches="tight")
+elif SAVE_AS == 'pdf': fig.savefig('%s.pdf' % FNAME, dpi=300,
+                                              bbox_inches="tight")
+elif SAVE_AS == 'x11': fig.show()
 
 
 # ------------------------------------------------------------------------------
