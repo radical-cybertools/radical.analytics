@@ -62,7 +62,8 @@ class Session(object):
                     raise ValueError('cannot handle extension %s' % ext)
 
             except Exception as e:
-                raise RuntimeError('Cannot extract tarball: %s' % repr(e))
+                raise RuntimeError(
+                    'Cannot extract tarball: %s' % repr(e)) from e
 
         self._sid   = sid
         self._src   = src
@@ -103,10 +104,10 @@ class Session(object):
 
             try:
                 import radical.pilot.utils as rpu
-            except:
+            except Exception as e:
                 raise RuntimeError('radical.analytics requires the '
                                    'radical.pilot module to analyze this '
-                                   'session - please install it.')
+                                   'session - please install it.') from e
 
             self._profile, accuracy, hostmap \
                               = rpu.get_session_profile    (sid=sid, src=self._src)
@@ -120,10 +121,10 @@ class Session(object):
 
             try:
                 import radical.entk.utils as reu
-            except:
+            except Exception as e:
                 raise RuntimeError('radical.analytics requires the '
                                    'radical.entk module to analyze this '
-                                   'session - please install it.')
+                                   'session - please install it.') from e
 
             self._profile, accuracy, hostmap \
                               = reu.get_session_profile    (sid=sid, src=self._src)
@@ -416,7 +417,7 @@ class Session(object):
         entities.
 
         RA knows exactly 4 properties:
-          - uid   (entity idetifiers)
+          - uid   (entity identifiers)
           - etype (type of entities)
           - event (names of events)
           - state (state identifiers)
@@ -878,13 +879,13 @@ class Session(object):
         This method accepts the same parameters as the `timestamps()` method: it
         will count all matching events and state transitions as given, and will
         return a time series of the rate of how many of those events and/or
-        transitions occured per second.
+        transitions occurred per second.
 
         The additional parameter `sampling` determines the exact points in time
         for which the rate is computed, and thus determines the sampling rate
         for the returned time series.  If not specified, the time series will
-        contain all points at which and event occured, and the rate value will
-        only be determined by the time passed between two consequtuve events.
+        contain all points at which and event occurred, and the rate value will
+        only be determined by the time passed between two consecutive events.
         If specified, it is interpreted as second (float) interval at which,
         after the starting point (begin of first event matching the filters) the
         rate is computed.
@@ -984,7 +985,7 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def utilization(self, metrics):
+    def utilization(self, metrics, rtype='cpu', udurations=None):
 
         if self._stype != 'radical.pilot':
             raise ValueError('session utilization is only available on '
@@ -992,8 +993,8 @@ class Session(object):
 
         import radical.pilot as rp
 
-        provided  = rp.utils.get_provided_resources(self)
-        consumed  = rp.utils.get_consumed_resources(self)
+        provided  = rp.utils.get_provided_resources(self, rtype)
+        consumed  = rp.utils.get_consumed_resources(self, rtype, udurations)
         stats_abs = {'total':   0.0}
         stats_rel = {'total': 100.0}
         total     = 0.0

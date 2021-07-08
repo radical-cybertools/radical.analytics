@@ -1,0 +1,55 @@
+axes.axisbelow              : True
+axes.edgecolor              : .15
+axes.facecolor              : white
+axes.formatter.use_mathtext : True
+axes.grid                   : False
+axes.labelcolor             : .15
+axes.labelsize              : 8
+axes.linewidth              : .5
+axes.prop_cycle             : cycler('color', ['1a80b2', 'b2cce6', 'ff801a', 'ffb280', '339933', '99e680', 'cc3333', 'ff9999', '9966b2', 'ccb2cc', '804c4c', 'cc9999', 'e680cc', 'ffb2cc', 'b2b21a', 'e6e699', '1ab2cc', '99e6e6', '4c4c4c', '666666', '808080', '998080', '99b2b2', 'cccccc'])
+axes.spines.right           : False
+axes.spines.top             : False
+axes.titlesize              : 8
+
+errorbar.capsize            : 3
+
+figure.titlesize            : 8
+figure.dpi                  : 300
+
+font.family                 : [serif]
+font.serif                  : [Times New Roman]
+font.size                   : 8
+
+grid.color                  : .8
+grid.linestyle              : -
+grid.linewidth              : .1
+
+image.cmap                  : Greys
+
+legend.fontsize             : 8
+legend.frameon              : False
+legend.borderpad            : .2
+
+
+lines.markeredgecolor       : .15
+lines.solid_capstyle        : round
+lines.linewidth             : .5
+
+mathtext.fontset            : stix
+
+patch.edgecolor             : .15
+patch.force_edgecolor       : True
+patch.linewidth             : .5
+
+scatter.edgecolors          : .15
+
+text.color                  : .15
+text.usetex                 : True
+
+xtick.color                 : .15
+xtick.direction             : out
+xtick.labelsize             : 8
+
+ytick.color                 : .15
+ytick.direction             : out
+ytick.labelsize             : 8
