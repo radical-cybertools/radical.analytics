@@ -150,7 +150,7 @@ if __name__ == '__main__':
       # pprint.pprint(stats_rel)
 
         legend, patches, x, y = ra.get_plot_utilization(metrics,
-                {sid: consumed}, p_zero, sid, 'pilot.0000')
+                {sid: consumed}, p_zero, sid)
 
         for patch in patches:
             axes[i].add_patch(patch)
