@@ -1,3 +1,4 @@
 radical.pilot
+radical.analytics
 sphinx_copybutton
 nbsphinx
