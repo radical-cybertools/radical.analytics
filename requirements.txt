@@ -1,1 +1,2 @@
 radical.pilot
+sphinx_copybutton
