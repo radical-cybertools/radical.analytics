@@ -45,9 +45,9 @@ Content
    introduction.rst
    installation.rst
    inspection.rst
-   duration.rst
+   durations.ipynb
    concurrency.rst
-   utilization.rst
+   utilization.ipynb
    plotting.rst
    apidoc.rst
 

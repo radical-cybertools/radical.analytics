@@ -104,9 +104,11 @@ class Session(object):
                                    'radical.pilot module to analyze this '
                                    'session - please install it.') from e
 
-            self._profile, accuracy, hostmap \
-                              = rpu.get_session_profile    (sid=sid, src=self._src)
-            self._description = rpu.get_session_description(sid=sid, src=self._src)
+            self._profile, accuracy, hostmap = \
+                    rpu.get_session_profile(sid=sid, src=self._src)
+            print(sid, self._src)
+            self._description = \
+                    rpu.get_session_description(sid=sid, src=self._src)
 
             self._description['accuracy'] = accuracy
             self._description['hostmap']  = hostmap
@@ -179,7 +181,7 @@ class Session(object):
 
         elif os.path.isfile(src):
 
-            # src is afile - we assume its a tarball and extract it
+            # src is a file - we assume its a tarball and extract it
             if  src.endswith('.prof'):
                 # use as is
                 tgt = src
