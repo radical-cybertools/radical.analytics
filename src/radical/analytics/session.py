@@ -106,7 +106,6 @@ class Session(object):
 
             self._profile, accuracy, hostmap = \
                     rpu.get_session_profile(sid=sid, src=self._src)
-            print(sid, self._src)
             self._description = \
                     rpu.get_session_description(sid=sid, src=self._src)
 
