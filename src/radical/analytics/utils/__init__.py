@@ -10,7 +10,7 @@ from .plot import tabulate_durations
 #
 __all__ = ('get_plotsize', 'get_mplstyle', 'stack_transitions',
            'get_pilot_series', 'get_plot_utilization', 'get_pilots_zeros',
-           'to_latex', 'tablulate_durations')
+           'to_latex', 'tabulate_durations')
 
 
 # ------------------------------------------------------------------------------
