@@ -1,6 +1,12 @@
+radical.utils
 radical.pilot
+radical.entk
 radical.analytics
 sphinx_copybutton
 nbsphinx
 ipykernel
 nbsphinx
+os
+tarfile
+pandas
+matplotlib
