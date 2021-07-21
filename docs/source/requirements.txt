@@ -1,7 +1,8 @@
 radical.utils
 radical.pilot
 radical.entk
-radical.analytics
+#radical.analytics
+git+git://github.com/radical-cybertools/radical.analytics@devel
 sphinx_copybutton
 nbsphinx
 ipykernel
