@@ -25,7 +25,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'RADICAL-Analytics'
-copyright = '2020, RADICAL Devel Team'
+copyright = '2021, RADICAL Devel Team'
 author = 'RADICAL Devel Team'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -54,7 +54,9 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages'
+    'sphinx.ext.githubpages',
+    'nbsphinx',
+    'sphinx_copybutton'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -186,7 +188,7 @@ html_static_path = ['_static']
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
 #
-# html_use_smartypants = True
+html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
 #
@@ -215,17 +217,17 @@ html_static_path = ['_static']
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
 #
-# html_show_sphinx = True
+html_show_sphinx = True
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
 #
-# html_show_copyright = True
+html_show_copyright = True
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
 # base URL from which the finished HTML is served.
 #
-# html_use_opensearch = ''
+html_use_opensearch = 'https://radicalanalytics.readthedocs.io/'
 
 # This is the file name suffix for HTML files (e.g. ".xhtml").
 # html_file_suffix = None
@@ -250,6 +252,14 @@ html_static_path = ['_static']
 
 # Output file base name for HTML help builder.
 # htmlhelp_basename = 'RADICAL-Analyticsdoc'
+
+# By default, a .txt suffix is added to source files. This is only relevant if
+# the chosen HTML theme supports source links and if html_show_sourcelink is
+# True. Jupyter notebooks with the suffix .ipynb.txt are normally not very
+# useful, so if you want to avoid the additional suffix, set
+# html_sourcelink_suffix to the empty string:
+html_sourcelink_suffix = ''
+
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -441,3 +451,22 @@ html_static_path = ['_static']
 
 # Example configuration for intersphinx: refer to the Python standard library.
 # intersphinx_mapping = {'https://docs.python.org/': None}
+
+
+# -- Options for nbsphinx ------------------------------------------------------
+# Kernel arguments used when executing notebooks. If you use Matplotlib for
+# plots, this setting is recommended:
+# nbsphinx_execute_arguments = [
+#     "--InlineBackend.figure_formats={'svg'}",
+#     "--InlineBackend.rc=figure.dpi=96",
+# ]
+
+# Input prompt for code cells. %s is replaced by the execution count. To get a
+# prompt similar to the Classic Notebook, use
+# nbsphinx_input_prompt = 'In [%s]:'
+
+# Output prompt for code cells. %s is replaced by the execution count. To get a
+# prompt similar to the Classic Notebook, use
+# nbsphinx_output_prompt = 'Out[%s]:'
+
+
