@@ -9,3 +9,4 @@ ipykernel
 nbsphinx
 pandas
 matplotlib
+sphinx-rtd-theme

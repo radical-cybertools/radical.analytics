@@ -30,13 +30,9 @@ RA has supported the development and experimental analysis of most of the
 `papers published <http://radical.rutgers.edu/publications/>`_ by `RADICAL
 <http://radical.rutgers.edu/>`_ at Rutgers University.
 
-**Links**
+.. * repository:     https://github.com/radical-cybertools/radical.analytics
+.. * issues:         https://github.com/radical-cybertools/radical.analytics/issues
 
-* repository:     https://github.com/radical-cybertools/radical.analytics
-* issues:         https://github.com/radical-cybertools/radical.analytics/issues
-
-Content
--------
 
 .. toctree::
    :numbered:
@@ -45,7 +41,7 @@ Content
    introduction.rst
    installation.rst
    inspection.rst
-   durations.ipynb
+   duration.ipynb
    concurrency.rst
    utilization.ipynb
    plotting.rst
