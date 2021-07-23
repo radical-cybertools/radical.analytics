@@ -425,7 +425,7 @@ def get_plot_utilization(metrics, consumed, t_zero, sid):
 def to_latex(data):
     '''
     Transforms the input string(s) so that it can be used as latex compiled plot
-    label, title etc. Escapes special characters with `\\\\`.
+    label, title etc. Escapes special characters with a slash.
 
     Parameters
     ----------
