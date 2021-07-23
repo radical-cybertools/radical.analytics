@@ -424,8 +424,8 @@ def get_plot_utilization(metrics, consumed, t_zero, sid):
 #
 def to_latex(data):
     '''
-    Transform the input string(s) so that it can be used as latex compiled plot
-    label, title etc.  This method escapes special characters with `\\`.
+    Transforms the input string(s) so that it can be used as latex compiled plot
+    label, title etc. Escapes special characters with `\\`.
 
     Parameters
     ----------
@@ -443,17 +443,23 @@ def to_latex(data):
 
     else:
         assert(isinstance(data, str)), type(data)
-        return data.replace('%', '\\%') \
-                   .replace('#', '\\#') \
-                   .replace('_', '\\_')
+        return data.replace('%',  '\\%') \
+                   .replace('#',  '\\#') \
+                   .replace('_',  '\\_') \
+                   .replace('$',  '\\$') \
+                   .replace('&',  '\\&') \
+                   .replace('~',  '\\~') \
+                   .replace('^',  '\\^') \
+                   .replace('{',  '\\{') \
+                   .replace('}',  '\\}')
 
 
 # ------------------------------------------------------------------------------
 #
 def tabulate_durations(durations):
     '''
-    Take a dict of durations as defined in rp.utils (e.g.,
-    rp.utils.PILOT_DURATIONS_DEBUG) and returns a list of durations with their
+    Takes a dict of durations as defined in rp.utils (e.g.,
+    `rp.utils.PILOT_DURATIONS_DEBUG`) and returns a list of durations with their
     start and stop timestamps. That list can be directly converted to a
     panda.df.
 
