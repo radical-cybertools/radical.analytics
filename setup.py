@@ -24,6 +24,9 @@ from setuptools import setup, Command, find_namespace_packages
 name     = 'radical.analytics'
 mod_root = 'src/radical/analytics/'
 
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
 
 # ------------------------------------------------------------------------------
 #
@@ -32,7 +35,7 @@ def sh_callout(cmd):
     p = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, shell=True)
 
     stdout, stderr = p.communicate()
-    ret            = p.returncode
+    ret = p.returncode
     return stdout, stderr, ret
 
 
@@ -188,13 +191,16 @@ setup_args = {
     'name'               : name,
     'namespace_packages' : ['radical'],
     'version'            : version,
-    'description'        : 'The RADICAL analytics framework',
-  # 'long_description'   : (read('README.md') + '\n\n' + read('CHANGES.md')),
+    'description'        : 'Profiling library for RADICAL-Cybertools',
+    'long_description'   : long_description,
     'author'             : 'RADICAL Group at Rutgers University',
     'author_email'       : 'radical@rutgers.edu',
-    'maintainer'         : 'The RADICAL Devel Team',
+    'maintainer'         : 'The RADICAL Development Team',
     'maintainer_email'   : 'radical@rutgers.edu',
     'url'                : 'https://www.github.com/radical-cybertools/radical.analytics/',
+    'project_urls'       : {
+        'Bug Tracker': 'https://github.com/pypa/sampleproject/issues'
+                           },
     'license'            : 'MIT',
     'keywords'           : 'radical analytics',
     'python_requires'    : '>=3.6',
@@ -237,7 +243,7 @@ setup_args = {
                             'flake8',
                             'coverage',
                             'mock==2.0.0.',
-                            'radical.pilo >= 1.6.7',
+                            'radical.pilot >= 1.6.7',
                            ],
     'test_suite'         : '%s.tests' % name,
     'zip_safe'           : False,
