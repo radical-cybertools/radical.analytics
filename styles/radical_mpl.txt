@@ -6,7 +6,7 @@ axes.grid                   : False
 axes.labelcolor             : .15
 axes.labelsize              : 8
 axes.linewidth              : .5
-axes.prop_cycle             : cycler('color', ['1a80b2', 'b2cce6', 'ff801a', 'ffb280', '339933', '99e680', 'cc3333', 'ff9999', '9966b2', 'ccb2cc', '804c4c', 'cc9999', 'e680cc', 'ffb2cc', 'b2b21a', 'e6e699', '1ab2cc', '99e6e6', '4c4c4c', '666666', '808080', '998080', '99b2b2', 'cccccc'])
+axes.prop_cycle             : cycler('color', ['1a80b2', 'ff801a', '339933', 'cc3333', '9966b2', '804c4c', 'e680cc', 'b2b21a', '1ab2cc', '4c4c4c', '808080', '99b2b2', 'b2cce6', 'ffb280', '99e680', 'ff9999', 'ccb2cc', 'cc9999', 'ffb2cc', 'e6e699', '99e6e6', '666666', '998080', 'cccccc'])
 axes.spines.right           : False
 axes.spines.top             : False
 axes.titlesize              : 8
