@@ -51,11 +51,12 @@ RA supports the development and experimental analysis of the
 
    introduction.rst
    installation.rst
-   inspection.rst
-   duration.ipynb
-   concurrency.rst
-   utilization.ipynb
    plotting.rst
+   inspection.ipynb
+   duration.ipynb
+   utilization.ipynb
+   timestamps.ipynb
+   concurrency.ipynb
    apidoc.rst
 
 .. Indices and tables

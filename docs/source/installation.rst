@@ -14,6 +14,9 @@ RA requires the following packages:
 
 RA automatically installs the dependencies above. Besides that, RA requires the manual installation of the RADICAL-Cybertool (RCT) of choice.
 
+Virtual Environment
+-------------------
+
 To install RA in a virtual environment, open a terminal and
 run:
 
