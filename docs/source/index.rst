@@ -54,9 +54,9 @@ RA supports the development and experimental analysis of the
    plotting.rst
    inspection.ipynb
    duration.ipynb
-   timestamps.ipynb
    utilization.ipynb
-   concurrency.rst
+   timestamps.ipynb
+   concurrency.ipynb
    apidoc.rst
 
 .. Indices and tables

@@ -25,28 +25,28 @@ Default Color Cycler of RADICAL-Analytics Style
    :format: html
 
 01. :raw-html:`<span style="display:inline-block;width:100px;background-color:#1a80b2">#1a80b2</span>`
-02. :raw-html:`<span style="display:inline-block;width:100px;background-color:#b2cce6">#b2cce6</span>`
-03. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ff801a">#ff801a</span>`
-04. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ffb280">#ffb280</span>`
-05. :raw-html:`<span style="display:inline-block;width:100px;background-color:#339933">#339933</span><br>`
-06. :raw-html:`<span style="display:inline-block;width:100px;background-color:#99e680">#99e680</span>`
-07. :raw-html:`<span style="display:inline-block;width:100px;background-color:#cc3333">#cc3333</span>`
-08. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ff9999">#ff9999</span>`
-09. :raw-html:`<span style="display:inline-block;width:100px;background-color:#9966b2">#9966b2</span>`
-10. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ccb2cc">#ccb2cc</span><br>`
-11. :raw-html:`<span style="display:inline-block;width:100px;background-color:#804c4c">#804c4c</span>`
-12. :raw-html:`<span style="display:inline-block;width:100px;background-color:#cc9999">#cc9999</span>`
-13. :raw-html:`<span style="display:inline-block;width:100px;background-color:#e680cc">#e680cc</span>`
-14. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ffb2cc">#ffb2cc</span>`
-15. :raw-html:`<span style="display:inline-block;width:100px;background-color:#b2b21a">#b2b21a</span><br>`
-16. :raw-html:`<span style="display:inline-block;width:100px;background-color:#e6e699">#e6e699</span>`
-17. :raw-html:`<span style="display:inline-block;width:100px;background-color:#1ab2cc">#1ab2cc</span>`
-18. :raw-html:`<span style="display:inline-block;width:100px;background-color:#99e6e6">#99e6e6</span>`
-19. :raw-html:`<span style="display:inline-block;width:100px;background-color:#4c4c4c">#4c4c4c</span>`
-20. :raw-html:`<span style="display:inline-block;width:100px;background-color:#666666">#666666</span><br>`
-21. :raw-html:`<span style="display:inline-block;width:100px;background-color:#808080">#808080</span>`
-22. :raw-html:`<span style="display:inline-block;width:100px;background-color:#998080">#998080</span>`
-23. :raw-html:`<span style="display:inline-block;width:100px;background-color:#99b2b2">#99b2b2</span>`
+02. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ff801a">#ff801a</span>`
+03. :raw-html:`<span style="display:inline-block;width:100px;background-color:#339933">#339933</span>`
+04. :raw-html:`<span style="display:inline-block;width:100px;background-color:#cc3333">#cc3333</span>`
+05. :raw-html:`<span style="display:inline-block;width:100px;background-color:#9966b2">#9966b2</span><br>`
+06. :raw-html:`<span style="display:inline-block;width:100px;background-color:#804c4c">#804c4c</span>`
+07. :raw-html:`<span style="display:inline-block;width:100px;background-color:#e680cc">#e680cc</span>`
+08. :raw-html:`<span style="display:inline-block;width:100px;background-color:#b2b21a">#b2b21a</span>`
+09. :raw-html:`<span style="display:inline-block;width:100px;background-color:#1ab2cc">#1ab2cc</span>`
+10. :raw-html:`<span style="display:inline-block;width:100px;background-color:#4c4c4c">#4c4c4c</span><br>`
+11. :raw-html:`<span style="display:inline-block;width:100px;background-color:#808080">#808080</span>`
+12. :raw-html:`<span style="display:inline-block;width:100px;background-color:#99b2b2">#99b2b2</span>`
+13. :raw-html:`<span style="display:inline-block;width:100px;background-color:#b2cce6">#b2cce6</span>`
+14. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ffb280">#ffb280</span>`
+15. :raw-html:`<span style="display:inline-block;width:100px;background-color:#99e680">#99e680</span><br>`
+16. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ff9999">#ff9999</span>`
+17. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ccb2cc">#ccb2cc</span>`
+18. :raw-html:`<span style="display:inline-block;width:100px;background-color:#cc9999">#cc9999</span>`
+19. :raw-html:`<span style="display:inline-block;width:100px;background-color:#ffb2cc">#ffb2cc</span>`
+20. :raw-html:`<span style="display:inline-block;width:100px;background-color:#e6e699">#e6e699</span><br>`
+21. :raw-html:`<span style="display:inline-block;width:100px;background-color:#99e6e6">#99e6e6</span>`
+22. :raw-html:`<span style="display:inline-block;width:100px;background-color:#666666">#666666</span>`
+23. :raw-html:`<span style="display:inline-block;width:100px;background-color:#998080">#998080</span>`
 24. :raw-html:`<span style="display:inline-block;width:100px;background-color:#cccccc">#cccccc</span>`
 
 Plotting for Latex Documents
