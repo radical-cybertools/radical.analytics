@@ -753,7 +753,7 @@ class Session(object):
 
            session.duration(state=[rp.NEW, rp.FINAL]))
 
-        where `rp.FINAL` is a list of final unit states.
+        where `rp.FINAL` is a list of final task states.
         '''
 
         if not ranges:
@@ -777,7 +777,7 @@ class Session(object):
         '''
         This method accepts the same set of parameters as the `ranges()` method,
         and will use the `ranges()` method to obtain a set of ranges.  It will
-        return a time series, counting the number of units which are
+        return a time series, counting the number of tasks which are
         concurrently matching the ranges filter at any point in time.
 
         The additional parameter `sampling` determines the exact points in time
@@ -799,7 +799,7 @@ class Session(object):
 
         Example::
 
-            session.filter(etype='unit').concurrency(state=[rp.AGENT_EXECUTING,
+            session.filter(etype='task').concurrency(state=[rp.AGENT_EXECUTING,
                 rp.AGENT_STAGING_OUTPUT_PENDING])
 
         '''
@@ -904,7 +904,7 @@ class Session(object):
 
         Example::
 
-           session.filter(etype='unit').rate(state=[rp.AGENT_EXECUTING])
+           session.filter(etype='task').rate(state=[rp.AGENT_EXECUTING])
         '''
 
         timestamps = self.timestamps(event=event, state=state, time=time,
@@ -1019,7 +1019,7 @@ class Session(object):
                                            (box[3] - box[2]  + 1)
 
         info  = ''
-        info += '%s [%d]\n' % (self.uid, len(self.get(etype='unit')))
+        info += '%s [%d]\n' % (self.uid, len(self.get(etype='task')))
 
         for metric in metrics + ['total']:
             if isinstance(metric, list):
@@ -1115,7 +1115,7 @@ class Session(object):
     #     Example::
 
     #         s.utilization(owner          = 'pilot',
-    #                       consumer       = 'unit',
+    #                       consumer       = 'task',
     #                       resource       = 'cores',
     #                       owner_events   = [{ru.EVENT: 'bootstrap_0_start'},
     #                                         {ru.EVENT: 'bootstrap_0_stop' }])
@@ -1316,14 +1316,14 @@ class Session(object):
 
             usage('pilot', [{ru.STATE: None, ru.EVENT: 'bootstrap_0_start'},
                             {ru.STATE: None, ru.EVENT: 'bootstrap_0_stop' }],
-                  'unit' , [{ru.STATE: None, ru.EVENT: 'schedule_ok'      },
+                  'task' , [{ru.STATE: None, ru.EVENT: 'schedule_ok'      },
                             {ru.STATE: None, ru.EVENT: 'unschedule_stop'  }],
-                  'unit' , [{ru.STATE: None, ru.EVENT: 'exec_start'       },
+                  'task' , [{ru.STATE: None, ru.EVENT: 'exec_start'       },
                             {ru.STATE: None, ru.EVENT: 'exec_stop'        }])
         '''
 
         # this is currently only supported for RP sessions, as we only know for
-        # pilots and units how to dig resource information out of session and
+        # pilots and tasks how to dig resource information out of session and
         # entity metadata.
         assert(self.stype == 'radical.pilot'), \
                'stype %s unsupported' % self._stype
@@ -1371,7 +1371,7 @@ class Session(object):
                 return [[[res_idx[entity.uid]['_min'],
                           res_idx[entity.uid]['_max']]], []]
 
-            elif entity.etype == 'unit':
+            elif entity.etype == 'task':
 
                 # find owning pilot
                 pid = entity.cfg.get('pilot')
