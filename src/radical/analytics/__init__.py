@@ -15,6 +15,7 @@ from .plotter    import Plotter
 from .utils import get_plotsize, get_mplstyle, stack_transitions
 from .utils import get_pilot_series, get_plot_utilization, get_pilots_zeros
 from .utils import to_latex
+from .utils import tabulate_durations
 
 
 # ------------------------------------------------------------------------------
@@ -28,7 +29,7 @@ version_short, version_detail, version_base, \
         version_branch, sdist_name, sdist_path = ru.get_version(paths=[root])
 version = version_short
 
-logger = ru.Logger('radical.analytics')
+logger = ru.Logger('radical.analytics', targets=['-'])
 logger.info('radical.analytics    version: %s' % version_detail)
 
 
@@ -36,7 +37,8 @@ logger.info('radical.analytics    version: %s' % version_detail)
 #
 __all__ = ('Experiment','Session','Entity','Plotter', 'get_plotsize',
            'get_mplstyle', 'stack_transitions', 'get_pilot_series',
-           'get_plot_utilization', 'get_pilots_zeros', 'to_latex')
+           'get_plot_utilization', 'get_pilots_zeros', 'to_latex',
+           'tabulate_durations')
 
 
 # ------------------------------------------------------------------------------

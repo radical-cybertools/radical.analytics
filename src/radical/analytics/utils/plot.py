@@ -424,17 +424,18 @@ def get_plot_utilization(metrics, consumed, t_zero, sid):
 #
 def to_latex(data):
     '''
-    Transform the input string(s) so that it can be used as latex compiled plot
-    label, title etc.  This method escapes special characters with `\\`.
+    Transforms the input string(s) so that it can be used as latex compiled plot
+    label, title etc. Escapes special characters with a slash.
 
     Parameters
     ----------
     data : list or str
-           an individual string or a list of strings to transform
+           An individual string or a list of strings to transform.
 
     Returns
     -------
-    data : transformed string
+    data : list of str
+           Transformed data.
     '''
 
     if isinstance(data, list):
@@ -442,9 +443,62 @@ def to_latex(data):
 
     else:
         assert(isinstance(data, str)), type(data)
-        return data.replace('%', '\\%') \
-                   .replace('#', '\\#') \
-                   .replace('_', '\\_')
+        return data.replace('%',  '\\%') \
+                   .replace('#',  '\\#') \
+                   .replace('_',  '\\_') \
+                   .replace('$',  '\\$') \
+                   .replace('&',  '\\&') \
+                   .replace('~',  '\\~') \
+                   .replace('^',  '\\^') \
+                   .replace('{',  '\\{') \
+                   .replace('}',  '\\}')
 
 
 # ------------------------------------------------------------------------------
+#
+def tabulate_durations(durations):
+    '''
+    Takes a dict of durations as defined in rp.utils (e.g.,
+    `rp.utils.PILOT_DURATIONS_DEBUG`) and returns a list of durations with their
+    start and stop timestamps. That list can be directly converted to a
+    panda.df.
+
+    Parameters
+    ----------
+    durations : dict
+                Dict of lists of dicts/lists of dicts. It contains
+                details about states and events.
+
+    Returns
+    -------
+    data : list
+           List of dicts, each dict containing 'Duration Name',
+           'Start Timestamp' and 'Stop Timestamp'.
+    '''
+    table = []
+    for name in durations:
+        duration = {}
+        start = durations[name][0]
+        stop  = durations[name][1]
+
+        duration['Duration Name'] = name
+
+        if list(start.values())[0] == 'state':
+            duration['Start Timestamp'] = list(start.values())[1]
+        else:
+            duration['Start Timestamp'] = list(start.values())[0]
+
+        if isinstance(stop, list):
+            ds = []
+            for state in stop:
+                ds.append(list(state.values())[1])
+            duration['Stop Timestamp'] = ', '.join(map(str, ds))
+        else:
+            if list(stop.values())[0] == 'state':
+                duration['Stop Timestamp'] = list(stop.values())[1]
+            else:
+                duration['Stop Timestamp'] = list(stop.values())[0]
+
+        table.append(duration)
+
+    return table

@@ -32,7 +32,7 @@ def sh_callout(cmd):
     p = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, shell=True)
 
     stdout, stderr = p.communicate()
-    ret            = p.returncode
+    ret = p.returncode
     return stdout, stderr, ret
 
 
@@ -185,20 +185,26 @@ df    = [
 # ------------------------------------------------------------------------------
 #
 setup_args = {
-    'name'               : name,
-    'namespace_packages' : ['radical'],
-    'version'            : version,
-    'description'        : 'The RADICAL analytics framework',
-  # 'long_description'   : (read('README.md') + '\n\n' + read('CHANGES.md')),
-    'author'             : 'RADICAL Group at Rutgers University',
-    'author_email'       : 'radical@rutgers.edu',
-    'maintainer'         : 'The RADICAL Devel Team',
-    'maintainer_email'   : 'radical@rutgers.edu',
-    'url'                : 'https://www.github.com/radical-cybertools/radical.analytics/',
-    'license'            : 'MIT',
-    'keywords'           : 'radical analytics',
-    'python_requires'    : '>=3.6',
-    'classifiers'        : [
+    'name'                         : name,
+    'namespace_packages'           : ['radical'],
+    'version'                      : version,
+    'description'                  : 'Profiling library for RADICAL-Cybertools',
+    'long_description'             : read('README.md'),   #long_description,
+    'long_description_content_type': 'text/markdown; charset=UTF-8; variant=GFM',
+    'author'                       : 'RADICAL Group at Rutgers University',
+    'author_email'                 : 'radical@rutgers.edu',
+    'maintainer'                   : 'The RADICAL Development Team',
+    'maintainer_email'             : 'radical@rutgers.edu',
+    'url'                          : 'https://www.github.com/radical-cybertools/radical.analytics/',
+    'project_urls'                 : {
+        'Documentation': 'https://radicalanalytics.readthedocs.io/en/latest/',
+        'Source'       : 'https://github.com/radical-cybertools/radical.analytics/',
+        'Issues'       : 'https://github.com/radical-cybertools/radical.analytics/issues'
+    },
+    'license'                      : 'MIT',
+    'keywords'                     : 'radical analytics',
+    'python_requires'              : '>=3.6',
+    'classifiers'                  : [
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Environment :: Console',
@@ -212,48 +218,50 @@ setup_args = {
         'Operating System :: POSIX',
         'Operating System :: Unix'
     ],
-    'packages'           : find_namespace_packages('src', include=['radical.*']),
-    'package_dir'        : {'': 'src'},
-    'scripts'            : [
-                            'bin/radical-analytics-check',
-                            'bin/radical-analytics-inspect',
-                            'bin/radical-analytics-plot.py',
-                            'bin/radical-analytics-version',
-                            'bin/radical-analytics-wrangler.py',
-                           ],
-    'package_data'       : {'': ['*.txt', '*.sh', '*.json', '*.gz', '*.c',
-                                 '*.md', 'VERSION', 'SDIST', sdist_name]},
-  # 'setup_requires'     : ['pytest-runner'],
-    'install_requires'   : ['radical.utils>=1.6',
-                            'matplotlib>=3.1.2',
-                            'psutil',
-                            'pandas',
-                            'numpy',
-                            'sqlalchemy',
-                            'more_itertools',
-                            ],
-    'tests_require'      : ['pytest',
-                            'pylint',
-                            'flake8',
-                            'coverage',
-                            'mock==2.0.0.',
-                            'radical.pilo >= 1.6.7',
-                           ],
-    'test_suite'         : '%s.tests' % name,
-    'zip_safe'           : False,
-  # 'build_sphinx'       : {
-  #     'source-dir'     : 'docs/',
-  #     'build-dir'      : 'docs/build',
-  #     'all_files'      : 1,
+    'packages'                     : find_namespace_packages('src', include=['radical.*']),
+    'package_dir'                  : {'': 'src'},
+    'scripts'                      : [
+        'bin/radical-analytics-check',
+        'bin/radical-analytics-inspect',
+        'bin/radical-analytics-plot.py',
+        'bin/radical-analytics-version',
+        'bin/radical-analytics-wrangler.py',
+    ],
+    'package_data'                 : {'': ['*.txt', '*.sh', '*.json', '*.gz', '*.c',
+                                           '*.md', 'VERSION', 'SDIST', sdist_name]},
+  # 'setup_requires'               : ['pytest-runner'],
+    'install_requires'             : [
+        'radical.utils>=1.6',
+        'matplotlib>=3.1.2',
+        'psutil',
+        'pandas',
+        'numpy',
+        'sqlalchemy',
+        'more_itertools',
+    ],
+    'tests_require'                : [
+        'pytest',
+        'pylint',
+        'flake8',
+        'coverage',
+        'mock==2.0.0.',
+        'radical.pilot >= 1.6.7',
+    ],
+    'test_suite'                   : '%s.tests' % name,
+    'zip_safe'                     : False,
+  # 'build_sphinx'                 : {
+  #     'source-dir'               : 'docs/',
+  #     'build-dir'                : 'docs/build',
+  #     'all_files'                : 1,
   # },
-  # 'upload_sphinx'      : {
-  #     'upload-dir'     : 'docs/build/html',
+  # 'upload_sphinx'                : {
+  #     'upload-dir'               : 'docs/build/html',
   # },
     # This copies the contents of the examples/ dir under
     # sys.prefix/share/$name
     # It needs the MANIFEST.in entries to work.
-    'data_files'         : df,
-    'cmdclass'           : {'upload': RunTwine},
+    'data_files'                   : df,
+    'cmdclass'                     : {'upload': RunTwine},
 }
 
 
