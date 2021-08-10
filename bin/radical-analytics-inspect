@@ -77,7 +77,7 @@ EOT
          concurrency: (\$sid.conc.png / \$sid.conc_hist.png)
                       Plot a selection of concurrency measures to gauge the
                       efficiency of execution.  Specifically, we plot the
-                      concurrency of units waiting to be scheduled (pending)
+                      concurrency of tasks waiting to be scheduled (pending)
                       and concurrency of execution (execute).  The x-axis shows
                       time, the y-axis shows the number of tasks which were in
                       a specific state (between two specific events) at that

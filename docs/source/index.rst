@@ -1,5 +1,16 @@
+*****************
 RADICAL-Analytics
-=================
+*****************
+
+.. image:: https://img.shields.io/pypi/v/radical_analytics.svg
+   :target: https://pypi.python.org/pypi/radical_analytics
+   :alt: Pypi Version
+.. image:: https://img.shields.io/pypi/l/radical_analytics.svg
+   :target: https://pypi.python.org/pypi/radical_analytics/
+   :alt: License
+.. image:: https://readthedocs.org/projects/radicalanalytics/badge/?version=latest
+   :target: http://radicalanalytics.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 
 `RADICAL-Analytics <https://github.com/radical-cybertools/radical.analytics>`_
 (RA) is a library implemented in Python to support the analysis of traces
@@ -26,17 +37,13 @@ variables. RA also enables introspecting the behavior of RP or EnTK, measuring
 and characterizing percentage of resource utilization, information flow, and
 distribution patterns.
 
-RA has supported the development and experimental analysis of most of the
+RA supports the development and experimental analysis of the
 `papers published <http://radical.rutgers.edu/publications/>`_ by `RADICAL
 <http://radical.rutgers.edu/>`_ at Rutgers University.
-
-**Links**
 
 * repository:     https://github.com/radical-cybertools/radical.analytics
 * issues:         https://github.com/radical-cybertools/radical.analytics/issues
 
-Content
--------
 
 .. toctree::
    :numbered:
@@ -44,11 +51,12 @@ Content
 
    introduction.rst
    installation.rst
-   inspection.rst
-   duration.rst
-   concurrency.rst
-   utilization.rst
    plotting.rst
+   inspection.ipynb
+   duration.ipynb
+   utilization.ipynb
+   timestamps.ipynb
+   concurrency.ipynb
    apidoc.rst
 
 .. Indices and tables

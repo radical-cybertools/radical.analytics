@@ -92,10 +92,10 @@ class Experiment(object):
                 ...
             }
 
-        `float` is always in units of `resource * time`, (think `core-hours`),
+        `float` is always in tasks of `resource * time`, (think `core-hours`),
         `list` is a list of 4-tuples `[t0, t1, r0, r1]` which signify at what
         specific time interval (`t0 to t1`) what specific resources (`r0 to r1`)
-        have been used.  The unit of the resources are here dependent on the
+        have been used.  The task of the resources are here dependent on the
         session type: only RP sessions are supported at the moment where those
         resource values are indexes in to the list of cores used in that
         specific session (offset over multiple pilots, if needed).

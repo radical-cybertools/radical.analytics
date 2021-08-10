@@ -401,8 +401,8 @@ class Entity(object):
 
         Example::
 
-           unit.ranges(state=[rp.NEW, rp.FINAL]))
-           unit.ranges(event=[{ru.NAME : 'exec_start'},
+           task.ranges(state=[rp.NEW, rp.FINAL]))
+           task.ranges(event=[{ru.NAME : 'exec_start'},
                               {ru.NAME : 'exec_ok'}])
         """
 
