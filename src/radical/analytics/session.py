@@ -374,7 +374,7 @@ class Session(object):
 
         for event in profile:
 
-            if event[ru.TIME] >= 0:
+            if event[ru.TIME] < -1:  # allow fow 1sec rounding error
                 raise ValueError('invalid time stamp: %s' % event)
 
             uid = event[ru.UID]

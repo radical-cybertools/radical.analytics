@@ -175,8 +175,7 @@ if __name__ == '__main__':
     axes[0].set_title(to_latex('%s Tasks - %s Nodes' % (n_tasks, n_nodes)))
 
     # Add legend for both plots
-    fig.legend([to_latex(l) for l in legend],
-               [m[0] for m in metrics], ncol=3,
+    fig.legend(legend, [m[0] for m in metrics], ncol=3,
                loc='upper center', bbox_to_anchor=(0.5, 1.10))
 
 
