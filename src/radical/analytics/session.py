@@ -860,7 +860,6 @@ class Session(object):
             ret   = list()
             for time, val in collapsed:
                 while time >= t:
-                    print(time, t)
                     ret.append([t, val])
                     t += sampling
 
