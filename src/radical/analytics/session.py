@@ -373,8 +373,11 @@ class Session(object):
         entity_events = dict()
 
         for event in profile:
-            uid = event[ru.UID]
 
+            if event[ru.TIME] >= 0:
+                raise ValueError('invalid time stamp: %s' % event)
+
+            uid = event[ru.UID]
             if uid not in entity_events:
                 entity_events[uid] = list()
             entity_events[uid].append(event)
@@ -857,6 +860,7 @@ class Session(object):
             ret   = list()
             for time, val in collapsed:
                 while time >= t:
+                    print(time, t)
                     ret.append([t, val])
                     t += sampling
 
