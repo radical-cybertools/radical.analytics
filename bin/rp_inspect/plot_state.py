@@ -25,7 +25,7 @@ plt.style.use(ra.get_mplstyle("radical_mpl"))
 # type `event_entity`..  Before plotting, we sort those entities by the
 # timestamp of the first event in the event list
 
-event_entity = 'task'
+event_entities = ['task', 'master', 'worker']
 event_list   = [
     # {ru.STATE: rp.NEW                         , ru.EVENT: 'state'          },
     # {ru.STATE: rp.TMGR_SCHEDULING_PENDING     , ru.EVENT: 'state'          },
@@ -42,11 +42,11 @@ event_list   = [
       {ru.STATE: rp.AGENT_EXECUTING             , ru.EVENT: 'state'          },
     # {ru.STATE: None                           , ru.EVENT: 'exec_mkdir'     },
     # {ru.STATE: None                           , ru.EVENT: 'exec_mkdir_done'},
-    # {ru.STATE: None                           , ru.EVENT: 'exec_start'     },
+      {ru.STATE: None                           , ru.EVENT: 'exec_start'     },
     # {ru.STATE: None                           , ru.EVENT: 'app_start'      },
     # {ru.STATE: None                           , ru.EVENT: 'app_stop'       },
     # {ru.STATE: None                           , ru.EVENT: 'exec_ok'        },
-    # {ru.STATE: None                           , ru.EVENT: 'exec_stop'      },
+      {ru.STATE: None                           , ru.EVENT: 'exec_stop'      },
       {ru.STATE: rp.AGENT_STAGING_OUTPUT_PENDING, ru.EVENT: 'state'          },
       {ru.STATE: rp.AGENT_STAGING_OUTPUT        , ru.EVENT: 'state'          },
     # {ru.STATE: rp.TMGR_STAGING_OUTPUT_PENDING , ru.EVENT: 'state'          },
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     data = dict()
     pipe = dict()
 
-    for thing in session.get(etype=event_entity):
+    for thing in session.get(etype=event_entities):
 
         tstamps = list()
 
@@ -97,7 +97,7 @@ if __name__ == '__main__':
   #     'get'  : time of ingest
   #     'sched': time of sccheduling
   #     'pipe' : pipeline ID (RE sessions only)
-    order = 'AGENT_EXECUTING state'
+    order = 'uid'
     index = 4
 
     if order == 'uid':

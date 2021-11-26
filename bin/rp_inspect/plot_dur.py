@@ -25,8 +25,8 @@ plt.style.use(ra.get_mplstyle("radical_mpl"))
 # and the durations between subsequential events are considered contributing
 # sub-durations.  For each entity, we plot the times derived that way.
 #
-event_entity = 'task'
-event_list   = [
+event_entities = ['task', 'master', 'worker']
+event_list     = [
     # {ru.STATE: 'NEW'                          , ru.EVENT: 'state'           },
     # {ru.STATE: 'TMGR_SCHEDULING_PENDING'      , ru.EVENT: 'state'           },
     # {ru.STATE: 'TMGR_SCHEDULING'              , ru.EVENT: 'state'           },
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     session = ra.Session.create(src, stype)
     data    = dict()
 
-    for thing in session.get(etype=event_entity):
+    for thing in session.get(etype=event_entities):
 
         tstamps = list()
 
