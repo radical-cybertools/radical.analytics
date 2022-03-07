@@ -23,9 +23,9 @@ resrc = ['cpu', 'gpu']
 # pick and choose what contributions to plot
 metrics  = [  # metric,      line color, alpha, fill color, alpha
               ['bootstrap', ['#c6dbef',  0.0,   '#c6dbef',  1  ]],
-              ['exec_cmd' , ['#e31a1c',  0.0,   '#e31a1c',  1  ]],
+              ['exec_cmd' , ['#88bb88',  0.0,   '#88bb88',  1  ]],
               ['exec_rp'  , ['#fdbb84',  0.0,   '#fdbb84',  1  ]],
-              ['schedule' , ['#c994c7',  0.0,   '#c994c7',  1  ]],
+              ['exec_prte', ['#fd88aa',  0.0,   '#fd88aa',  1  ]],
               ['term'     , ['#addd8e',  0.0,   '#addd8e',  1  ]],
               ['idle'     , ['#f0f0f0',  0.0,   '#f0f0f0',  1  ]]
 ]
@@ -45,10 +45,12 @@ p_trans = [
 ]
 
 t_trans = [
-        [{1: 'schedule_ok'}           , 'idle'       , 'schedule'   ],
-        [{1: 'exec_start'}            , 'schedule'   , 'exec_rp'    ],
-        [{1: 'task_exec_start'}       , 'exec_rp'    , 'exec_cmd'   ],
-        [{1: 'unschedule_stop'}       , 'exec_cmd'   , 'idle'       ]
+        [{1: 'schedule_ok'}           , 'idle'       , 'exec_rp'    ],
+        [{1: 'task_exec_start'}       , 'exec_rp'    , 'exec_prte'  ],
+        [{1: 'app_start'}             , 'exec_prte'  , 'exec_cmd'   ],
+        [{1: 'app_stop'}              , 'exec_cmd'   , 'exec_prte'  ],
+        [{1: 'task_exec_stop'}        , 'exec_prte'  , 'exec_rp'    ],
+        [{1: 'unschedule_stop'}       , 'exec_rp'    , 'idle'       ]
 ]
 
 m_trans = [
@@ -105,10 +107,11 @@ def main():
     pilots = session.get(etype='pilot')
     assert(len(pilots) == 1), len(pilots)
 
+    rm_info = pilots[0].cfg['resource_details']['rm_info']
     pilot   = pilots[0]
     sid     = session.uid
     p_size  = pilots[0].description['cores']
-    n_nodes = int(p_size / pilots[0].cfg['cores_per_node'])
+    n_nodes = int(p_size / rm_info['cores_per_node'])
     n_tasks = len(session.get(etype='task'))
 
     # Derive pilot and task timeseries of a session for each metric
@@ -121,7 +124,7 @@ def main():
             n_plots += 1
 
     # sub-plots for each resource type, legend on first, x-axis shared
-    fig = plt.figure(figsize=(ra.get_plotsize(252)))
+    fig = plt.figure(figsize=(ra.get_plotsize(512)))
     gs  = mpl.gridspec.GridSpec(n_plots, 1)
 
     for plot_id, r in enumerate(resrc):
@@ -185,7 +188,8 @@ def main():
         # first sub-plot gets legend
         if plot_id == 0:
             ax.legend(patches, legend, loc='upper center', ncol=3,
-                    bbox_to_anchor=(0.5, 1.4), fancybox=True, shadow=True)
+                    bbox_to_anchor=(0.5, 1.2),
+                    fancybox=True, shadow=True)
 
     for ax in fig.get_axes():
         ax.label_outer()

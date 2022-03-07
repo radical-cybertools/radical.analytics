@@ -127,10 +127,11 @@ if __name__ == '__main__':
     pilots = session.get(etype='pilot')
     assert(len(pilots) == 1), len(pilots)
 
+    rm_info = pilots[0].cfg['resource_details']['rm_info']
     sid     = session.uid
     p_zero  = pilots[0].timestamps(event={ru.EVENT: 'bootstrap_0_start'})[0]
     p_size  = pilots[0].description['cores']
-    n_nodes = int(p_size / pilots[0].cfg['cores_per_node'])
+    n_nodes = int(p_size / rm_info['cores_per_node'])
     n_tasks = len(session.get(etype='task'))
 
     legend = None

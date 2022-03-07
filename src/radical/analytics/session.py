@@ -41,24 +41,34 @@ class Session(object):
             assert sid
             assert src
             tgt = None
+            ext = None
 
         if tgt and not os.path.exists(tgt):
 
             # need to extract
             print(('extract tarball to %s' % tgt))
             try:
-                if ext in ['tbz', 'tar.bz', 'tbz2', 'tar.bz2']:
+                if not ext:
+                    raise ValueError('session does not exist: %s' % tgt)
+
+                elif ext in ['tbz', 'tar.bz', 'tbz2', 'tar.bz2']:
                     tf = tarfile.open(name=src, mode='r:bz2')
                     tf.extractall(path=os.path.dirname(tgt))
-                elif ext in ['tgz, tar.gz']:
+
+                elif ext in ['tgz', 'tar.gz']:
                     tf = tarfile.open(name=src, mode='r:gz')
                     tf.extractall(path=os.path.dirname(tgt))
+
                 else:
                     raise ValueError('cannot handle extension %s' % ext)
 
             except Exception as e:
                 raise RuntimeError(
                     'Cannot extract tarball: %s' % repr(e)) from e
+
+        if tgt and os.path.exists(tgt):
+            # once unpacked the new data dir is the source for all next ops
+            src = tgt
 
         self._sid   = sid
         self._src   = src
