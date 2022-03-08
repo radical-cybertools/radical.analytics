@@ -37,7 +37,7 @@ This command should print the version and release numbers of the ``radical.analy
 .. code-block:: bash
 
     $ radical-analytics-version
-    0.90.7-v0.72.0-64
+    1.6.7
 
 RA installation is now complete.
 
