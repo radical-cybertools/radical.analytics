@@ -87,7 +87,7 @@ jobs:
         . testenv/bin/activate
         python -m pip install --upgrade pip setuptools radical.pilot radical.entk
         python -m pip install --upgrade .
-        python -m pip install pylint
+        python -m pip install pylint pytest
     - name: Lint with pylint
       run: |
         . testenv/bin/activate
