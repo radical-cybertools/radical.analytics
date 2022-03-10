@@ -141,7 +141,7 @@ if __name__ == '__main__':
         # get utilization information
         prov, consumed, stats_abs, stats_rel, info = session.utilization(metrics, rtype)
 
-        with open('%s.stats' % sid, 'w') as fout:
+        with ru.ru_open('%s.stats' % sid, 'w') as fout:
             fout.write('\n%s\n\n' % info)
 
       # import pprint
