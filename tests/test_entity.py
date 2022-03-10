@@ -254,6 +254,7 @@ class TestEntity(object):
         edict = e.as_dict()
         del(edict['cfg'])
         del(edict['description'])
+        del(edict['resources'])
         assert(edict == expected)
 
 
