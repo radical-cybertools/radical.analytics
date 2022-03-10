@@ -60,7 +60,7 @@ jobs:
         . testenv/bin/activate
         python -m pip install --upgrade pip setuptools
         python -m pip install --upgrade .
-        python -m pip install flake8 flake8-per-file-ignores
+        python -m pip install flake8 flake8-per-file-ignores pytest
     - name: Lint with flake8
       run: |
         . testenv/bin/activate
@@ -87,7 +87,7 @@ jobs:
         . testenv/bin/activate
         python -m pip install --upgrade pip setuptools radical.pilot radical.entk
         python -m pip install --upgrade .
-        python -m pip install pylint
+        python -m pip install pylint pytest
     - name: Lint with pylint
       run: |
         . testenv/bin/activate

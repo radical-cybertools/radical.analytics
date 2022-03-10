@@ -140,7 +140,7 @@ if __name__ == '__main__':
         # get utilization information
         prov, consumed, stats_abs, stats_rel, info = session.utilization(metrics, rtype)
 
-        with open('%s.stats' % sid, 'w') as fout:
+        with ru.ru_open('%s.stats' % sid, 'w') as fout:
             fout.write('\n%s\n\n' % info)
 
       # import pprint
@@ -175,8 +175,7 @@ if __name__ == '__main__':
     axes[0].set_title(to_latex('%s Tasks - %s Nodes' % (n_tasks, n_nodes)))
 
     # Add legend for both plots
-    fig.legend([to_latex(l) for l in legend],
-               [m[0] for m in metrics], ncol=3,
+    fig.legend(legend, [m[0] for m in metrics], ncol=3,
                loc='upper center', bbox_to_anchor=(0.5, 1.10))
 
 
