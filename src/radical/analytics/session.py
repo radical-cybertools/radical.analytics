@@ -378,8 +378,11 @@ class Session(object):
         entity_events = dict()
 
         for event in profile:
-            uid = event[ru.UID]
 
+            if event[ru.TIME] < -1:  # allow fow 1sec rounding error
+                raise ValueError('invalid time stamp: %s' % event)
+
+            uid = event[ru.UID]
             if uid not in entity_events:
                 entity_events[uid] = list()
             entity_events[uid].append(event)
@@ -477,18 +480,11 @@ class Session(object):
         # iterate through all self._entities and collect UIDs of all entities
         # which match the given set of filters (after removing all events which
         # are not in the given time ranges)
-        if not etype: etype = list()
-        if not uid  : uid   = list()
-        if not state: state = list()
-        if not event: event = list()
-        if not time : time  = list()
-
-        if etype and not isinstance(etype, list): etype = [etype]
-        if uid   and not isinstance(uid  , list): uid   = [uid  ]
-        if state and not isinstance(state, list): state = [state]
-        if event and not isinstance(event, list): event = [event]
-
-        if time and len(time) and not isinstance(time[0], list): time = [time]
+        etype = ru.as_list(etype)
+        uid   = ru.as_list(uid  )
+        state = ru.as_list(state)
+        event = ru.as_list(event)
+        time  = ru.as_list(time )
 
         ret = list()
         for eid,entity in list(self._entities.items()):

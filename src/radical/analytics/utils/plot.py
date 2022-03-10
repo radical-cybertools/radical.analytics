@@ -441,8 +441,7 @@ def to_latex(data):
     if isinstance(data, list):
         return [to_latex(x) for x in data]
 
-    else:
-        assert(isinstance(data, str)), type(data)
+    if isinstance(data, str):
         return data.replace('%',  '\\%') \
                    .replace('#',  '\\#') \
                    .replace('_',  '\\_') \
@@ -452,6 +451,8 @@ def to_latex(data):
                    .replace('^',  '\\^') \
                    .replace('{',  '\\{') \
                    .replace('}',  '\\}')
+
+    return to_latex(str(data))
 
 
 # ------------------------------------------------------------------------------

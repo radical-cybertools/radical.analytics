@@ -7,7 +7,7 @@ from radical.analytics.entity import Entity
 
 
 # Test Directory use to load example json files
-directory = "%s/example-data" % os.path.dirname(__file__)
+base = "%s/example-data" % os.path.dirname(__file__)
 
 
 # ------------------------------------------------------------------------------
@@ -16,7 +16,7 @@ directory = "%s/example-data" % os.path.dirname(__file__)
 def pilot_entity():
     """Fixture to get the example Pilot entity from example data"""
 
-    with open("%s/pilot-entity-example.json" % directory, 'r') as f:
+    with ru.ru_open("%s/pilot-entity-example.json" % base, 'r') as f:
         entity = json.load(f)
         entity['events'] = [tuple(event) for event in entity['events']]
         return entity
@@ -28,7 +28,7 @@ def pilot_entity():
 def range_entity():
     """Fixture to get the example range-testing entity from example data"""
 
-    with open("%s/range-testing-entity-example.json" % directory, 'r') as f:
+    with ru.ru_open("%s/range-testing-entity-example.json" % base, 'r') as f:
         entity = json.load(f)
         entity['events'] = [tuple(event) for event in entity['events']]
         return entity
@@ -254,6 +254,7 @@ class TestEntity(object):
         edict = e.as_dict()
         del(edict['cfg'])
         del(edict['description'])
+        del(edict['resources'])
         assert(edict == expected)
 
 
