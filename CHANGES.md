@@ -4,6 +4,21 @@
 - For a list of open issues and known problems, see:
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
+1.13.0 Release                                                        2022-03-21
+--------------------------------------------------------------------------------
+
+  - add badges and links
+  - adding requirements
+  - documentation fixes (layout and content, notbeook based examples)
+  - support concurrency analysis
+  - convert all the protected char in latex
+  - remove debug prints
+  - remove outdated code
+  - stringent check for non-negative times
+  - timestamp analysis
+  - rename `unit` to `task`
+  
+
 1.6.7 Release                                                         2021-07-08
 --------------------------------------------------------------------------------
 
@@ -148,3 +163,4 @@
 --------------------------------------------------------------------------------
 
 - initial release
+
