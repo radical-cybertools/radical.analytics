@@ -9,7 +9,56 @@ import radical.analytics as ra
 
 from radical.analytics.utils import to_latex
 
-
+# This utilization plot accounts for resource usages the following way:
+#
+#   - initially, all resources are owned by the 'system'.
+#   - if a pilot gets placed (`bootstrap_0_start` event), the resources' control
+#     transitions from `system` to `bootstrap`.
+#   - if bootstrapper is done (at `PMGR_ACTIVE` state of the pilot), they
+#     transition from `bootstrap` to `idle`
+#   - etc etc.
+#
+# Basicall, specific profile events signal that control over a certain amount of
+# resources transitions from one entity to another.  Another example
+#
+#   - the task event `schedule_ok` signals that some resources transition out of
+#     the idle pool and are now allocated for a task.  The task may not yet be
+#     running, so the resources transition to `rp_exec`, signifying that RP
+#     still works to execute that task.
+#   - `unschedule_stop` signals that execution and cleanup completed, that
+#     the resources are not allocated for a task anymore and are returned back
+#     into the `idle` pool.
+#
+# The plotting content is controled as follows:
+#
+#   - the `metrics` data strcuture lists all metrics to be plotted, i.e., all
+#     'resource owners' in the sense above (e.g., `bootstrap`, `idle`, `rp_exec`
+#     etc.
+#
+#     metrics  = [  # metric,      line color, alpha, fill color, alpha
+#                   ['bootstrap', ['#c6dbef',  0.0,   '#c6dbef',  1  ]],
+#                   [...]
+#                ]
+#
+#   - the `tmap` data structure defines what entities' events will be considered
+#     to determine resource transitions:
+#
+#     tmap = {
+#             # etype  : transition map
+#             'pilot'  : p_trans,
+#             ...
+#            }
+#
+#   - the individual `tmap` entries (transition maps) determine what *events*
+#     signal transition *from* what entity *to* what other entity:
+#
+#     t_trans = [
+#               # event          , from,          to
+#             [{1: 'schedule_ok'}, 'idle'       , 'exec_rp'    ],
+#             [{1: 'exec_start'} , 'exec_rp'    , 'launch'     ],
+#             [{1: 'rank_start'} , 'launch'     , 'exec_cmd'   ],
+#
+#
 # ----------------------------------------------------------------------------
 #
 plt.style.use(ra.get_mplstyle("radical_mpl"))
@@ -24,8 +73,9 @@ resrc = ['cpu', 'gpu']
 metrics  = [  # metric,      line color, alpha, fill color, alpha
               ['bootstrap', ['#c6dbef',  0.0,   '#c6dbef',  1  ]],
               ['exec_cmd' , ['#e31a1c',  0.0,   '#e31a1c',  1  ]],
-              ['exec_rp'  , ['#fdbb84',  0.0,   '#fdbb84',  1  ]],
-              ['schedule' , ['#c994c7',  0.0,   '#c994c7',  1  ]],
+              ['raptor'   , ['#fd8884',  0.0,   '#fd8884',  1  ]],
+              ['launch'   , ['#fdbb84',  0.0,   '#fdbb84',  1  ]],
+              ['exec_rp'  , ['#c994c7',  0.0,   '#c994c7',  1  ]],
               ['term'     , ['#addd8e',  0.0,   '#addd8e',  1  ]],
               ['idle'     , ['#f0f0f0',  0.0,   '#f0f0f0',  1  ]]
 ]
@@ -40,34 +90,43 @@ p_trans = [
         [{5: 'PMGR_ACTIVE'}           , 'bootstrap'  , 'idle'       ],
         [{1: 'cmd', 6: 'cancel_pilot'}, 'idle'       , 'term'       ],
         [{1: 'bootstrap_0_stop'}      , 'term'       , 'system'     ],
+        # sub-agents also consume resources
         [{1: 'sub_agent_start'}       , 'idle'       , 'agent'      ],
         [{1: 'sub_agent_stop'}        , 'agent'      , 'term'       ]
 ]
 
 t_trans = [
-        [{1: 'schedule_ok'}           , 'idle'       , 'schedule'   ],
-        [{1: 'exec_start'}            , 'schedule'   , 'exec_rp'    ],
-        [{1: 'task_exec_start'}       , 'exec_rp'    , 'exec_cmd'   ],
-        [{1: 'unschedule_stop'}       , 'exec_cmd'   , 'idle'       ]
+        [{1: 'schedule_ok'}           , 'idle'       , 'exec_rp'    ],
+        [{1: 'exec_start'}            , 'exec_rp'    , 'launch'     ],
+        [{1: 'rank_start'}            , 'launch'     , 'exec_cmd'   ],
+        [{1: 'app_start'}             , 'exec_cmd'   , 'exec_app'   ],
+        [{1: 'app_stop'}              , 'exec_app'   , 'exec_cmd'   ],
+        [{1: 'rank_stop'}             , 'exec_cmd'   , 'launch'     ],
+        [{1: 'exec_stop'}             , 'launch'     , 'exec_rp'    ],
+        [{1: 'unschedule_stop'}       , 'exec_rp'    , 'idle'       ]
 ]
 
 m_trans = [
-        [{1: 'schedule_ok'}           , 'idle'       , 'schedule'   ],
-        [{1: 'exec_start'}            , 'schedule'   , 'exec_rp'    ],
-        [{1: 'task_exec_start'}       , 'exec_rp'    , 'exec_master'],
-        [{1: 'unschedule_stop'}       , 'exec_master', 'idle'       ]
+        [{1: 'schedule_ok'}           , 'idle'       , 'exec_rp'    ],
+        [{1: 'exec_start'}            , 'exec_rp'    , 'launch'     ],
+        [{1: 'rank_start'}            , 'launch'     , 'raptor'     ],
+        [{1: 'rank_stop'}             , 'raptor'     , 'launch'     ],
+        [{1: 'exec_stop'}             , 'launch'     , 'exec_rp'    ],
+        [{1: 'unschedule_stop'}       , 'exec_rp'    , 'idle'       ]
 ]
 
 w_trans = [
-        [{1: 'schedule_ok'}           , 'idle'       , 'schedule'   ],
-        [{1: 'exec_start'}            , 'schedule'   , 'exec_rp'    ],
-        [{1: 'task_exec_start'}       , 'exec_rp'    , 'exec_worker'],
-        [{1: 'unschedule_stop'}       , 'exec_worker', 'idle'       ]
+        [{1: 'schedule_ok'}           , 'idle'       , 'exec_rp'    ],
+        [{1: 'exec_start'}            , 'exec_rp'    , 'launch'     ],
+        [{1: 'rank_start'}            , 'launch'     , 'raptor'     ],
+        [{1: 'rank_stop'}             , 'raptor'     , 'launch'     ],
+        [{1: 'exec_stop'}             , 'launch'     , 'exec_rp'    ],
+        [{1: 'unschedule_stop'}       , 'exec_rp'    , 'idle'       ]
 ]
 
 r_trans = [
-            [{1: 'req_start'}         , 'exec_worker', 'workload'   ],
-            [{1: 'req_stop'}          , 'workload'   , 'exec_worker']
+        [{1: 'req_start'}             , 'raptor'     , 'exec_cmd'   ],
+        [{1: 'req_stop'}              , 'exec_cmd'   , 'raptor'     ]
 ]
 
 # what entity maps to what transition table
@@ -122,7 +181,7 @@ def main():
             n_plots += 1
 
     # sub-plots for each resource type, legend on first, x-axis shared
-    fig = plt.figure(figsize=(ra.get_plotsize(252)))
+    fig = plt.figure(figsize=(ra.get_plotsize(400)))
     gs  = mpl.gridspec.GridSpec(n_plots, 1)
 
     for plot_id, r in enumerate(resrc):
@@ -185,8 +244,8 @@ def main():
 
         # first sub-plot gets legend
         if plot_id == 0:
-            ax.legend(patches, legend, loc='upper center', ncol=3,
-                    bbox_to_anchor=(0.5, 1.4), fancybox=True, shadow=True)
+            ax.legend(patches, legend, loc='upper center', ncol=4,
+                    bbox_to_anchor=(0.5, 1.2), fancybox=True, shadow=True)
 
     for ax in fig.get_axes():
         ax.label_outer()
