@@ -76,6 +76,7 @@ metrics  = [  # metric,      line color, alpha, fill color, alpha
               ['raptor'   , ['#fd8884',  0.0,   '#fd8884',  1  ]],
               ['launch'   , ['#fdbb84',  0.0,   '#fdbb84',  1  ]],
               ['exec_rp'  , ['#c994c7',  0.0,   '#c994c7',  1  ]],
+            # ['exec_app' , ['#c994c7',  0.0,   '#c994c7',  1  ]],
               ['term'     , ['#addd8e',  0.0,   '#addd8e',  1  ]],
               ['idle'     , ['#f0f0f0',  0.0,   '#f0f0f0',  1  ]]
 ]
