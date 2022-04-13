@@ -105,10 +105,11 @@ def main():
     pilots = session.get(etype='pilot')
     assert(len(pilots) == 1), len(pilots)
 
-    pilot   = pilots[0]
     sid     = session.uid
-    p_size  = pilots[0].description['cores']
-    n_nodes = int(p_size / pilots[0].cfg['cores_per_node'])
+    pilot   = pilots[0]
+    rm_info = pilot.cfg['resource_details']['rm_info']
+    p_size  = pilot.description['cores']
+    n_nodes = int(p_size / rm_info['cores_per_node'])
     n_tasks = len(session.get(etype='task'))
 
     # Derive pilot and task timeseries of a session for each metric
