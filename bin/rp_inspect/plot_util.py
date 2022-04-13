@@ -128,9 +128,11 @@ if __name__ == '__main__':
     assert(len(pilots) == 1), len(pilots)
 
     sid     = session.uid
-    p_zero  = pilots[0].timestamps(event={ru.EVENT: 'bootstrap_0_start'})[0]
-    p_size  = pilots[0].description['cores']
-    n_nodes = int(p_size / pilots[0].cfg['cores_per_node'])
+    pilot   = pilots[0]
+    rm_info = pilot.cfg['resource_details']['rm_info']
+    p_zero  = pilot.timestamps(event={ru.EVENT: 'bootstrap_0_start'})[0]
+    p_size  = pilot.description['cores']
+    n_nodes = int(p_size / rm_info['cores_per_node'])
     n_tasks = len(session.get(etype='task'))
 
     legend = None
