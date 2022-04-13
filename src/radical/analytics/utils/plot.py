@@ -174,9 +174,21 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
     p_resrc = {'cpu': pilot.cfg['cores'],
                'gpu': pilot.cfg['gpus' ]}
 
-    t_min = pilot.timestamps(event={1: 'bootstrap_0_start'})[0]
-    t_max = pilot.timestamps(event={1: 'bootstrap_0_stop'})[0]
+    t_min = None
+    t_max = None
 
+    try   : t_min = pilot.timestamps(event={1: 'bootstrap_0_start'})[0]
+    except: pass
+
+    try   : t_max = pilot.timestamps(event={1: 'bootstrap_0_stop'})[0]
+    except: pass
+
+    # fallback for missing bootstrap events
+    if t_min is None: t_min = pilot.timestamps(state='PMGR_ACTIVE')
+    if t_max is None: t_max = pilot.events[-1][ru.TIME]
+
+    assert(t_min is not None)
+    assert(t_max is not None)
 
     t_span = t_max - t_min
     x_min  = 0
