@@ -4,6 +4,13 @@
 - For a list of open issues and known problems, see:
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
+1.14.0 Release                                                        2022-04-13
+--------------------------------------------------------------------------------
+
+  - get cores_per_node from rm_info
+  - handle session w/o bootstrap events
+
+
 1.13.0 Release                                                        2022-03-21
 --------------------------------------------------------------------------------
 
