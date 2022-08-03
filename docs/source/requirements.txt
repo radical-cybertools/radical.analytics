@@ -1,10 +1,13 @@
 # radical.utils -- use at release time
-git+git://github.com/radical-cybertools/radical.utils@devel
+# git+git://github.com/radical-cybertools/radical.utils@devel
+git+https://github.com/radical-cybertools/radical.utils@devel
 # radical.pilot -- use at release time
-git+git://github.com/radical-cybertools/radical.pilot@devel
+# git+git://github.com/radical-cybertools/radical.pilot@devel
+git+https://github.com/radical-cybertools/radical.pilot@devel
 radical.entk
 # radical.analytics  -- use at release time
-git+git://github.com/radical-cybertools/radical.analytics@devel
+# git+git://github.com/radical-cybertools/radical.analytics@devel
+git+https://github.com/radical-cybertools/radical.analytics@devel
 sphinx_copybutton
 nbsphinx
 ipykernel
