@@ -213,16 +213,16 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
 
     for entity in session.get():
 
-        uid = entity.uid
-        td  = entity.description
+        uid   = entity.uid
+        td    = entity.description
+        etype = entity.etype
 
-        # filter out worker ranks
-        if uid.count('.') > 1:
-            continue
-
-        transitions = tmap.get(entity.etype, [])
+        transitions = tmap.get(etype)
         if not transitions:
+          # print('no transitions for %s' % etype)
             continue
+
+      # print('\n', entity.uid, etype, sorted(set([e[1] for e in entity.events])))
 
         for trans in transitions:
 
@@ -233,12 +233,14 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
             try:
                 t_resrc = {'cpu': entity.resources['cpu'],
                            'gpu': entity.resources['gpu']}
-                if 'task' in entity.uid:
-                    td = entity.description
-                    cores = td['cpu_processes'] * td['cpu_threads']
-                    gpus  = td['cpu_processes'] * td['gpu_processes']
-                    t_resrc = {'cpu': cores,
-                            'gpu': gpus}
+
+              # if 'task' in entity.uid:
+              #     td = entity.description
+              #     cores = td['cpu_processes'] * td['cpu_threads']
+              #     gpus  = td['cpu_processes'] * td['gpu_processes']
+              #     t_resrc = {'cpu': cores,
+              #                'gpu': gpus}
+              # print(entity.uid, p_from, p_to, t_resrc)
 
             except Exception as e:
                 # if 'request' not in entity.uid:
@@ -263,18 +265,18 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
 
             ts = entity.timestamps(event=event)
             if not ts:
+             ## print('%s: no event %s for %s' % (uid, etype, event))
                 continue
 
             for r in resrc:
-                try:
-                    amount = t_resrc[r]
-                    if amount == 0:
-                        continue
-                    t = (ts[0] - t_min)
-                    contribs[r][p_from].append([t, -amount])
-                    contribs[r][p_to  ].append([t, +amount])
-                except Exception:
-                    pass
+                amount = t_resrc[r]
+                if amount == 0:
+                    continue
+                t = (ts[0] - t_min)
+                contribs[r][p_from].append([t, -amount])
+                contribs[r][p_to  ].append([t, +amount])
+              # print('%-30s: %-25s @ %6.3f: %-9s --> %-9s [%s]' %
+              #         (uid, event, t, p_from, p_to,   amount))
 
     # we now have, for all metrics, a list of resource changes, in the form of
     #
@@ -299,13 +301,20 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
                 if p_resrc[r]:
                     if percent:
                         rel = value / p_resrc[r] * 100
+                      # print('rel', rel)
                         series[r][m].append([c[0], rel])
                     else:
                         series[r][m].append([c[0], value])
+                      # print('val %6.3f %-15s: %3d' % (c[0], m, value))
                 else:
                     series[r][m].append([c[0], 0])
 
     x = {'min': x_min, 'max': x_max}
+
+  # import pprint
+  # pprint.pprint(p_resrc)
+  # pprint.pprint(series)
+  # pprint.pprint(x)
 
     return p_resrc, series, x
 

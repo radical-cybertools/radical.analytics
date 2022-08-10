@@ -9,14 +9,11 @@ import radical.utils as ru
 #
 class Entity(object):
 
-    def __init__(self, _uid, _etype, _profile, _details):
+    def __init__(self, _uid, _profile, _details):
         """
         Args:
             uid (:obj:str): an ID assumed to be unique in the scope of an RA
                 Session
-            etype (:obj:str): the type of the entity. This defines, amongst
-                others, what event model the session will assume to be valid for
-                this entity.
             profile: .
             details: .
         """
@@ -24,9 +21,10 @@ class Entity(object):
         assert(_uid)
         assert(_profile)
 
+
         self._uid         = _uid
-        self._etype       = _etype
         self._details     = _details
+        self._etype       = self._details.get('etype',       'unknown')
         self._description = self._details.get('description', dict())
         self._cfg         = self._details.get('cfg',         dict())
         self._resources   = self._details.get('resources',   dict())

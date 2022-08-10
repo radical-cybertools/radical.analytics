@@ -282,6 +282,7 @@ class Session(object):
             with open(cache, 'rb') as fin:
                 data = fin.read()
                 session = pickle.loads(data)
+                print(('using cache for %s' % sid))
          #      import pprint
          #      j = ru.read_json("%s/%s.json" % (src, sid))
          #      rd = j['pilot'][0]['resource_details']
@@ -291,8 +292,8 @@ class Session(object):
          #    # session = Session(src, stype, sid, _entities, _init)
          #      fout.write(pickle.dumps(session, protocol=pickle.HIGHEST_PROTOCOL))
 
-        except Exception as e:
-            print(('cache read failed: %s' % e))
+        except Exception:
+            print(('no cache for %s' % sid))
             with open(cache, 'wb') as fout:
                 session = Session(src, stype, sid, _entities, _init)
                 fout.write(pickle.dumps(session, protocol=pickle.HIGHEST_PROTOCOL))
@@ -386,11 +387,9 @@ class Session(object):
         # entity type in one of the events (and assume it is consistent over
         # all events for that uid)
         for uid,events in list(entity_events.items()):
-            etype   = events[0][ru.ENTITY]
             details = self._description.get('tree', dict()).get(uid, dict())
             details['hostid'] = self._description.get('hostmap', dict()).get(uid)
             self._entities[uid] = Entity(_uid=uid,
-                                         _etype=etype,
                                          _profile=events,
                                          _details=details)
 
