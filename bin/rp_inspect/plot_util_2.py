@@ -132,8 +132,8 @@ w_trans = [
 ]
 
 r_trans = [
-        [{1: 'app_start'}         , 'raptor_worker' , 'raptor_task'  ] ,
-        [{1: 'app_stop'}          , 'raptor_task'   , 'raptor_worker']
+        [{1: 'rank_start'}        , 'raptor_worker' , 'raptor_task'  ] ,
+        [{1: 'rank_stop'}         , 'raptor_task'   , 'raptor_worker']
 ]
 
 # what entity maps to what transition table

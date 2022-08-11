@@ -170,7 +170,7 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
 
     """
 
-    # get total pilot resources and runtime
+    # get total pilot resources and runtime,
     p_resrc = {'cpu': pilot.cfg['cores'],
                'gpu': pilot.cfg['gpus' ]}
 
@@ -184,7 +184,7 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
     except: pass
 
     # fallback for missing bootstrap events
-    if t_min is None: t_min = pilot.timestamps(state='PMGR_ACTIVE')
+    if t_min is None: t_min = pilot.timestamps(state='PMGR_ACTIVE')[0]
     if t_max is None: t_max = pilot.events[-1][ru.TIME]
 
     assert(t_min is not None)
@@ -223,7 +223,7 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
             continue
 
       # print('\n', entity.uid, etype, sorted(set([e[1] for e in entity.events])))
-        print()
+      # print()
 
         for trans in transitions:
 
@@ -275,7 +275,7 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
 
             ts = entity.timestamps(event=event)
             if not ts:
-              # print('%s: no event %s for %s' % (uid, etype, event))
+              # print('%s: no event %s for %s' % (uid, event, etype))
                 continue
 
             for r in resrc:
