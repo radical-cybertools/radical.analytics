@@ -388,7 +388,12 @@ class Session(object):
         # all events for that uid)
         for uid,events in list(entity_events.items()):
             details = self._description.get('tree', dict()).get(uid, dict())
-            details['hostid'] = self._description.get('hostmap', dict()).get(uid)
+
+            # hostid should be handled on RP level
+            hostid  = self._description.get('hostmap', dict()).get(uid)
+            if hostid:
+                details['hostid'] = hostid
+
             self._entities[uid] = Entity(_uid=uid,
                                          _profile=events,
                                          _details=details)
