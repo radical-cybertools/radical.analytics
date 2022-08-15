@@ -4,6 +4,12 @@
 - For a list of open issues and known problems, see:
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
+1.16.0 Release                                                        2022-08-15
+--------------------------------------------------------------------------------
+
+  - use https instead of git for doc requirements
+
+
 1.14.0 Release                                                        2022-04-13
 --------------------------------------------------------------------------------
 
@@ -170,4 +176,5 @@
 --------------------------------------------------------------------------------
 
 - initial release
+
 
