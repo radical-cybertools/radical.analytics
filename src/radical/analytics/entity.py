@@ -31,6 +31,10 @@ class Entity(object):
         self._cfg         = self._details.get('cfg',         dict())
         self._resources   = self._details.get('resources',   dict())
 
+        # if have no etype tree information, guess the etype from uid
+        if not self._etype:
+            self._etype = self._uid.split('.')[0]
+
         # FIXME: this should be sorted out on RP level
         self._cfg['hostid'] = self._details['hostid']
 
