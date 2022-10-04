@@ -76,7 +76,7 @@ class TestEntity(object):
         events = sort_events(pilot_entity['events'])
 
         # Should match the time in the first element after sorting
-        assert(e.t_start == events[0][ru.TIME])
+        assert e.t_start == events[0][ru.TIME]
 
 
     # --------------------------------------------------------------------------
@@ -90,7 +90,7 @@ class TestEntity(object):
         events = sort_events(pilot_entity['events'])
 
         # Should match the time in the last element after sorting
-        assert(events[-1][ru.TIME] == e.t_stop)
+        assert events[-1][ru.TIME] == e.t_stop
 
 
     # --------------------------------------------------------------------------
@@ -105,7 +105,7 @@ class TestEntity(object):
 
         # Should match the difference in time between
         # first and last elements after sorting
-        assert(e.ttc == float(events[-1][ru.TIME] - events[0][ru.TIME]))
+        assert e.ttc == float(events[-1][ru.TIME] - events[0][ru.TIME])
 
 
     # --------------------------------------------------------------------------
@@ -132,7 +132,7 @@ class TestEntity(object):
                    )
 
         # Should match exactly what was passed in...
-        assert(e.uid == pilot_entity['uid'])
+        assert e.uid == pilot_entity['uid']
 
 
     # --------------------------------------------------------------------------
@@ -145,7 +145,7 @@ class TestEntity(object):
                    )
 
         # Should match exactly what was passed in...
-        assert(e.etype == pilot_entity['etype'])
+        assert e.etype == pilot_entity['etype']
 
 
     # --------------------------------------------------------------------------
@@ -161,7 +161,7 @@ class TestEntity(object):
 
         # Should match a list of events of type 'state'
         # extracted from the events passed in
-        assert(e.states == states)
+        assert e.states == states
 
 
     # --------------------------------------------------------------------------
@@ -177,7 +177,7 @@ class TestEntity(object):
 
         # Should match a list of sorted events (by the time field)
         # generated from the list of events passed in
-        assert(e.events == events)
+        assert e.events == events
 
 
     # --------------------------------------------------------------------------
@@ -190,8 +190,8 @@ class TestEntity(object):
                    )
 
         # Should match exactly what was passed in...
-        assert(type(e.description) is dict)
-        assert(e.description == pilot_entity['details']['description'])
+        assert type(e.description) is dict
+        assert e.description == pilot_entity['details']['description']
 
 
     # --------------------------------------------------------------------------
@@ -204,8 +204,8 @@ class TestEntity(object):
                    )
 
         # Should match exactly what was passed in...
-        assert(type(e.cfg) is dict)
-        assert(e.cfg == pilot_entity['details']['cfg'])
+        assert type(e.cfg) is dict
+        assert e.cfg == pilot_entity['details']['cfg']
 
 
     # --------------------------------------------------------------------------
@@ -218,7 +218,7 @@ class TestEntity(object):
                    )
 
         # TODO: Better matching, for now we match just a dict()
-        assert(type(e.consistency) is dict)
+        assert type(e.consistency) is dict
 
 
     # --------------------------------------------------------------------------
@@ -243,7 +243,7 @@ class TestEntity(object):
         del(edict['cfg'])
         del(edict['description'])
         del(edict['resources'])
-        assert(edict == expected)
+        assert edict == expected
 
 
     ##############################################################
@@ -264,7 +264,7 @@ class TestEntity(object):
 
         # Only one range of one start/end
         ranges = e.ranges(state=['PMGR_ACTIVE_PENDING', 'FAILED'])
-        assert(ranges == [[21.668299913406372, 50.227399826049805]])
+        assert ranges == [[21.668299913406372, 50.227399826049805]]
 
 
     # --------------------------------------------------------------------------
@@ -279,7 +279,7 @@ class TestEntity(object):
         # Two consecutive ranges which get collapsed to the spanning max
         ranges = e.ranges(state=[['NEW',            'PMGR_ACTIVE'     ],
                                  ['PMGR_LAUNCHING', 'PMGR_ACTIVE_PENDING']])
-        assert(ranges == [[0.0, 4.449499845504761]])
+        assert ranges == [[0.0, 4.449499845504761]]
 
 
     # --------------------------------------------------------------------------
@@ -298,9 +298,9 @@ class TestEntity(object):
         ], time=[
             [21.668299913406372, 50.227399826049805]
         ])
-        assert(ranges == [
+        assert ranges == [
             [21.668299913406372, 50.227399826049805]
-        ])
+        ]
 
         # for events
         ranges = e.ranges(event=[
@@ -309,9 +309,9 @@ class TestEntity(object):
         ], time=[
             [4.446699857711792, 29.150099992752075]
         ])
-        assert(ranges == [
+        assert ranges == [
             [4.446699857711792, 29.150099992752075]
-        ])
+        ]
 
 
     # --------------------------------------------------------------------------
@@ -330,7 +330,7 @@ class TestEntity(object):
         ], time=[
             [60.0, 70.0]
         ])
-        assert(ranges == [])
+        assert ranges == []
 
         # for events
         ranges = e.ranges(event=[
@@ -339,7 +339,7 @@ class TestEntity(object):
         ], time=[
             [30.0, 40.0]
         ])
-        assert(ranges == [])
+        assert ranges == []
 
 
     # --------------------------------------------------------------------------
@@ -363,9 +363,9 @@ class TestEntity(object):
         ], time=[
             [25.0, 30.0]
         ])
-        assert(ranges == [
+        assert ranges == [
             [25.0, 30.0]
-        ])
+        ]
 
         ranges = e.ranges(event=[
             [{ru.EVENT: 'put'}],
@@ -373,9 +373,9 @@ class TestEntity(object):
         ], time=[
             [5.0, 25.0]
         ])
-        assert(ranges == [
+        assert ranges == [
             [5.0, 25.0]
-        ])
+        ]
 
         # Outter intersection: {   ([    ])   }
         ranges = e.ranges(state=[
@@ -384,9 +384,9 @@ class TestEntity(object):
         ], time=[
             [10.0, 60.0]
         ])
-        assert(ranges == [
+        assert ranges == [
             [21.668299913406372, 50.227399826049805]
-        ])
+        ]
 
         ranges = e.ranges(event=[
             [{ru.EVENT: 'put'}],
@@ -394,9 +394,9 @@ class TestEntity(object):
         ], time=[
             [0.0, 50.0]
         ])
-        assert(ranges == [
+        assert ranges == [
             [4.446699857711792, 29.150099992752075]
-        ])
+        ]
 
         # Right-side intersection match: {   ([   )}   ]
         ranges = e.ranges(state=[
@@ -405,9 +405,9 @@ class TestEntity(object):
         ], time=[
             [25.0, 100.00]
         ])
-        assert(ranges == [
+        assert ranges == [
             [25.0, 50.227399826049805]
-        ])
+        ]
 
         ranges = e.ranges(event=[
             [{ru.EVENT: 'put'}],
@@ -415,9 +415,9 @@ class TestEntity(object):
         ], time=[
             [5.0, 50.0]
         ])
-        assert(ranges == [
+        assert ranges == [
             [5.0, 29.150099992752075]
-        ])
+        ]
 
         # Left-side intersection match: [   {(   ])   }
         ranges = e.ranges(state=[
@@ -426,9 +426,9 @@ class TestEntity(object):
         ], time=[
             [0, 30.0]
         ])
-        assert(ranges == [
+        assert ranges == [
             [21.668299913406372, 30.0]
-        ])
+        ]
 
         ranges = e.ranges(event=[
             [{ru.EVENT: 'put'}],
@@ -436,9 +436,9 @@ class TestEntity(object):
         ], time=[
             [0.0, 25.0]
         ])
-        assert(ranges == [
+        assert ranges == [
             [4.446699857711792, 25.0]
-        ])
+        ]
 
 
     # --------------------------------------------------------------------------
@@ -466,9 +466,9 @@ class TestEntity(object):
             [21.668299913406372, 50.227399826049805],
             [60.0, 80.0]
         ])
-        assert(ranges == [
+        assert ranges == [
             [21.668299913406372, 50.227399826049805]
-        ])
+        ]
 
         ranges = e.ranges(event=[
             [{ru.EVENT: 'put'}],
@@ -477,9 +477,9 @@ class TestEntity(object):
             [4.446699857711792, 29.150099992752075],
             [30.0, 40.0]
         ])
-        assert(ranges == [
+        assert ranges == [
             [4.446699857711792, 29.150099992752075]
-        ])
+        ]
 
         # Only one of the filters match: {   }   |<[   ]>|
         ranges = e.ranges(state=[
@@ -489,9 +489,9 @@ class TestEntity(object):
             [60.0, 80.0],
             [21.668299913406372, 50.227399826049805]
         ])
-        assert(ranges == [
+        assert ranges == [
             [21.668299913406372, 50.227399826049805]
-        ])
+        ]
 
         ranges = e.ranges(event=[
             [{ru.EVENT: 'put'}],
@@ -500,9 +500,9 @@ class TestEntity(object):
             [30.0, 40.0],
             [4.446699857711792, 29.150099992752075]
         ])
-        assert(ranges == [
+        assert ranges == [
             [4.446699857711792, 29.150099992752075]
-        ])
+        ]
 
 
     # --------------------------------------------------------------------------
@@ -516,13 +516,13 @@ class TestEntity(object):
                    _details=range_entity['details']
                    )
 
-        assert(e.t_start       ==  0)
-        assert(e.t_stop        ==     50.507999897003174)
-        assert(e.ttc           ==     50.507999897003174)
-        assert(e.t_range       == [0, 50.507999897003174])
-        assert(len(e.list_states()) ==  6)
-        assert(len(e.states       ) ==  6)
-        assert(len(e.events       ) == 22)
+        assert e.t_start       ==  0
+        assert e.t_stop        ==     50.507999897003174
+        assert e.ttc           ==     50.507999897003174
+        assert e.t_range       == [0, 50.507999897003174]
+        assert len(e.list_states()) ==  6
+        assert len(e.states       ) ==  6
+        assert len(e.events       ) == 22
         # TODO: Add more assertions as needed
 
         # As you read the tests, here is what each symbol represents:
@@ -535,50 +535,50 @@ class TestEntity(object):
         # Non-overlaping filters, one matches:    {([   )}   ]   |   |
         ranges = e.ranges(state=['PMGR_ACTIVE_PENDING', 'FAILED'],
                           time=[[21.668299913406372, 25.0], [60.0, 70.0]])
-        assert(ranges == [[21.668299913406372, 25.0]])
+        assert ranges == [[21.668299913406372, 25.0]]
 
         ranges = e.ranges(event=[{ru.EVENT: 'put'}, {ru.EVENT: 'sync_rel'}],
                           time=[[4.446699857711792, 15.0], [30.0, 50.0]
         ])
-        assert(ranges == [[4.446699857711792, 15.0]])
+        assert ranges == [[4.446699857711792, 15.0]]
 
         # Non-overlaping filters, both match: {   ([   )}   |<   ]>   |
         ranges = e.ranges(state=['PMGR_ACTIVE_PENDING', 'FAILED'],
                           time=[[10, 25.0], [30.0, 70.0]])
-        assert(ranges == [[21.668299913406372, 25.0],
-                           [30.0, 50.227399826049805]])
+        assert ranges == [[21.668299913406372, 25.0],
+                           [30.0, 50.227399826049805]]
 
         ranges = e.ranges(event=[{ru.EVENT: 'put'}, {ru.EVENT: 'sync_rel'}],
                           time=[[0.0, 15.0], [20.0, 30.0]])
-        assert(ranges == [[4.446699857711792, 15.0],
-                           [20.0, 29.150099992752075]])
+        assert ranges == [[4.446699857711792, 15.0],
+                           [20.0, 29.150099992752075]]
 
         # semi-overlaping filters, one matches: [   {(   ])   |   }   |
         ranges = e.ranges(state=['PMGR_ACTIVE_PENDING', 'FAILED'],
                           time=[[25.0, 70.0], [60.0, 80.0]])
-        assert(ranges == [[25.0, 50.227399826049805]])
+        assert ranges == [[25.0, 50.227399826049805]]
 
         ranges = e.ranges(event=[{ru.EVENT: 'put'}, {ru.EVENT: 'sync_rel'}],
                           time=[[15.0, 40.0], [30.0, 50.0]])
-        assert(ranges == [[15.0, 29.150099992752075]])
+        assert ranges == [[15.0, 29.150099992752075]]
 
         # semi-overlaping filters, both match: {   ([   |<   )}   ]>   |
         ranges = e.ranges(state=['PMGR_ACTIVE_PENDING', 'FAILED'],
                           time=[[10, 30.0], [25.0, 70.0]])
-        assert(ranges == [[21.668299913406372, 50.227399826049805]])
+        assert ranges == [[21.668299913406372, 50.227399826049805]]
 
         ranges = e.ranges(event=[{ru.EVENT: 'put'}, {ru.EVENT: 'sync_rel'}],
                           time=[[0.0, 20.0], [15.0, 30.0]])
-        assert(ranges == [[4.446699857711792, 29.150099992752075]])
+        assert ranges == [[4.446699857711792, 29.150099992752075]]
 
         # complete-overlap filters, both match: |   <[   {(   )}   ]>   |
         ranges = e.ranges(state=['PMGR_ACTIVE_PENDING', 'FAILED'],
                           time=[[25.0, 35.0], [10.0, 70.0]])
-        assert(ranges == [[21.668299913406372, 50.227399826049805]])
+        assert ranges == [[21.668299913406372, 50.227399826049805]]
 
         ranges = e.ranges(event=[{ru.EVENT: 'put'}, {ru.EVENT: 'sync_rel'}],
                           time=[[10.0, 20.0], [0.0, 30.0]])
-        assert(ranges == [[4.446699857711792, 29.150099992752075]])
+        assert ranges == [[4.446699857711792, 29.150099992752075]]
 
 
     # --------------------------------------------------------------------------
@@ -592,7 +592,7 @@ class TestEntity(object):
         # Two overlaping ranges
         ranges = e.ranges(state=[['NEW', 'PMGR_ACTIVE_PENDING'],
                                  ['PMGR_LAUNCHING', 'PMGR_ACTIVE']])
-        assert(ranges == [[4.433599948883057, 4.449499845504761]])
+        assert ranges == [[4.433599948883057, 4.449499845504761]]
 
 
     # --------------------------------------------------------------------------
@@ -608,9 +608,9 @@ class TestEntity(object):
             ({ru.EVENT: 'put'}),
             ({ru.EVENT: 'cmd'})
         ])
-        assert(ranges == [
+        assert ranges == [
             [4.446699857711792, 50.507999897003174]
-        ])
+        ]
 
 
     # --------------------------------------------------------------------------
@@ -626,14 +626,14 @@ class TestEntity(object):
             ({ru.EVENT: 'update_request'}),
             ({ru.EVENT: 'update_pushed'})
         ])
-        assert(ranges == [
+        assert ranges == [
             [4.447200059890747 , 4.457900047302246],
             [4.458099842071533 , 5.236199855804443],
             [21.666899919509888, 21.685499906539917],
             [29.752099990844727, 29.939599990844727],
             [30.722899913787842, 32.28690004348755 ],
             [50.22889995574951 , 50.240999937057495]
-        ])
+        ]
 
 
     # --------------------------------------------------------------------------
@@ -650,8 +650,8 @@ class TestEntity(object):
             [{ru.EVENT: 'sync_rel'}, {ru.EVENT: 'cmd'     }]
         ])
         print(ranges)
-        assert(ranges == [[4.446699857711792, 29.150099992752075],
-                          [29.760799884796143, 50.507999897003174]])
+        assert ranges == [[4.446699857711792, 29.150099992752075],
+                          [29.760799884796143, 50.507999897003174]]
 
 
     # --------------------------------------------------------------------------
@@ -669,10 +669,10 @@ class TestEntity(object):
             [{ru.EVENT: 'put'     }, {ru.EVENT: 'hostname'}],
             [{ru.EVENT: 'sync_rel'}, {ru.EVENT: 'cmd'     }]
         ])
-        assert(ranges == [
+        assert ranges == [
             [4.446699857711792, 29.150099992752075],
             [29.760799884796143, 50.507999897003174]
-        ])
+        ]
 
 
     # --------------------------------------------------------------------------
@@ -752,7 +752,7 @@ class TestEntity(object):
         # Only one range of one start/end
         ranges = e.ranges(event=[({ru.EVENT: 'put'}), ({ru.EVENT: 'aaa'})
         ])
-        assert(ranges == [])
+        assert ranges == []
 
 
     # --------------------------------------------------------------------------
@@ -765,7 +765,7 @@ class TestEntity(object):
 
         # Only one range of one start/end
         ranges = e.ranges(event=[('NEW'), ('AAA') ])
-        assert(ranges == [])
+        assert ranges == []
 
 
     # --------------------------------------------------------------------------
@@ -779,7 +779,7 @@ class TestEntity(object):
         # Only one range of one start/end
         ranges = e.ranges(event=[({ru.EVENT: 'aaa'}), ({ru.EVENT: 'put'})
         ])
-        assert(ranges == [])
+        assert ranges == []
 
 
     # --------------------------------------------------------------------------
@@ -792,7 +792,7 @@ class TestEntity(object):
 
         # Only one range of one start/end
         ranges = e.ranges(event=[('AAA'), ('NEW')])
-        assert(ranges == [])
+        assert ranges == []
 
 
 # ------------------------------------------------------------------------------
