@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import sys
-import math
 
 import matplotlib        as mpl
 import matplotlib.pyplot as plt

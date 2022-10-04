@@ -12,15 +12,14 @@ class Entity(object):
     def __init__(self, _uid, _profile, _details):
         """
         Args:
-            uid (:obj:str): an ID assumed to be unique in the scope of an RA
+            uid (`str`): an ID assumed to be unique in the scope of an RA
                 Session
-            profile: .
-            details: .
+            profile: a list of profile events for this entity
+            details: a dictionary of complementary information on this entity
         """
 
         assert _uid
         assert _profile
-
 
         self._uid         = _uid
         self._details     = _details
