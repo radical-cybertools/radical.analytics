@@ -169,7 +169,7 @@ def main():
 
     # this script only works for one pilot
     pilots = session.get(etype='pilot')
-    assert(len(pilots) == 1), len(pilots)
+    assert len(pilots) == 1, len(pilots)
 
     sid     = session.uid
     pilot   = pilots[0]

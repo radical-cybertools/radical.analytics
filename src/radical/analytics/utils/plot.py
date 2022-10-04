@@ -187,8 +187,8 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
     if t_min is None: t_min = pilot.timestamps(state='PMGR_ACTIVE')[0]
     if t_max is None: t_max = pilot.events[-1][ru.TIME]
 
-    assert(t_min is not None)
-    assert(t_max is not None)
+    assert t_min is not None
+    assert t_max is not None
 
     t_span = t_max - t_min
     x_min  = 0
@@ -213,13 +213,12 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
 
     for entity in session.get():
 
-        uid   = entity.uid
         td    = entity.description
         etype = entity.etype
 
         transitions = tmap.get(etype)
         if not transitions:
-          # print('no transitions for %s: etype %s' % (uid, etype))
+          # print('no transitions for %s: etype %s' % (entity.uid, etype))
             continue
 
       # print('\n', entity.uid, etype, sorted(set([e[1] for e in entity.events])))

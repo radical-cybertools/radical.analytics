@@ -760,9 +760,9 @@ class Session(object):
             ranges = self.ranges(state, event, time)
 
         else:
-            assert(not state)
-            assert(not event)
-            assert(not time)
+            assert not state
+            assert not event
+            assert not time
 
             # make sure the ranges are collapsed (although they likely are
             # already...)
@@ -1325,7 +1325,7 @@ class Session(object):
         # this is currently only supported for RP sessions, as we only know for
         # pilots and tasks how to dig resource information out of session and
         # entity metadata.
-        assert(self.stype == 'radical.pilot'), \
+        assert self.stype == 'radical.pilot', \
                'stype %s unsupported' % self._stype
 
         # for RP sessions, create resource indices which can be used to
