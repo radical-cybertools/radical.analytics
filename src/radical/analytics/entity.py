@@ -21,8 +21,8 @@ class Entity(object):
             details: .
         """
 
-        assert(_uid)
-        assert(_profile)
+        assert _uid
+        assert _profile
 
         self._uid         = _uid
         self._etype       = _etype
@@ -30,6 +30,10 @@ class Entity(object):
         self._description = self._details.get('description', dict())
         self._cfg         = self._details.get('cfg',         dict())
         self._resources   = self._details.get('resources',   dict())
+
+        # if have no etype tree information, guess the etype from uid
+        if not self._etype:
+            self._etype = self._uid.split('.')[0]
 
         # FIXME: this should be sorted out on RP level
         self._cfg['hostid'] = self._details['hostid']
@@ -163,8 +167,8 @@ class Entity(object):
     def _initialize(self, profile):
 
         # only call once
-        assert (not self._states)
-        assert (not self._events)
+        assert not self._states
+        assert not self._events
 
         if profile:
             self._t_start = sys.float_info.max
@@ -265,9 +269,9 @@ class Entity(object):
           # pprint.pprint(self.events)
 
         else:
-            assert(not state)
-            assert(not event)
-            assert(not time)
+            assert not state
+            assert not event
+            assert not time
 
             # make sure the ranges are collapsed (although they likely are
             # already...)
