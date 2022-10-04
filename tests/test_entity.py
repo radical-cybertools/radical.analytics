@@ -119,7 +119,7 @@ class TestEntity(object):
         events = sort_events(pilot_entity['events'])
 
         # Should match exactly what was passed in...
-        assert[events[0][ru.TIME], events[-1][ru.TIME]] == e.t_range
+        assert [events[0][ru.TIME], events[-1][ru.TIME]] == e.t_range
 
 
     # --------------------------------------------------------------------------
@@ -240,9 +240,9 @@ class TestEntity(object):
         # as the order seen above...
         # don't match `cfg` and `description` as those are runtime dependent
         edict = e.as_dict()
-        del(edict['cfg'])
-        del(edict['description'])
-        del(edict['resources'])
+        del edict['cfg']
+        del edict['description']
+        del edict['resources']
         assert edict == expected
 
 
