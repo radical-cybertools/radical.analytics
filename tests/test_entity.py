@@ -70,7 +70,6 @@ class TestEntity(object):
     def test_t_start(self, pilot_entity):
         """Test a valid t_start"""
         e = Entity(_uid=pilot_entity['uid'],
-                   _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
@@ -85,7 +84,6 @@ class TestEntity(object):
     def test_t_stop(self, pilot_entity):
         """Test a valid t_stop"""
         e = Entity(_uid=pilot_entity['uid'],
-                   _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
@@ -100,7 +98,6 @@ class TestEntity(object):
     def test_ttc(self, pilot_entity):
         """Test a valid ttc"""
         e = Entity(_uid=pilot_entity['uid'],
-                   _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
@@ -116,7 +113,6 @@ class TestEntity(object):
     def test_t_range(self, pilot_entity):
         """Test a valid t_range"""
         e = Entity(_uid=pilot_entity['uid'],
-                   _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
@@ -131,7 +127,6 @@ class TestEntity(object):
     def test_uid(self, pilot_entity):
         """Test a valid uid"""
         e = Entity(_uid=pilot_entity['uid'],
-                   _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
@@ -145,7 +140,6 @@ class TestEntity(object):
     def test_etype(self, pilot_entity):
         """Test a valid etype"""
         e = Entity(_uid=pilot_entity['uid'],
-                   _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
@@ -159,7 +153,6 @@ class TestEntity(object):
     def test_states(self, pilot_entity):
         """Test a valid states"""
         e = Entity(_uid=pilot_entity['uid'],
-                   _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
@@ -176,7 +169,6 @@ class TestEntity(object):
     def test_events(self, pilot_entity):
         """Test a valid events"""
         e = Entity(_uid=pilot_entity['uid'],
-                   _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
@@ -193,7 +185,6 @@ class TestEntity(object):
     def test_description(self, pilot_entity):
         """Test a valid description"""
         e = Entity(_uid=pilot_entity['uid'],
-                   _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
@@ -208,7 +199,6 @@ class TestEntity(object):
     def test_cfg(self, pilot_entity):
         """Test a valid cfg"""
         e = Entity(_uid=pilot_entity['uid'],
-                   _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
@@ -223,7 +213,6 @@ class TestEntity(object):
     def test_consistency(self, pilot_entity):
         """Test a valid consistency"""
         e = Entity(_uid=pilot_entity['uid'],
-                   _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
@@ -237,7 +226,6 @@ class TestEntity(object):
     def test_as_dict(self, pilot_entity):
         """Test a valid as_dict"""
         e = Entity(_uid=pilot_entity['uid'],
-                   _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
@@ -270,7 +258,6 @@ class TestEntity(object):
     def test_ranges_one_state(self, range_entity):
         """Test a valid ranges result with one state start/finish"""
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
@@ -285,7 +272,6 @@ class TestEntity(object):
     def test_ranges_two_consecutive_state(self, range_entity):
         """Test a valid ranges result with two states start/finish"""
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
@@ -301,7 +287,6 @@ class TestEntity(object):
     def test_ranges_time_filter_exact_match(self, range_entity):
         """Test a valid ranges with time filter, exact matches"""
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
@@ -334,7 +319,6 @@ class TestEntity(object):
     def test_ranges_time_filter_no_match(self, range_entity):
         """Test a valid ranges with time filter, exact matches"""
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
@@ -363,7 +347,6 @@ class TestEntity(object):
     def test_ranges_time_filter_intersection_match(self, range_entity):
         """Test a valid ranges with time filter, one intersection match each"""
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
@@ -464,7 +447,6 @@ class TestEntity(object):
         """Test a valid ranges with multiple time filters,
         exact matches only"""
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
@@ -530,7 +512,6 @@ class TestEntity(object):
         """Test a valid ranges with multiple time filters,
             intersection matches each"""
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
@@ -604,7 +585,6 @@ class TestEntity(object):
     #
     def test_ranges_two_overlaping_state(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
@@ -619,7 +599,6 @@ class TestEntity(object):
     #
     def test_ranges_one_event(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
@@ -638,7 +617,6 @@ class TestEntity(object):
     #
     def test_ranges_one_event_multi_match(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
@@ -662,7 +640,6 @@ class TestEntity(object):
     #
     def test_ranges_two_consecutive_event(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
@@ -681,7 +658,6 @@ class TestEntity(object):
     #
     def test_ranges_two_overlaping_event(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
@@ -705,7 +681,6 @@ class TestEntity(object):
 
         with pytest.raises(Exception):
             Entity(_uid=pilot_entity['uid'],
-                   _etype=pilot_entity['etype'],
                    _profile=list(),
                    _details=pilot_entity['details'])
 
@@ -716,7 +691,6 @@ class TestEntity(object):
 
         with pytest.raises(Exception):
             Entity(_uid=pilot_entity['uid'],
-                   _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
                    _details=dict())
 
@@ -732,7 +706,6 @@ class TestEntity(object):
 
         with pytest.raises(Exception):
             Entity(_uid=None,
-                   _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
                    _details=pilot_entity['details']
                    )
@@ -743,7 +716,6 @@ class TestEntity(object):
     def test_none_etype(self, pilot_entity):
 
         Entity(_uid=pilot_entity['uid'],
-               _etype=None,
                _profile=pilot_entity['events'],
                _details=pilot_entity['details']
                )
@@ -754,7 +726,6 @@ class TestEntity(object):
     def test_none_profile(self, pilot_entity):
         with pytest.raises(Exception):
             Entity(_uid=None,
-                   _etype=pilot_entity['etype'],
                    _profile=None,
                    _details=pilot_entity['details']
                    )
@@ -765,7 +736,6 @@ class TestEntity(object):
     def test_none_details(self, pilot_entity):
         with pytest.raises(Exception):
             Entity(_uid=pilot_entity['uid'],
-                   _etype=pilot_entity['etype'],
                    _profile=pilot_entity['events'],
                    _details=None
                    )
@@ -775,7 +745,6 @@ class TestEntity(object):
     #
     def test_invalid_ranges_no_end_matched_state(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
@@ -790,7 +759,6 @@ class TestEntity(object):
     #
     def test_invalid_ranges_no_end_matched_event(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
@@ -804,7 +772,6 @@ class TestEntity(object):
     #
     def test_invalid_ranges_no_start_matched_event(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
@@ -819,7 +786,6 @@ class TestEntity(object):
     #
     def test_invalid_ranges_no_start_matched_state(self, range_entity):
         e = Entity(_uid=range_entity['uid'],
-                   _etype=range_entity['etype'],
                    _profile=range_entity['events'],
                    _details=range_entity['details']
                    )
