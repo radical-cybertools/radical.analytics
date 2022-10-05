@@ -689,11 +689,10 @@ class TestEntity(object):
     #
     def test_empty_details(self, pilot_entity):
 
-        with pytest.raises(Exception):
-            Entity(_uid=pilot_entity['uid'],
+        e = Entity(_uid=pilot_entity['uid'],
                    _profile=pilot_entity['events'],
                    _details=dict())
-
+        assert e
 
 
     ##############################################################
