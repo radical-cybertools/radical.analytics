@@ -3,7 +3,7 @@
 # A comma-separated list of package or module names from where C extensions may
 # be loaded. Extensions are loading into the active Python interpreter and may
 # run arbitrary code
-extension-pkg-whitelist=
+extension-pkg-whitelist=setproctitle
 
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
@@ -60,16 +60,10 @@ disable=raising-format-tuple,
         unpacking-in-except,
         old-raise-syntax,
         backtick,
-        long-suffix,
-        old-ne-operator,
-        old-octal-literal,
         import-star-module-level,
-        non-ascii-bytes-literal,
-        invalid-unicode-literal,
         raw-checker-failed,
         bad-inline-option,
         locally-disabled,
-        locally-enabled,
         file-ignored,
         suppressed-message,
         useless-suppression,
@@ -113,7 +107,6 @@ disable=raising-format-tuple,
         range-builtin-not-iterating,
         filter-builtin-not-iterating,
         using-cmp-argument,
-        eq-without-hash,
         div-method,
         idiv-method,
         rdiv-method,
@@ -137,10 +130,22 @@ disable=raising-format-tuple,
         comprehension-escape,
         C,
         R,
-        relative-import,
         bare-except,
         redefined-outer-name,
-        attribute-defined-outside-init
+        attribute-defined-outside-init,
+        unnecessary-pass,
+        protected-access,
+        eval-used,
+        no-method-argument
+
+#       long-suffix,
+#       old-ne-operator,
+#       old-octal-literal,
+#       non-ascii-bytes-literal,
+#       invalid-unicode-literal,
+#       locally-enabled,
+#       eq-without-hash,
+#       relative-import,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -242,7 +247,7 @@ function-naming-style=snake_case
 #function-rgx=
 
 # Good variable names which should always be accepted, separated by a comma
-good-names=i, j, k, l, m, n, x, y, z, e, ex, _
+good-names=i, j, k, x, y, z, e, ex, _
 
 # Include a hint for the correct naming format with invalid-name
 include-naming-hint=no
@@ -313,8 +318,8 @@ max-line-length=80
 # separator` is used to allow tabulation in dicts, etc.: {1  : 1,\n222: 2}.
 # `trailing-comma` allows a space between comma and closing bracket: (a, ).
 # `empty-line` allows space-only lines.
-no-space-check=trailing-comma,
-               dict-separator
+# no-space-check=trailing-comma,
+#                dict-separator
 
 # Allow the body of a class to be on the same line as the declaration if body
 # contains single statement.
@@ -547,3 +552,4 @@ known-third-party=enchant
 # Exceptions that will emit a warning when being caught. Defaults to
 # "Exception"
 overgeneral-exceptions=
+

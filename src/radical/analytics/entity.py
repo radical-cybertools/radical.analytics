@@ -11,24 +11,22 @@ import radical.utils as ru
 #
 class Entity(object):
 
-    def __init__(self, _uid, _etype, _profile, _details):
+    def __init__(self, _uid, _profile, _details):
         """
         Args:
-            uid (:obj:str): an ID assumed to be unique in the scope of an RA
+            uid (`str`): an ID assumed to be unique in the scope of an RA
                 Session
-            etype (:obj:str): the type of the entity. This defines, amongst
-                others, what event model the session will assume to be valid for
-                this entity.
-            profile: .
-            details: .
+            profile: a list of profile events for this entity
+            details: a dictionary of complementary information on this entity
         """
 
         assert _uid
         assert _profile
+        assert _details
 
         self._uid         = _uid
-        self._etype       = _etype
         self._details     = _details
+        self._etype       = self._details.get('etype')
         self._description = self._details.get('description', dict())
         self._cfg         = self._details.get('cfg',         dict())
         self._resources   = self._details.get('resources',   dict())
@@ -38,7 +36,16 @@ class Entity(object):
             self._etype = self._uid.split('.')[0]
 
         # FIXME: this should be sorted out on RP level
-        self._cfg['hostid'] = self._details['hostid']
+        self._cfg['hostid'] = self._details.get('hostid')
+
+        # entities for which we have no tree information are raptor tasks (they
+        # were created by the master and never saw the client side)
+        # FIXME: this should be sorted out on RP level
+        if not self._etype:
+            if not self._details and 'task' in self._uid:
+                self._etype = 'raptor.task'
+            else:
+                self._etype = 'unknown'
 
         self._states      = dict()
         self._events      = list()
