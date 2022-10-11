@@ -170,7 +170,7 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
 
     """
 
-    # get total pilot resources and runtime
+    # get total pilot resources and runtime,
     p_resrc = {'cpu': pilot.cfg['cores'],
                'gpu': pilot.cfg['gpus' ]}
 
@@ -184,11 +184,11 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
     except: pass
 
     # fallback for missing bootstrap events
-    if t_min is None: t_min = pilot.timestamps(state='PMGR_ACTIVE')
+    if t_min is None: t_min = pilot.timestamps(state='PMGR_ACTIVE')[0]
     if t_max is None: t_max = pilot.events[-1][ru.TIME]
 
-    assert(t_min is not None)
-    assert(t_max is not None)
+    assert t_min is not None
+    assert t_max is not None
 
     t_span = t_max - t_min
     x_min  = 0
@@ -213,16 +213,16 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
 
     for entity in session.get():
 
-        uid = entity.uid
-        td  = entity.description
+        td    = entity.description
+        etype = entity.etype
 
-        # filter out worker ranks
-        if uid.count('.') > 1:
-            continue
-
-        transitions = tmap.get(entity.etype, [])
+        transitions = tmap.get(etype)
         if not transitions:
+          # print('no transitions for %s: etype %s' % (entity.uid, etype))
             continue
+
+      # print('\n', entity.uid, etype, sorted(set([e[1] for e in entity.events])))
+      # print()
 
         for trans in transitions:
 
@@ -231,14 +231,25 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
             p_to   = trans[2]
 
             try:
-                t_resrc = {'cpu': entity.resources['cpu'],
-                           'gpu': entity.resources['gpu']}
-                if 'task' in entity.uid:
+                t_resrc = {'cpu': entity.resources.get('cpu'),
+                           'gpu': entity.resources.get('gpu')}
+
+                # raptor tasks which were created in the master may not have
+                # resources defined, or may not even have a task description
+                # (they don't get an entry on MongoDB).  We thus guess their
+                # resource consumption here.
+                # NOTE: this can lead to underutilization to be reported!
+                if not t_resrc['cpu'] and 'task' in entity.uid:
                     td = entity.description
-                    cores = td['cpu_processes'] * td['cpu_threads']
-                    gpus  = td['cpu_processes'] * td['gpu_processes']
-                    t_resrc = {'cpu': cores,
-                            'gpu': gpus}
+                    if not td.get('cpu_processes'):
+                        # guess
+                        t_resrc = {'cpu': 1, 'gpu': 0}
+                    else:
+                        cores = td['cpu_processes'] * td['cpu_threads']
+                        gpus  = td['cpu_processes'] * td['gpu_processes']
+                        t_resrc = {'cpu': cores,
+                                   'gpu': gpus}
+              # print(entity.uid, p_from, p_to, t_resrc)
 
             except Exception as e:
                 # if 'request' not in entity.uid:
@@ -263,18 +274,18 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
 
             ts = entity.timestamps(event=event)
             if not ts:
+              # print('%s: no event %s for %s' % (uid, event, etype))
                 continue
 
             for r in resrc:
-                try:
-                    amount = t_resrc[r]
-                    if amount == 0:
-                        continue
-                    t = (ts[0] - t_min)
-                    contribs[r][p_from].append([t, -amount])
-                    contribs[r][p_to  ].append([t, +amount])
-                except Exception:
-                    pass
+                amount = t_resrc[r]
+                if amount == 0:
+                    continue
+                t = (ts[0] - t_min)
+                contribs[r][p_from].append([t, -amount])
+                contribs[r][p_to  ].append([t, +amount])
+              # print('%6.3f : %-30s : %-25s : %-15s --> %-15s [%s]' %
+              #         (t, uid, event, p_from, p_to,   amount))
 
     # we now have, for all metrics, a list of resource changes, in the form of
     #
@@ -299,13 +310,20 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
                 if p_resrc[r]:
                     if percent:
                         rel = value / p_resrc[r] * 100
+                      # print('rel', rel)
                         series[r][m].append([c[0], rel])
                     else:
                         series[r][m].append([c[0], value])
+                      # print('val %6.3f %-15s: %3d' % (c[0], m, value))
                 else:
                     series[r][m].append([c[0], 0])
 
     x = {'min': x_min, 'max': x_max}
+
+  # import pprint
+  # pprint.pprint(p_resrc)
+  # pprint.pprint(series)
+  # pprint.pprint(x)
 
     return p_resrc, series, x
 
