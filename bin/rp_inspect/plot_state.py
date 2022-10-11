@@ -95,9 +95,9 @@ if __name__ == '__main__':
   # sort x-axis (task IDs) by
   #     'uid'  : task ID
   #     'get'  : time of ingest
-  #     'sched': time of sccheduling
+  #     'sched': time of scheduling
   #     'pipe' : pipeline ID (RE sessions only)
-    order = 'uid'
+    order = 'sched'
     index = 4
 
     if order == 'uid':
