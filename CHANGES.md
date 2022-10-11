@@ -4,6 +4,17 @@
 - For a list of open issues and known problems, see:
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
+1.18.0 Release                                                        2022-10-11
+--------------------------------------------------------------------------------
+
+  - better sorting for state transition plots
+  - documentation for plot_util_2, fix transition events
+  - better etype guessing
+  - raptor tasks use normal task events now (`rank_*`)
+  - separate raptor contributions to utilization plots
+  - sync ci workflow and linter settings
+
+
 1.16.0 Release                                                        2022-08-15
 --------------------------------------------------------------------------------
 
@@ -176,5 +187,4 @@
 --------------------------------------------------------------------------------
 
 - initial release
-
 
