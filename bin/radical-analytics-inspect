@@ -125,7 +125,7 @@ do
     echo 'DUR  :'; $bin/rp_inspect/plot_dur.py    "$session" && echo -n .
     echo 'CONC :'; $bin/rp_inspect/plot_conc.py   "$session" && echo -n .
     echo 'RATE :'; $bin/rp_inspect/plot_rate.py   "$session" && echo -n .
-    echo 'UTIL :'; $bin/rp_inspect/plot_util.py   "$session" && echo -n .
+  # echo 'UTIL :'; $bin/rp_inspect/plot_util.py   "$session" && echo -n .
     echo 'UTIL2:'; $bin/rp_inspect/plot_util_2.py "$session" && echo -n .
     echo " done"
 done
