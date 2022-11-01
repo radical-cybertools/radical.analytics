@@ -22,7 +22,6 @@ class Entity(object):
 
         assert _uid
         assert _profile
-        assert _details
 
         self._uid         = _uid
         self._details     = _details
