@@ -685,17 +685,6 @@ class TestEntity(object):
                    _details=pilot_entity['details'])
 
 
-    # --------------------------------------------------------------------------
-    #
-    def test_empty_details(self, pilot_entity):
-
-        with pytest.raises(Exception):
-            Entity(_uid=pilot_entity['uid'],
-                   _profile=pilot_entity['events'],
-                   _details=dict())
-
-
-
     ##############################################################
     # Test invalid scenarios
     ##############################################################
