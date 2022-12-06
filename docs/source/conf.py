@@ -49,6 +49,9 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinxcontrib.napoleon',
+    'nbsphinx',
+    'sphinx_copybutton',
+    'sphinx_rtd_theme',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -57,7 +60,7 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = ['.rst', 'ipynb']
+source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
