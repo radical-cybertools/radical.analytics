@@ -4,8 +4,16 @@ version: 2
 formats: all
 
 python:
+  system_packages: true
   version: 3.6
   install:
-    - requirements: docs/source/requirements.txt
-  system_packages: true
+    - requirements: requirements-docs.txt
+    - method: pip
+      path: .
+
+sphinx:
+  builder: html
+  configuration: docs/source/conf.py
+  fail_on_warning: false
+
 
