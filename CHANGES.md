@@ -4,7 +4,7 @@
 - For a list of open issues and known problems, see:
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
-1.19.0 Release                                                        2022-12-16
+1.20.0 Release                                                        2022-12-16
 --------------------------------------------------------------------------------
 
   - re-enable notebooks
@@ -196,6 +196,4 @@
 
 0.1  Release                                                          2016-02-20
 --------------------------------------------------------------------------------
-
-- initial release
 
