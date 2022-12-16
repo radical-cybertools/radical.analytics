@@ -4,6 +4,12 @@
 - For a list of open issues and known problems, see:
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
+1.20.1 Release                                                        2022-12-16
+--------------------------------------------------------------------------------
+
+  - fix MANIFEST.in
+
+
 1.20.0 Release                                                        2022-12-16
 --------------------------------------------------------------------------------
 
