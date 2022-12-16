@@ -4,6 +4,17 @@
 - For a list of open issues and known problems, see:
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
+1.19.0 Release                                                        2022-12-16
+--------------------------------------------------------------------------------
+
+  - re-enable notebooks
+  - fix doc deps
+  - fix rtd build
+  - remove invalid assert
+  - remove outdated test
+  - sync with ru
+
+
 1.18.0 Release                                                        2022-10-11
 --------------------------------------------------------------------------------
 
