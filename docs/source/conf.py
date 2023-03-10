@@ -39,6 +39,7 @@ with open('../../VERSION', 'r', encoding='utf-8') as f:
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'nbsphinx',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
@@ -48,8 +49,7 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
-    'sphinxcontrib.napoleon',
-    'nbsphinx',
+    'sphinx.ext.napoleon',
     'sphinx_copybutton',
     'sphinx_rtd_theme',
 ]
