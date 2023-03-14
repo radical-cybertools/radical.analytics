@@ -34,7 +34,7 @@ if __name__ == '__main__':
         for i in range(0, n):
 
             td = rp.TaskDescription()
-            td.executable     = '%s/bin/radical-pilot-hello.sh' % os.getcwd()
+            td.executable     = '%s/radical-pilot-hello.sh' % os.getcwd()
             td.arguments      = [random.randint(1, 10)]
             td.ranks          =  random.randint(1, 8)
             td.cores_per_rank =  random.randint(1, 8)
