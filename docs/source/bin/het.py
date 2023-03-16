@@ -36,9 +36,9 @@ if __name__ == '__main__':
             td = rp.TaskDescription()
             td.executable     = '%s/radical-pilot-hello.sh' % os.getcwd()
             td.arguments      = [random.randint(1, 10)]
-            td.ranks          =  random.randint(1, 8)
-            td.cores_per_rank =  random.randint(1, 8)
-            td.gpus_per_rank  =  random.randint(0, 2)
+            td.ranks          =  random.randint(1, 4)
+            td.cores_per_rank =  random.randint(1, 64)
+            td.gpus_per_rank  =  random.randint(0, 8)
             tds.append(td)
 
         tmgr.submit_tasks(tds)
