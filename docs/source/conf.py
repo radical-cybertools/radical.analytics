@@ -60,6 +60,7 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
+# [, '.ipynb']
 source_suffix = '.rst'
 
 # The master toctree document.
@@ -83,7 +84,7 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "armstrong"
+html_theme = "sphinx_rtd_theme"
 html_theme_path = ["_themes", ]
 
 # Add any paths that contain custom static files (such as style sheets) here,

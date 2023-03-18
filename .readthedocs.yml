@@ -3,9 +3,14 @@ version: 2
 
 formats: all
 
+build:
+  os: ubuntu-22.04
+  apt_packages:
+    - mpich
+
 python:
   system_packages: true
-  version: 3.6
+  version: 3.7
   install:
     - requirements: requirements-docs.txt
     - method: pip

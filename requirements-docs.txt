@@ -1,9 +1,11 @@
-
 -r requirements.txt
 
 sphinx>=5.1
-sphinxcontrib-napoleon
+sphinx.ext.napoleon
+ipykernel
 nbsphinx
 sphinx_copybutton
 sphinx_rtd_theme
-
+radical.pilot
+radical.entk
+radical.analytics

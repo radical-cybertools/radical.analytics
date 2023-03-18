@@ -2,9 +2,11 @@
 
 RA docuentation requires running RADICAL-Pilot (RP) to generate 4 sessions that will be used to illustrate how RA work. After producing the sessions with the released version of RP, documentation is build via Sphinx. We use nbsphinx to run the Jupyter notebook that illustrates RA classes and methods.
 
+IMPORTANT: Jupyter notebooks will be compiled by readthedocs. They MUST be saved without executing their cells. Otherwise, `nbspinx` will not trigger their compilation.
+
 ## Prepare Execution Environment
 
-We need a GNU/Linux OS and a MPI runtime to execute multi-node tasks. 
+We need a GNU/Linux OS and a MPI runtime to execute multi-node tasks.
 
 ```
 sudo apt install mpich
