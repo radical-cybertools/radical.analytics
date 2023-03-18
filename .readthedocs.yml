@@ -7,6 +7,8 @@ build:
   os: ubuntu-22.04
   apt_packages:
     - mpich
+  tools:
+    python: "3.7"
 
 python:
   system_packages: true
