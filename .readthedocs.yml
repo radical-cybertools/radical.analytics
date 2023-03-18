@@ -5,14 +5,14 @@ formats: all
 
 build:
   os: ubuntu-22.04
+  tools:
+    python: "3.9"
   apt_packages:
     - mpich
-  tools:
-    python: "3.7"
 
 python:
   system_packages: true
-  version: 3.7
+  version: 3.9
   install:
     - requirements: requirements-docs.txt
     - method: pip
