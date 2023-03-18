@@ -1,7 +1,6 @@
 -r requirements.txt
 
-sphinx>=5.1
-sphinx.ext.napoleon
+sphinx
 ipykernel
 nbsphinx
 sphinx_copybutton
