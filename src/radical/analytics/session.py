@@ -37,10 +37,15 @@ class Session(object):
         if _init:
             # if no sid is given, derive it from the src path
             sid, src, tgt, ext = self._get_sid(sid, src)
+
         else:
             assert sid
             assert src
             tgt = None
+
+        self._sid   = sid
+        self._src   = src
+        self._stype = stype
 
         if tgt and not os.path.exists(tgt):
 
@@ -60,9 +65,8 @@ class Session(object):
                 raise RuntimeError(
                     'Cannot extract tarball: %s' % repr(e)) from e
 
-        self._sid   = sid
-        self._src   = src
-        self._stype = stype
+        if tgt:
+            self._src = tgt
 
       # print 'sid: %s [%s]' % (sid, stype)
       # print 'src: %s'      % src
