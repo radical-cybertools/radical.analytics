@@ -4,6 +4,17 @@
 - For a list of open issues and known problems, see:
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
+1.33.0 Release                                                        2023-04-25
+--------------------------------------------------------------------------------
+
+  - avoid hardcoding session IDs
+  - enable compilation of notebooks
+  - fix extension renaming
+  - Iterate and fix all the tutorials
+  - simplify session ingest
+  - use same ncores/gpus of frontier
+
+
 1.20.1 Release                                                        2022-12-16
 --------------------------------------------------------------------------------
 
