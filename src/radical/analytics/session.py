@@ -37,11 +37,16 @@ class Session(object):
         if _init:
             # if no sid is given, derive it from the src path
             sid, src, tgt, ext = self._get_sid(sid, src)
+
         else:
             assert sid
             assert src
             tgt = None
             ext = None
+
+        self._sid   = sid
+        self._src   = src
+        self._stype = stype
 
         if tgt and not os.path.exists(tgt):
 
