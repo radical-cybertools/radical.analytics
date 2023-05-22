@@ -46,7 +46,6 @@ RA supports the development and experimental analysis of the
 
 
 .. toctree::
-   :numbered:
    :maxdepth: 2
 
    introduction.rst
