@@ -4,6 +4,13 @@
 - For a list of open issues and known problems, see:
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
+
+1.34.0 Release                                                        2023-06-22
+--------------------------------------------------------------------------------
+
+  - consistency across RCT modules
+
+
 1.33.0 Release                                                        2023-04-25
 --------------------------------------------------------------------------------
 
