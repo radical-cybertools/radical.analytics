@@ -17,7 +17,7 @@ import shutil
 import subprocess as sp
 
 from setuptools import setup, Command, find_namespace_packages
-
+from pathlib    import Path
 
 # ------------------------------------------------------------------------------
 base     = 'analytics'
@@ -202,11 +202,18 @@ with open('%s/requirements.txt' % root, encoding='utf-8') as freq:
 
 # ------------------------------------------------------------------------------
 #
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
+
+# ------------------------------------------------------------------------------
+#
 setup_args = {
     'name'               : name,
     'namespace_packages' : ['radical'],
     'version'            : version,
     'description'        : 'Profiling library for RADICAL-Cybertools',
+    'long_description'   : long_description,
+    'long_description_content_type' : 'text/markdown',
     'author'             : 'RADICAL Group at Rutgers University',
     'author_email'       : 'radical@rutgers.edu',
     'maintainer'         : 'The RADICAL Group',
