@@ -17,7 +17,6 @@ import shutil
 import subprocess as sp
 
 from setuptools import setup, Command, find_namespace_packages
-from pathlib    import Path
 
 # ------------------------------------------------------------------------------
 base     = 'analytics'
@@ -196,14 +195,12 @@ df    = [('%s/styles/'   % share, glob.glob('styles/*.txt')),
 
 # ------------------------------------------------------------------------------
 #
-with open('%s/requirements.txt' % root, encoding='utf-8') as freq:
-    requirements = freq.readlines()
+with open('%s/requirements.txt' % root, encoding='utf-8') as fin:
+    requirements = fin.readlines()
 
+with open('%s/README.md' % root, encoding='utf-8') as fin:
+    long_description = fin.read()
 
-# ------------------------------------------------------------------------------
-#
-this_directory = Path(__file__).parent
-long_description = (this_directory / "README.md").read_text(encoding='utf-8')
 
 # ------------------------------------------------------------------------------
 #
