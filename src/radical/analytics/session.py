@@ -485,32 +485,32 @@ class Session(object):
         # which match the given set of filters (after removing all events which
         # are not in the given time ranges)
         etype = ru.as_list(etype)
+        uids  = ru.as_list(uid)
         state = ru.as_list(state)
         event = ru.as_list(event)
         time  = ru.as_list(time )
-
-
-        if isinstance(uid, re.Pattern):
-            # uid is actually a regex we use for matching
-            uid_regex = True
-        else:
-            # uid is a list of strings to look out for
-            uid_regex = False
-            uid = ru.as_list(uid)
-
 
         ret = list()
         for eid,entity in list(self._entities.items()):
 
             if etype and entity.etype not in etype: continue
 
-            if uid:
-                if uid_regex:
-                    if not uid.match(entity.uid):
-                        continue
-                else:
-                    if entity.uid not in uid:
-                        continue
+            if uids:
+                keep = False
+                for uid in uids:
+                    if isinstance(uid, re.Pattern):
+                        # uid is actually a regex we use for matching
+                        if uid.match(entity.uid):
+                            keep = True
+                            break
+                    else:
+                        # uid is a specific string to look out for
+                        if entity.uid == uid:
+                            keep = True
+                            break
+
+                if not keep:
+                    continue
 
             if state:
                 match = False
