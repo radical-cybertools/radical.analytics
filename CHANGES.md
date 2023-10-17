@@ -5,6 +5,13 @@
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
 
+1.41.0 Release                                                        2023-10-17
+--------------------------------------------------------------------------------
+
+  - fix RTD
+  - Add long description for pypi
+
+
 1.34.0 Release                                                        2023-06-22
 --------------------------------------------------------------------------------
 
