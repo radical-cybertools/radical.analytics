@@ -857,16 +857,19 @@ class Session(object):
         else:
             # select data points according to sampling
             # get min time, and create timestamps at regular intervals
-            t     = times[0][0]
-            ret   = list()
+            t   = times[0][0]
+            v   = collapsed[0][1]
+            ret = list()
             for time, val in collapsed:
                 while time >= t:
-                    ret.append([t, val])
+                    ret.append([t, v])
                     t += sampling
+                # value is changed after reaching the next timestamp
+                v = val
 
             # append last time stamp if it is not appended, yet
-            if ret[-1] != [t, val]:
-                ret.append([t, val])
+            if ret[-1] != [t, v]:
+                ret.append([t, v])
 
         return ret
 
