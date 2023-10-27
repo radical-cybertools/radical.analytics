@@ -5,6 +5,12 @@
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
 
+1.39.0 Release                                                        2023-10-27
+--------------------------------------------------------------------------------
+
+  - last release before MongoDB removal
+
+
 1.34.0 Release                                                        2023-06-22
 --------------------------------------------------------------------------------
 

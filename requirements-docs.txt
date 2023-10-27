@@ -5,6 +5,6 @@ ipykernel
 nbsphinx
 sphinx_copybutton
 sphinx_rtd_theme
-radical.pilot
-radical.entk
-radical.analytics
+radical.pilot==1.39
+radical.entk==1.39
+radical.analytics==1.39

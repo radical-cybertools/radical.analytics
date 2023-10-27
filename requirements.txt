@@ -1,4 +1,4 @@
-radical.utils
+radical.utils==1.39
 matplotlib
 psutil
 pandas
