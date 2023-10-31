@@ -1,5 +1,6 @@
 # pylint: disable=W0102,W0212
 
+import re
 import os
 import sys
 import copy
@@ -484,7 +485,7 @@ class Session(object):
         # which match the given set of filters (after removing all events which
         # are not in the given time ranges)
         etype = ru.as_list(etype)
-        uid   = ru.as_list(uid  )
+        uids  = ru.as_list(uid)
         state = ru.as_list(state)
         event = ru.as_list(event)
         time  = ru.as_list(time )
@@ -493,7 +494,23 @@ class Session(object):
         for eid,entity in list(self._entities.items()):
 
             if etype and entity.etype not in etype: continue
-            if uid   and entity.uid   not in uid  : continue
+
+            if uids:
+                keep = False
+                for uid in uids:
+                    if isinstance(uid, re.Pattern):
+                        # uid is actually a regex we use for matching
+                        if uid.match(entity.uid):
+                            keep = True
+                            break
+                    else:
+                        # uid is a specific string to look out for
+                        if entity.uid == uid:
+                            keep = True
+                            break
+
+                if not keep:
+                    continue
 
             if state:
                 match = False
