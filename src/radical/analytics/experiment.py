@@ -1,6 +1,8 @@
 
 from .session import Session
 
+from typing import List, Union
+
 
 # ------------------------------------------------------------------------------
 #
@@ -8,16 +10,19 @@ class Experiment(object):
 
     # --------------------------------------------------------------------------
     #
-    def __init__(self, sources, stype):
+    def __init__(self, sessions: List[Union[str, Session]],
+                       stype: str = None):
         '''
         This class represents an RCT experiment, i.e., a series of RA sessions
         which are collectively analyzed.
 
-        `sources` is expected to be a list of tuples of session source paths
-        pointing to tarballs or session directories.  The order of tuples in the
-        list determines the default order used in plots etc.
+        `sessions` is expected to be either (1) a list of session source paths
+        pointing to tarballs or session directories, or (b) a list of
+        `ra.Session` instances.  The order of entries in the list determines the
+        default order used in plots etc.
 
-        The session type `stype` will be uniformely applied to all sessions.
+        The session type `stype` will be uniformely applied when reading session
+        data from provided paths.
         '''
 
         # FIXME: this is missing an abstraction: `Run`: a collection of sessions
@@ -28,8 +33,18 @@ class Experiment(object):
 
         self._sessions = list()
 
-        for src in sources:
-            self._sessions.append(Session.create(src=src, stype=stype))
+        if not sessions:
+            raise ValueError('cannot create experiments w/o sessions')
+
+        if isinstance(sessions[0], str):
+            for src in sessions:
+                assert isinstance(src, str)
+                self._sessions.append(Session.create(src=src, stype=stype))
+
+        else:
+            for session in sessions:
+                assert isinstance(session, Session)
+                self._sessions.append(session)
 
 
     # --------------------------------------------------------------------------
