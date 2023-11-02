@@ -4,7 +4,7 @@ __license__   = 'MIT'
 
 # pylint: disable=W0102,W0212
 
-
+import re
 import os
 import sys
 import copy
@@ -489,7 +489,7 @@ class Session(object):
         # which match the given set of filters (after removing all events which
         # are not in the given time ranges)
         etype = ru.as_list(etype)
-        uid   = ru.as_list(uid  )
+        uids  = ru.as_list(uid)
         state = ru.as_list(state)
         event = ru.as_list(event)
         time  = ru.as_list(time )
@@ -498,7 +498,23 @@ class Session(object):
         for eid,entity in list(self._entities.items()):
 
             if etype and entity.etype not in etype: continue
-            if uid   and entity.uid   not in uid  : continue
+
+            if uids:
+                keep = False
+                for uid in uids:
+                    if isinstance(uid, re.Pattern):
+                        # uid is actually a regex we use for matching
+                        if uid.match(entity.uid):
+                            keep = True
+                            break
+                    else:
+                        # uid is a specific string to look out for
+                        if entity.uid == uid:
+                            keep = True
+                            break
+
+                if not keep:
+                    continue
 
             if state:
                 match = False
@@ -862,16 +878,19 @@ class Session(object):
         else:
             # select data points according to sampling
             # get min time, and create timestamps at regular intervals
-            t     = times[0][0]
-            ret   = list()
+            t   = times[0][0]
+            v   = collapsed[0][1]
+            ret = list()
             for time, val in collapsed:
                 while time >= t:
-                    ret.append([t, val])
+                    ret.append([t, v])
                     t += sampling
+                # value is changed after reaching the next timestamp
+                v = val
 
             # append last time stamp if it is not appended, yet
-            if ret[-1] != [t, val]:
-                ret.append([t, val])
+            if ret[-1] != [t, v]:
+                ret.append([t, v])
 
         return ret
 
