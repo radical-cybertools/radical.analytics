@@ -491,14 +491,17 @@ class Session(object):
         time  = ru.as_list(time )
 
         ret = list()
-        for eid,entity in list(self._entities.items()):
+        for eid, entity in list(self._entities.items()):
 
             if etype and entity.etype not in etype: continue
 
             if uids:
+                try                  : re_pattern = re.Pattern
+                except AttributeError: re_pattern = None
+
                 keep = False
                 for uid in uids:
-                    if isinstance(uid, re.Pattern):
+                    if re_pattern and isinstance(uid, re_pattern):
                         # uid is actually a regex we use for matching
                         if uid.match(entity.uid):
                             keep = True
