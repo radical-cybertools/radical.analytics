@@ -496,8 +496,12 @@ class Session(object):
             if etype and entity.etype not in etype: continue
 
             if uids:
-                try                  : re_pattern = re.Pattern
-                except AttributeError: re_pattern = None
+                try:
+                    re_pattern = re.Pattern
+                except AttributeError:
+                    re_pattern = None
+                    self._log.warn('re.Pattern is not supported within this '
+                                   'python version')
 
                 keep = False
                 for uid in uids:
