@@ -5,6 +5,15 @@
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
 
+1.42.0 Release                                                        2023-12-04
+--------------------------------------------------------------------------------
+
+  - added check for `re.Pattern`
+  - create experiments from session sources and instances
+  - fixed concurrency offset
+  - improve filter semantics
+
+
 1.41.0 Release                                                        2023-10-17
 --------------------------------------------------------------------------------
 
