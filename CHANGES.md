@@ -5,7 +5,13 @@
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
 
-1.42.0 Release                                                        2024-01-10
+1.46.0 Release                                                        2024-01-11
+--------------------------------------------------------------------------------
+
+  - pypi fix
+
+
+1.44.0 Release                                                        2024-01-10
 --------------------------------------------------------------------------------
 
   - maintenance
