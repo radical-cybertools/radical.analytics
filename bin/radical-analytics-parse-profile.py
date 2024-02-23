@@ -120,7 +120,11 @@ try:
         fout.write('%17s ' % event)
     fout.write('\n')
 
-    for uid in data:
+    uids = list(data.keys())
+    if options.sort_by:
+        uids = sorted(uids, key=lambda uid: data[uid][options.sort_by])
+
+    for uid in uids:
         out = '%15s ' % uid
         for event in EVENTS:
             out += '%10.6f ' % data[uid][event]
