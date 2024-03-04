@@ -2,7 +2,7 @@
 
 import sys
 import time
-import optparse
+import optparse                              # pylint: disable=deprecated-module
 
 from collections import defaultdict
 
