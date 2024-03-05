@@ -93,7 +93,9 @@ try:
             continue
         time  = float(elems[0])
         tmin  = min(tmin, time)
-        data[elems[2]][elems[1]] = time
+        uid   = elems[4]
+        event = elems[1]
+        data[uid][event] = time
 
 finally:
     if fin: fin.close()
@@ -121,12 +123,13 @@ try:
 
     uids = list(data.keys())
     if options.sort_by:
-        uids = sorted(uids, key=lambda uid: data[uid][options.sort_by])
+        uids = sorted(uids, key=lambda uid: data[uid].get(options.sort_by, 0.0))
 
     for uid in uids:
         out = '%15s ' % uid
         for event in EVENTS:
-            out += '%10.6f ' % data[uid][event]
+            val = data[uid].get(event, 0.0)
+            out += '%10.6f ' % val
         fout.write('%s\n' % out)
 
 finally:
