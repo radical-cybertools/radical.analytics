@@ -1030,7 +1030,7 @@ class Session(object):
             for box in provided['total'][pid]:
                 stats_abs['total'] += (box[1] - box[0]) * \
                                       (box[3] - box[2]  + 1)
-        total = stats_abs['total']
+        total = (max(stats_abs['total'], 1)
 
         for metric in metrics:
             if isinstance(metric, list):
