@@ -246,6 +246,7 @@ setup_args = {
         'bin/radical-analytics-plot.py',
         'bin/radical-analytics-version',
         'bin/radical-analytics-wrangler.py',
+        'bin/radical-analytics-parse-profile.py',
     ],
     'package_data'       : {'': ['*.txt', '*.sh', '*.json', '*.gz', '*.c',
                                  '*.md', 'VERSION', 'SDIST', sdist_name]},

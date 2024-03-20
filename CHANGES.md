@@ -5,6 +5,13 @@
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
 
+1.48.0 Release                                                        2024-03-20
+--------------------------------------------------------------------------------
+
+  - disable stats on utilization plots
+  - add standalone profile parser
+
+
 1.47.0 Release                                                        2024-02-08
 --------------------------------------------------------------------------------
 
@@ -255,3 +262,9 @@
 0.1  Release                                                          2016-02-20
 --------------------------------------------------------------------------------
 
+  - add profile parser
+  - avoid broken stats
+  - devel version bump
+  - fix
+  - linting
+  - sort, deploy
