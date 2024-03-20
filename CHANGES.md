@@ -5,7 +5,7 @@
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
 
-1.48.0 Release                                                        2024-03-20
+1.48.1 Release                                                        2024-03-20
 --------------------------------------------------------------------------------
 
   - disable stats on utilization plots
@@ -268,3 +268,5 @@
   - fix
   - linting
   - sort, deploy
+  - (HEAD -> master, origin/devel, origin/HEAD, devel) fix syntax error
+  - devel version bump
