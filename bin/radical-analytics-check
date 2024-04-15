@@ -6,6 +6,7 @@ __license__   = 'MIT'
 
 import os
 import sys
+import pprint
 
 import radical.utils     as ru
 import radical.analytics as ra
@@ -72,7 +73,7 @@ if __name__ == '__main__':
     print('  session : %s' % sid)
     setypes = dict()
     states  = dict()
-    for p in session.get(etype=['rp', 'pmgr', 'umgr']):
+    for p in session.get(etype=['rp', 'pmgr', 'tmgr']):
         for e in p.events:
             t = e[ru.EVENT]
             if t not in setypes: setypes[t]  = 1
@@ -140,6 +141,7 @@ if __name__ == '__main__':
             + list(uetypes.keys())
     missing = list()
     allkeys = sorted(all_events.keys())
+    unknown = [e for e in found if e not in all_events]
     for e in allkeys:
         if e not in found:
             missing.append(e)
@@ -157,6 +159,16 @@ if __name__ == '__main__':
             ret += 1
 
         print('                  %s  %-20s : %s' % (c, e, all_events[e]))
+    print()
+
+  # pprint.pprint(unknown)
+  # pprint.pprint(all_events)
+
+    print()
+    print('  unknown:  %9d' % len(unknown))
+    for e in sorted(unknown):
+        print('                   ! %-20s' % e)
+
     print()
     print('-----------------------------------------------------------')
     print()
