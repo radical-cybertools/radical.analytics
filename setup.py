@@ -18,11 +18,11 @@ from setuptools import setup, Command, find_namespace_packages
 
 # ------------------------------------------------------------------------------
 #
-base     = 'utils'
+base     = 'analytics'
 name     = 'radical.%s'      % base
 mod_root = 'src/radical/%s/' % base
 
-scripts  = list(glob('bin/*'))
+scripts  = list(glob('bin/radical-*'))
 root     = os.path.dirname(__file__) or '.'
 readme   = open("%s/README.md" % root, encoding='utf-8').read()
 descr    = 'Profiling library for RADICAL-Cybertools',
@@ -31,7 +31,7 @@ keywords = ['radical', 'cybertools', 'utilities', 'profiling', 'analysis']
 share    = 'share/%s' % name
 data     = [('%s/examples'      % share, glob('examples/*.{py,cfg,json,sh}')),
             ('%s/styles/'       % share, glob('styles/*.txt')),
-            ('bin/rp_inspect/'         , glob('bin/rp_inspect/*')),
+            ('bin/rp_inspect'          , glob('bin/rp_inspect/*')),
 ]
 
 
