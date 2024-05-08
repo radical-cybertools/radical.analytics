@@ -5,6 +5,15 @@
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
 
+1.52.0 Release                                                        2024-04-15
+--------------------------------------------------------------------------------
+
+  - fix for setuptools upgrade
+  - add profile parser
+  - avoid broken stats
+  - report unknown events
+
+
 1.48.2 Release                                                        2024-03-20
 --------------------------------------------------------------------------------
 
@@ -262,12 +271,7 @@
 0.1  Release                                                          2016-02-20
 --------------------------------------------------------------------------------
 
-  - add profile parser
-  - avoid broken stats
+  - (HEAD -> master, origin/devel, origin/HEAD, devel) fix the fix
   - devel version bump
-  - fix
-  - linting
-  - sort, deploy
-  - (HEAD -> master, origin/devel, origin/HEAD, devel) fix syntax error
+  - (HEAD -> master, origin/devel, origin/HEAD, devel) fix the fix
   - devel version bump
-  - (HEAD -> master, origin/devel, origin/HEAD, devel) devel version bump
