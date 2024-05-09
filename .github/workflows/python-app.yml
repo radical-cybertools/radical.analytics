@@ -30,15 +30,8 @@ jobs:
       run: |
         python -m venv testenv
         . testenv/bin/activate
-        python -m pip install --upgrade pip setuptools
-        python -m pip install --upgrade .
-        python -m pip install git+https://github.com/radical-cybertools/radical.entk.git@devel
-        python -m pip install git+https://github.com/radical-cybertools/radical.pilot.git@devel
-        python -m pip install git+https://github.com/radical-cybertools/radical.saga.git@devel
-        python -m pip install git+https://github.com/radical-cybertools/radical.utils.git@devel
-        python -m pip install psutil
-        python -m pip install coverage codecov
-        python -m pip install pytest pytest-timeout
+        python -m pip install --upgrade pip setuptools wheel
+        python -m pip install -r requirements-ci.txt
     - name: Test with pytest
       env:
         LOC: testenv/lib/python3.7/site-packages
@@ -46,10 +39,11 @@ jobs:
         . testenv/bin/activate
         coverage run --include=$LOC/radical/analytics/* -m pytest -ra --timeout=600 -vvv --showlocals tests/
         coverage xml
-    - name: Codecov
-      uses: codecov/codecov-action@v1
+    - uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       with:
-        file: ./coverage.xml
+        files: ./coverage.xml
 
   linting:
     runs-on: ubuntu-latest
@@ -65,18 +59,12 @@ jobs:
       run: |
         python -m venv testenv
         . testenv/bin/activate
-        python -m pip install --upgrade pip setuptools
-        python -m pip install git+https://github.com/radical-cybertools/radical.entk.git@devel
-        python -m pip install git+https://github.com/radical-cybertools/radical.pilot.git@devel
-        python -m pip install git+https://github.com/radical-cybertools/radical.saga.git@devel
-        python -m pip install git+https://github.com/radical-cybertools/radical.utils.git@devel
-        python -m pip install --upgrade .
-        python -m pip install flake8 flake8-per-file-ignores
-        python -m pip install pytest pylint
+        python -m pip install --upgrade pip setuptools wheel
+        python -m pip install -r requirements-ci.txt
     - name: Lint with flake8 and pylint
       run: |
         . testenv/bin/activate
-        LOG=`git log -n 1 | grep Merge || true`
+        LOG=`git log -n 1 | grep Merge || echo 'no merging' && exit 0`
         NEW=`echo $LOG | cut -d ' ' -f2`
         OLD=`echo $LOG | cut -d ' ' -f3`
         test -z "$NEW" && NEW=HEAD
