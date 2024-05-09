@@ -1,0 +1,24 @@
+
+# provided branches for RCT components can be edited,
+# if there is a dependency with non-devel branch
+
+# default RCT branch for CI runs is "devel"
+
+radical.utils @ git+https://github.com/radical-cybertools/radical.utils.git@devel
+radical.gtod @ git+https://github.com/radical-cybertools/radical.gtod.git@devel
+radical.pilot @ git+https://github.com/radical-cybertools/radical.pilot.git@devel
+radical.entk @ git+https://github.com/radical-cybertools/radical.entk.git@devel
+
+# RA from the current branch
+.
+
+pytest
+pytest-timeout
+pylint
+flake8
+flake8-per-file-ignores
+coverage
+mock==2.0.0.
+psutil
+pudb
+
