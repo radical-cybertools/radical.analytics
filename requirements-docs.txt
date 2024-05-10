@@ -1,10 +1,13 @@
+
 -r requirements.txt
+
+radical.pilot>=1.60
+radical.entk>=1.60
+radical.analytics>=1.60
 
 sphinx
 ipykernel
 nbsphinx
 sphinx_copybutton
 sphinx_rtd_theme
-radical.pilot
-radical.entk
-radical.analytics
+
