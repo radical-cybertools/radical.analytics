@@ -28,6 +28,25 @@ class Entity(object):
         self._cfg         = self._details.get('cfg',         dict())
         self._resources   = self._details.get('resources',   dict())
 
+
+        # gracefully handle entities (mostly pilots) which have resources
+        # defined as number of nodes, but no core/gpu information.
+        if self._cfg.get('nodes'):
+            nodes = self._cfg['nodes']
+
+            if not self._cfg.get('cores'):
+                cpn = self._cfg.get('cores_per_node')
+                assert cpn, 'no cpn'
+
+                self._cfg['cores'] = nodes * cpn
+
+            if not self._cfg.get('gpus'):
+                gpn = self._cfg.get('gpus_per_node')
+                assert gpn, 'no gpn'
+
+                self._cfg['gpus'] = nodes * gpn
+
+
         # if have no etype tree information, guess the etype from uid
         if not self._etype:
             self._etype = self._uid.split('.')[0]
