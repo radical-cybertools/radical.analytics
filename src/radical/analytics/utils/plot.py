@@ -126,7 +126,7 @@ def stack_transitions(series, tresource, to_stack):
 
     # create dataframe and fill all NaN values with the previous valid value
     merged = pd.DataFrame(tlines)
-    merged.fillna(method='ffill', inplace=True)
+    merged.ffill(inplace=True)
 
     # stacked plotting and area filling don't play well together in matplotlib.
     # Instead we use normal (unstacked) plot routines and fill in between, we
