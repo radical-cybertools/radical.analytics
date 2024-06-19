@@ -265,7 +265,6 @@ def main():
 
     for ax in fig.get_axes():
         ax.label_outer()
-        plt.setp(ax.get_xticklabels(), visible=True)
 
     # Title of the plot
     fig.suptitle(to_latex('%s Tasks - %s Nodes' % (n_tasks, n_nodes)))
