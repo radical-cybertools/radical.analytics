@@ -1,7 +1,7 @@
 import os
 import sys
 import glob
-import functools                                                    # noqa: F401
+import functools
 
 import pandas as pd
 import matplotlib as mpl
