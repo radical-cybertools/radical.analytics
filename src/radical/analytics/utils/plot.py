@@ -2,7 +2,6 @@
 import os
 import sys
 import glob
-import functools
 
 import pandas        as pd
 import numpy         as np
