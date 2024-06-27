@@ -1,10 +1,12 @@
+
 import os
 import sys
 import glob
-import functools
 
-import pandas as pd
-import matplotlib as mpl
+import pandas        as pd
+import numpy         as np
+import matplotlib    as mpl
+
 import radical.utils as ru
 
 
@@ -75,7 +77,7 @@ def get_mplstyle(name):
 # ------------------------------------------------------------------------------
 #
 def stack_transitions(series, tresource, to_stack):
-    '''Creates data frames for each metric and combines them into one data frame
+    '''Creates time series for each metric and combines them into one data frame
     for alignment. Since transitions obviously happen at arbitrary times, the
     timestamps for metric A may see no transitions for metric B. When using a
     combined timeline, we end up with NaN entries for some metrics on most
@@ -104,20 +106,27 @@ def stack_transitions(series, tresource, to_stack):
               that point in time.
     '''
 
-    dfs = [pd.DataFrame(series[tresource][m], columns=['time', m])
-            for m in series[tresource]]
+    # find the global time line
+    glob_times = set()
+    for m,df in series[tresource].items():
+        for t,_ in df:
+            glob_times.add(t)
 
-    # merge them into one data frame, creating a common time-line
-    merged = functools.reduce(lambda left, right:
-                                     pd.merge(left, right,
-                                              left_on='time',
-                                              right_on='time',
-                                              how='outer'), dfs)
-    # sort the global time line
-    merged.sort_values(by='time', inplace=True)
+    glob_times = sorted(glob_times)
 
-    # fill in missing values (carry over previous ones)
-    merged.fillna(method='ffill', inplace=True)
+    # create a timeline for each metric, set missing values as NaN
+    tlines = dict()
+    tlines['time'] = glob_times
+    for m in series[tresource]:
+        tlines[m] = [np.nan] * len(glob_times)
+
+        for t,v in series[tresource][m]:
+            t_idx = glob_times.index(t)
+            tlines[m][t_idx] = v
+
+    # create dataframe and fill all NaN values with the previous valid value
+    merged = pd.DataFrame(tlines)
+    merged.ffill(inplace=True)
 
     # stacked plotting and area filling don't play well together in matplotlib.
     # Instead we use normal (unstacked) plot routines and fill in between, we
