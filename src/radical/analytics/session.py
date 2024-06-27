@@ -478,14 +478,15 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def _apply_filter(self, etype=None, uid=None, state=None,
-                            event=None, time=None):
+    def _apply_filter(self, etype=None, uid=None, name=None,
+                            state=None, event=None, time=None):
 
         # iterate through all self._entities and collect UIDs of all entities
         # which match the given set of filters (after removing all events which
         # are not in the given time ranges)
         etype = ru.as_list(etype)
         uids  = ru.as_list(uid)
+        names = ru.as_list(name)
         state = ru.as_list(state)
         event = ru.as_list(event)
         time  = ru.as_list(time )
@@ -513,6 +514,30 @@ class Session(object):
                     else:
                         # uid is a specific string to look out for
                         if entity.uid == uid:
+                            keep = True
+                            break
+
+                if not keep:
+                    continue
+
+            if names:
+                try:
+                    re_pattern = re.Pattern
+                except AttributeError:
+                    re_pattern = None
+                    self._log.warn('re.Pattern is not supported within this '
+                                   'python version')
+
+                keep = False
+                for name in names:
+                    if re_pattern and isinstance(name, re_pattern):
+                        # name is actually a regex we use for matching
+                        if name.match(entity.name):
+                            keep = True
+                            break
+                    else:
+                        # name is a specific string to look out for
+                        if entity.name == name:
                             keep = True
                             break
 
@@ -588,20 +613,21 @@ class Session(object):
 
     # --------------------------------------------------------------------------
     #
-    def get(self, etype=None, uid=None, state=None, event=None, time=None):
+    def get(self, etype=None, uid=None, name=None,
+                  state=None, event=None, time=None):
 
-        uids = self._apply_filter(etype=etype, uid=uid, state=state,
-                                  event=event, time=time)
+        uids = self._apply_filter(etype=etype, uid=uid, name=name,
+                                  state=state, event=event, time=time)
         return [self._entities[_uid] for _uid in uids]
 
 
     # --------------------------------------------------------------------------
     #
-    def filter(self, etype=None, uid=None, state=None, event=None, time=None,
-               inplace=True):
+    def filter(self, etype=None, uid=None, name=None,
+                     state=None, event=None, time=None, inplace=True):
 
-        uids = self._apply_filter(etype=etype, uid=uid, state=state,
-                                  event=event, time=time)
+        uids = self._apply_filter(etype=etype, uid=uid, name=name,
+                                  state=state, event=event, time=time)
 
         if inplace:
             # filter our own entity list, and refresh the entity based on
