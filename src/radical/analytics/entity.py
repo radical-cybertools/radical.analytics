@@ -28,6 +28,10 @@ class Entity(object):
         self._cfg         = self._details.get('cfg',         dict())
         self._resources   = self._details.get('resources',   dict())
 
+        self._name        =  self._description.get('name') \
+                          or self._description.get('job_name') \
+                          or self._uid
+
         # if have no etype tree information, guess the etype from uid
         if not self._etype:
             self._etype = self._uid.split('.')[0]
@@ -64,6 +68,7 @@ class Entity(object):
 
         state = {
                  'uid'         : self._uid,
+                 'name'        : self._name,
                  'etype'       : self._etype,
                  'details'     : self._details,
                  'description' : self._description,
@@ -101,6 +106,10 @@ class Entity(object):
         self._t_stop       = state['t_stop']
         self._ttc          = state['ttc']
 
+        self._name         =  self._description.get('name') \
+                           or self._description.get('job_name') \
+                           or self._uid
+
 
     # --------------------------------------------------------------------------
     #
@@ -123,6 +132,10 @@ class Entity(object):
     @property
     def uid(self):
         return self._uid
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def etype(self):
