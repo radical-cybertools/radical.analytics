@@ -5,6 +5,16 @@
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
 
+1.61.0 Release                                                        2024-07-01
+--------------------------------------------------------------------------------
+
+  - add entity name
+  - add name filter
+  - avoid deprecation warning
+  - changed path to RP event documentation
+  - speed up util plots
+
+
 1.60.0 Release                                                        2024-05-10
 --------------------------------------------------------------------------------
 
