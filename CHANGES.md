@@ -5,7 +5,7 @@
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
 
-1.61.0 Release                                                        2024-07-01
+1.81.0 Release                                                        2024-09-03
 --------------------------------------------------------------------------------
 
   - maintenance release
@@ -294,3 +294,4 @@
 0.1  Release                                                          2016-02-20
 --------------------------------------------------------------------------------
 
+  - (HEAD -> master, origin/devel, origin/HEAD, devel) devel version bump
