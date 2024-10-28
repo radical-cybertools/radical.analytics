@@ -278,12 +278,11 @@ try:
         # if cnum == 3:
         #     color = colors[4]
 
-        if   STYLE == 'point': ax.scatter(data_x, data_y,      c=color, label=label, s=10)
-        elif STYLE == 'line' : ax.plot   (data_x, data_y, 'b', c=color, label=label)
-        elif STYLE == 'step' : ax.step   (data_x, data_y, 'b', c=color, label=label)
-        elif STYLE == 'bar'  : ax.bar    (data_x, data_y,      c=color, label=label)
-        elif STYLE == 'hist' : ax.hist   (data_y,  150,        color=color, label=label)
-
+        if   STYLE == 'point': ax.scatter(data_x, data_y, s=10, c=color, label=label)
+        elif STYLE == 'line' : ax.plot   (data_x, data_y, 'b',           label=label)
+        elif STYLE == 'step' : ax.step   (data_x, data_y, 'b',           label=label)
+        elif STYLE == 'bar'  : ax.bar    (data_x, data_y,       c=color, label=label)
+        elif STYLE == 'hist' : ax.hist   (data_y,  150,     color=color, label=label)
 
 
 except IndexError:
