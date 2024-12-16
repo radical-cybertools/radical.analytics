@@ -5,6 +5,12 @@
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
 
+1.90.0 Release                                                        2024-12-16
+--------------------------------------------------------------------------------
+
+  - remove MacOS support
+
+
 1.81.0 Release                                                        2024-09-03
 --------------------------------------------------------------------------------
 
@@ -294,4 +300,3 @@
 0.1  Release                                                          2016-02-20
 --------------------------------------------------------------------------------
 
-  - (HEAD -> master, origin/devel, origin/HEAD, devel) devel version bump
