@@ -38,6 +38,7 @@ GRID      = False   # True, False
 FNAME     = None
 SAVE_AS   = 'x11'   # 'svg', 'png', 'x11', 'pdf'
 WIDTH     = 500
+HEIGHT    = None
 
 
 # ------------------------------------------------------------------------------
@@ -69,7 +70,8 @@ def usage(msg=None):
         -r, --range      <xmin,xmax,ymin,ymax> : axis range
         -s, --style      <point | line | step | bar | hist | lp>
                                                : plot type
-        -w, --width      <252>                 : canvas width
+        -W, --width      <252>                 : canvas width
+        -H, --height                           : canvas height (default: auto)
         -l, --log        <x | y | x,y>         : log-scale for x and/or y axis
         -g, --grid                             : grid lines (default: no)
         -a, --save-as    <png | svg | x11>     : save fig in format (x11: show)
@@ -96,7 +98,8 @@ parser.add_option('-v', '--y-ticks',   dest='yticks')
 parser.add_option('-r', '--range',     dest='range')
 parser.add_option('-L', '--legend',    dest='legend')
 parser.add_option('-s', '--style',     dest='style')
-parser.add_option('-w', '--width',     dest='width')
+parser.add_option('-W', '--width',     dest='width')
+parser.add_option('-H', '--height',    dest='height')
 parser.add_option('-l', '--log',       dest='log')
 parser.add_option('-g', '--grid',      dest='grid', action='store_true')
 parser.add_option('-a', '--save-as',   dest='save')
@@ -124,6 +127,7 @@ if options.xticks : TICKS_X      = [str(x) for x in options.xticks.split(',')]
 if options.yticks : TICKS_Y      = [str(x) for x in options.yticks.split(',')]
 if options.legend : LEGEND       = [str(x) for x in options.legend.split(',')]
 if options.width  : WIDTH        =  int(options.width)
+if options.height : HEIGHT       =  int(options.height)
 if options.log    : LOG          =  str(options.log)
 if options.grid   : GRID         =  str(options.grid)
 if options.style  : STYLE        =  str(options.style)
@@ -196,7 +200,9 @@ for line in get_lines():
         for idx in range(len(elems)):
             elem = elems[idx]
             if idx == COLUMN_X:
-                if not LABEL_X:
+                if LABEL_X == '-':
+                    LABEL_X = None
+                else:
                     LABEL_X = elem
             else:
                 if not LEGEND:
@@ -234,12 +240,14 @@ if STYLE == 'hist':
 # pprint.pprint(data)
 try:
 
-    fig, ax = plt.subplots(figsize=ra.get_plotsize(WIDTH))
-    cnum    = 0
+    fig, ax = plt.subplots(figsize=ra.get_plotsize(width=WIDTH, height=HEIGHT))
+    cnum = 0
     for col in COLUMNS_Y:
 
-        if LEGEND: label = to_latex(LEGEND[cnum])
-        else     : label = to_latex(str(cnum))
+        if   LEGEND[0] == ['-']: label = None,
+        elif LEGEND            : label = to_latex(LEGEND[cnum])
+        else                   : label = to_latex(str(cnum))
+
         cnum += 1
 
         if COLUMN_X == 'count':
@@ -247,25 +255,28 @@ try:
         else:
             data_x = np.array(data[COLUMN_X])
 
+
         if '+' in col:
-            cols = col.split('+', 1)
-            cols = [int(cols[0]), int(cols[1])]
-            data_y = np.array(data[cols[0]]) + np.array(data[cols[1]])
+            cols   = [int(c) for c in col.split('+')]
+            data_y = sum([np.array(data[c]) for c in cols])
 
         elif '-' in col:
-            cols = col.split('-', 1)
-            cols = [int(cols[0]), int(cols[1])]
-            data_y = np.array(data[cols[0]]) - np.array(data[cols[1]])
+            cols   = [int(c) for c in col.split('-')]
+            data_y = np.array(data[cols[0]])
+            for c in cols[1:]:
+                data_y -= np.array(data[c])
 
         elif '*' in col:
-            cols = col.split('*', 1)
-            cols = [int(cols[0]), int(cols[1])]
-            data_y = np.array(data[cols[0]]) * np.array(data[cols[1]])
+            cols   = [int(c) for c in col.split('*')]
+            data_y = np.array(data[cols[0]])
+            for c in cols[1:]:
+                data_y *= np.array(data[c])
 
         elif '/' in col:
-            cols = col.split('/', 1)
-            cols = [int(cols[0]), int(cols[1])]
-            data_y = np.array(data[cols[0]]) / np.array(data[cols[1]])
+            cols   = [int(c) for c in col.split('/')]
+            data_y = np.array(data[cols[0]])
+            for c in cols[1:]:
+                data_y /= np.array(data[c])
 
         else:
             col = int(col)
@@ -278,12 +289,12 @@ try:
         # if cnum == 3:
         #     color = colors[4]
 
-        if   STYLE == 'point': ax.scatter(data_x, data_y,      c=color, label=label, s=10)
-        elif STYLE == 'line' : ax.plot   (data_x, data_y, 'b', c=color, label=label)
-        elif STYLE == 'step' : ax.step   (data_x, data_y, 'b', c=color, label=label)
-        elif STYLE == 'bar'  : ax.bar    (data_x, data_y,      c=color, label=label)
-        elif STYLE == 'hist' : ax.hist   (data_y,  150,        color=color, label=label)
-        elif STYLE == 'lp'   : ax.plot   (data_x, data_y, 'b', c=color, label=label, marker='.')
+        if   STYLE == 'point': ax.scatter(data_x, data_y, c=color, label=label, s=10)
+        elif STYLE == 'line' : ax.plot   (data_x, data_y, c=color, label=label)
+        elif STYLE == 'step' : ax.step   (data_x, data_y, c=color, label=label)
+        elif STYLE == 'bar'  : ax.bar    (data_x, data_y, c=color, label=label)
+        elif STYLE == 'hist' : ax.hist   (data_y,  150,   color=color, label=label)
+        elif STYLE == 'lp'   : ax.plot   (data_x, data_y, c=color, label=label, marker='.')
 
 
 
@@ -293,8 +304,12 @@ except IndexError:
         print('    %2d: %s' % (i, e))
     raise
 
-if LEGEND != ['-']:
-    plt.legend(ncol=1, fancybox=True)
+print(LEGEND)
+if LEGEND[0] != '-':
+    plt.legend(ncol=len(LEGEND), bbox_to_anchor=(1.05, 1.25),
+          fancybox=True)
+
+ax.tick.label_format(axis='both', style='sci', scilimits=(2,None))
 
 if TITLE   : ax.set_title(TITLE, loc='center')
 if LOG_X   : ax.set_xscale('log')
@@ -302,7 +317,7 @@ if LOG_Y   : ax.set_yscale('log')
 if LABEL_X : ax.set_xlabel(to_latex(LABEL_X))
 if LABEL_Y : ax.set_ylabel(to_latex(LABEL_Y))
 if TICKS_X : ax.set_xticks([int(t) for t in TICKS_X], TICKS_X)
-if TICKS_Y : ax.set_yticks([int(t) for t in TICKS_Y], TICKS_Y)
+if TICKS_Y : ax.set_yticks([int(t) for t in TICKS_Y], TICKS_Y, )
 if GRID    : ax.grid(True)
 
 xmin, xmax, ymin, ymax = RANGE
