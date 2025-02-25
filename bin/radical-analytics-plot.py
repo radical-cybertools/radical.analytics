@@ -33,7 +33,7 @@ RANGE     = [None, None, None, None]
 LOG_X     = False
 LOG_Y     = False
 LOG       = ''
-STYLE     = 'line'  # 'point', 'line', 'step', 'bar', 'hist'
+STYLE     = 'line'  # 'point', 'line', 'step', 'bar', 'hist', 'lp'
 GRID      = False   # True, False
 FNAME     = None
 SAVE_AS   = 'x11'   # 'svg', 'png', 'x11', 'pdf'
@@ -67,7 +67,7 @@ def usage(msg=None):
         -u, --x-ticks    <tick_1,tick_2,...>   : not yet supported
         -v, --y-ticks    <tick_1,tick_2,...>   : not yet supported
         -r, --range      <xmin,xmax,ymin,ymax> : axis range
-        -s, --style      <point | line | step | bar | hist>
+        -s, --style      <point | line | step | bar | hist | lp>
                                                : plot type
         -w, --width      <252>                 : canvas width
         -l, --log        <x | y | x,y>         : log-scale for x and/or y axis
@@ -147,7 +147,7 @@ if COLUMN_X not in ['count']:
 if SAVE_AS not in ['x11', 'png', 'svg', 'pdf']:
     raise ValueError('invalid save_as value: %s' % SAVE_AS)
 
-if STYLE not in ['point', 'line', 'step', 'bar', 'hist']:
+if STYLE not in ['point', 'line', 'step', 'bar', 'hist', 'lp']:
     raise ValueError('invalid style: %s' % STYLE)
 
 
@@ -283,6 +283,7 @@ try:
         elif STYLE == 'step' : ax.step   (data_x, data_y, 'b',           label=label)
         elif STYLE == 'bar'  : ax.bar    (data_x, data_y,       c=color, label=label)
         elif STYLE == 'hist' : ax.hist   (data_y,  150,     color=color, label=label)
+        elif STYLE == 'lp'   : ax.plot   (data_x, data_y, 'b',  c=color, label=label, marker='.')
 
 
 except IndexError:
@@ -304,10 +305,10 @@ if TICKS_Y : ax.set_yticks([int(t) for t in TICKS_Y], TICKS_Y)
 if GRID    : ax.grid(True)
 
 xmin, xmax, ymin, ymax = RANGE
-if xmin is not None: ax.set_xlim(left=0)
-if xmax is not None: ax.set_xlim(right=0)
-if ymin is not None: ax.set_ylim(left=0)
-if ymax is not None: ax.set_ylim(right=0)
+if xmin is not None: ax.set_xlim(left=xmin)
+if xmax is not None: ax.set_xlim(right=xmax)
+if ymin is not None: ax.set_ylim(bottom=ymin)
+if ymax is not None: ax.set_ylim(top=ymax)
 
 if not FNAME:
     FNAME = TITLE.lower().replace(' ', '_')
