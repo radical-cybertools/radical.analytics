@@ -39,6 +39,7 @@ FNAME     = None
 SAVE_AS   = 'x11'   # 'svg', 'png', 'x11', 'pdf'
 WIDTH     = 500
 HEIGHT    = None
+STDEV     = False
 
 
 # ------------------------------------------------------------------------------
@@ -64,6 +65,7 @@ def usage(msg=None):
         -m, --match      <pattern>             : use lines matching pattern
         -x, --x-column   <col>                 : source column for x-values
         -y, --y-columns  <col_1,col_2,...>     : list of columns columns to plot
+        -S, --stdev                            : plot stdev from `col + 1`
         -L, --legend     <label_1,label_2,...> : name of plots specified in '-y'
         -u, --x-ticks    <tick_1,tick_2,...>   : not yet supported
         -v, --y-ticks    <tick_1,tick_2,...>   : not yet supported
@@ -95,6 +97,7 @@ parser.add_option('-x', '--x-column',  dest='xcol')
 parser.add_option('-y', '--y-columns', dest='ycols')
 parser.add_option('-u', '--x-ticks',   dest='xticks')
 parser.add_option('-v', '--y-ticks',   dest='yticks')
+parser.add_option('-S', '--stdev',     dest='stdev', action='store_true')
 parser.add_option('-r', '--range',     dest='range')
 parser.add_option('-L', '--legend',    dest='legend')
 parser.add_option('-s', '--style',     dest='style')
@@ -129,6 +132,7 @@ if options.legend : LEGEND       = [str(x) for x in options.legend.split(',')]
 if options.width  : WIDTH        =  int(options.width)
 if options.height : HEIGHT       =  int(options.height)
 if options.log    : LOG          =  str(options.log)
+if options.stdev  : STDEV        =  str(options.stdev)
 if options.grid   : GRID         =  str(options.grid)
 if options.style  : STYLE        =  str(options.style)
 if options.save   : SAVE_AS      =  str(options.save)
@@ -244,6 +248,8 @@ try:
     cnum = 0
     for col in COLUMNS_Y:
 
+        data_y_err = None
+
         if   LEGEND[0] == ['-']: label = None,
         elif LEGEND            : label = to_latex(LEGEND[cnum])
         else                   : label = to_latex(str(cnum))
@@ -259,36 +265,54 @@ try:
         if '+' in col:
             cols   = [int(c) for c in col.split('+')]
             data_y = sum([np.array(data[c]) for c in cols])
+            if STDEV:
+                data_y_err = sum([np.array(data[c + 1]) for c in cols])
 
         elif '-' in col:
             cols   = [int(c) for c in col.split('-')]
             data_y = np.array(data[cols[0]])
+            if STDEV:
+                data_y_err = np.array(data[cols[0] + 1])
             for c in cols[1:]:
                 data_y -= np.array(data[c])
+                if STDEV:
+                    data_y_err += np.array(data[c + 1])
 
         elif '*' in col:
             cols   = [int(c) for c in col.split('*')]
             data_y = np.array(data[cols[0]])
+            if STDEV:
+                data_y_err = np.array(data[cols[0] + 1])
             for c in cols[1:]:
                 data_y *= np.array(data[c])
+                if STDEV:
+                    data_y_err += np.array(data[c + 1])
 
         elif '/' in col:
             cols   = [int(c) for c in col.split('/')]
             data_y = np.array(data[cols[0]])
+            if STDEV:
+                data_y_err = np.array(data[cols[0] + 1])
             for c in cols[1:]:
                 data_y /= np.array(data[c])
+                if STDEV:
+                    data_y_err += np.array(data[c + 1])
 
         else:
             col = int(col)
             time.sleep(1)
-            data_y = np.array(data[col])
+            data_y  = np.array(data[col])
+            if STDEV:
+                data_y_err = np.array(data[col + 1])
+
+        if STDEV and data_y_err is None:
+            raise ValueError('stdev not available with column spec %s' % col)
 
         colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
         color = colors[cnum]
 
         # if cnum == 3:
         #     color = colors[4]
-
         if   STYLE == 'point': ax.scatter(data_x, data_y, c=color, label=label, s=10)
         elif STYLE == 'line' : ax.plot   (data_x, data_y, c=color, label=label)
         elif STYLE == 'step' : ax.step   (data_x, data_y, c=color, label=label)
@@ -296,7 +320,12 @@ try:
         elif STYLE == 'hist' : ax.hist   (data_y,  150,   color=color, label=label)
         elif STYLE == 'lp'   : ax.plot   (data_x, data_y, c=color, label=label, marker='.')
 
+      # if STDEV:
+      #     ax.fill_between(data_x, data_y - data_y_err, data_y + data_y_err,
+      #                     color=color, alpha=0.1)
 
+        if STDEV:
+            ax.errorbar(data_x, data_y, yerr=data_y_err, fmt='.', color=color)
 
 except IndexError:
     print('index error')
@@ -309,7 +338,7 @@ if LEGEND[0] != '-':
     plt.legend(ncol=len(LEGEND), bbox_to_anchor=(1.05, 1.25),
           fancybox=True)
 
-ax.tick.label_format(axis='both', style='sci', scilimits=(2,None))
+# ax.ytick.label_format(axis='both', style='sci', scilimits=(2,None))
 
 if TITLE   : ax.set_title(TITLE, loc='center')
 if LOG_X   : ax.set_xscale('log')
