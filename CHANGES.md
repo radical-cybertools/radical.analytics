@@ -5,6 +5,12 @@
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
 
+1.92.0 Release                                                        2025-02-28
+--------------------------------------------------------------------------------
+
+  - minor update to plot styles
+
+
 1.90.0 Release                                                        2024-12-16
 --------------------------------------------------------------------------------
 
