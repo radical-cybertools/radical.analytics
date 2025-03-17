@@ -72,8 +72,8 @@ def usage(msg=None):
         -r, --range      <xmin,xmax,ymin,ymax> : axis range
         -s, --style      <point | line | step | bar | hist | lp>
                                                : plot type
-        -W, --width      <252>                 : canvas width
-        -H, --height                           : canvas height (default: auto)
+        -W, --width      <pixels>              : canvas width (default: 500)
+        -H, --height     <pixels>              : canvas height
         -l, --log        <x | y | x,y>         : log-scale for x and/or y axis
         -g, --grid                             : grid lines (default: no)
         -a, --save-as    <png | svg | x11>     : save fig in format (x11: show)
@@ -132,11 +132,11 @@ if options.legend : LEGEND       = [str(x) for x in options.legend.split(',')]
 if options.width  : WIDTH        =  int(options.width)
 if options.height : HEIGHT       =  int(options.height)
 if options.log    : LOG          =  str(options.log)
-if options.stdev  : STDEV        =  str(options.stdev)
-if options.grid   : GRID         =  str(options.grid)
 if options.style  : STYLE        =  str(options.style)
 if options.save   : SAVE_AS      =  str(options.save)
 if options.fname  : FNAME        =  str(options.fname)
+if options.stdev  : STDEV        =  True
+if options.grid   : GRID         =  True
 
 if options.range  :
     RANGE = options.range .split(',')
