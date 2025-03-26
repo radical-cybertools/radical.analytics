@@ -5,6 +5,12 @@
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
 
+1.101.0 Release                                                       2025-03-26
+--------------------------------------------------------------------------------
+
+  - maintenance release
+
+
 1.100.0 Release                                                       2025-03-05
 --------------------------------------------------------------------------------
 
