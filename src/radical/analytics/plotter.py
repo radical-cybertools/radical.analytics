@@ -25,8 +25,9 @@ class Plotter(object):
             import matplotlib.pyplot as plt
             self._plt = plt
 
-        except:
-            raise RuntimeError('Plotter class needs matplotlib installed')
+        except Exception as e:
+            raise RuntimeError('Plotter class needs matplotlib installed') \
+                  from e
 
 
     # --------------------------------------------------------------------------
@@ -91,7 +92,7 @@ class Plotter(object):
 
             # FIXME: this code is too obscure
             for (key, util),i \
-                in zip(iter(list(util_data.items())), 
+                in zip(iter(list(util_data.items())),
                    list(range(self._plot_grid[0] * self._plot_grid[1]))):
 
                 # Getting the time moments where the utilization changes
@@ -100,7 +101,7 @@ class Plotter(object):
                 # Getting the utilization points. If normalized flag is set, utilization is
                 # divided with the total resources of the owner and multiply with 100
                 if normalized:
-                    y_axis = [(point[1] / util['resources']) * 100 
+                    y_axis = [(point[1] / util['resources']) * 100
                                        for point in util['utilization']]
                 else:
                     y_axis = [point[1] for point in util['utilization']]
@@ -143,7 +144,7 @@ class Plotter(object):
         y_axis = [point[1] for point in data]
 
         # Just plot
-        self._axis.plot(x_axis,y_axis)        
+        self._axis.plot(x_axis,y_axis)
         self._axis.set_ylabel('Concurrent Entities')
         self._axis.set_xlabel('Time in seconds')
         self._axis.set_title('Concurrency')
