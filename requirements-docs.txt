@@ -1,9 +1,9 @@
 
 -r requirements.txt
 
-radical.pilot>=1.80
-radical.entk>=1.80
-radical.analytics>=1.80
+radical.pilot>=1.100
+radical.entk>=1.100
+radical.analytics>=1.100
 
 sphinx
 ipykernel
