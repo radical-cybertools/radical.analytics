@@ -124,7 +124,7 @@ if __name__ == '__main__':
 
     # FIXME: how to do the legend now?  With the large font size, I don't see
     plt.legend()
-    plt.savefig('%s.state.png' % session.uid)
+    plt.savefig('%s_state.png' % session.uid)
   # plt.show()
 
 

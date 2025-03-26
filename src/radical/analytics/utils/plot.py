@@ -12,7 +12,7 @@ import radical.utils as ru
 
 # ------------------------------------------------------------------------------
 #
-def get_plotsize(width, fraction=1, subplots=(1, 1)):
+def get_plotsize(width, height=None, fraction=1, subplots=(1, 1)):
     """ Sets aesthetic figure dimensions to avoid scaling in latex.
 
     Parameters
@@ -20,7 +20,7 @@ def get_plotsize(width, fraction=1, subplots=(1, 1)):
     width   : float
               Width in points (pts).
     fraction: float
-              Fraction of the width which you wish the figure to occupy.
+              Fraction of the width and hight the figure to occupies
     subplots: tuple
               Number of raws and number of columns of the plot.
 
@@ -35,14 +35,17 @@ def get_plotsize(width, fraction=1, subplots=(1, 1)):
     # Convert from pt to inches
     inches_per_pt = 1 / 72.27
 
-    # Golden ratio to set aesthetic figure height
-    golden_ratio = (5 ** 0.5 - 1) / 2
-
     # Figure width in inches
     fig_width_in = fig_width_pt * inches_per_pt
 
     # Figure height in inches
-    fig_height_in = fig_width_in * golden_ratio * (subplots[0] / subplots[1])
+    if height:
+        fig_height_in = height * fraction * inches_per_pt
+
+    else:
+        # Golden ratio to set aesthetic figure height
+        golden_ratio  = (5 ** 0.5 - 1) / 2
+        fig_height_in = fig_width_in * golden_ratio * (subplots[0] / subplots[1])
 
     return fig_width_in, fig_height_in
 
