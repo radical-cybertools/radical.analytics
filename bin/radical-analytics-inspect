@@ -107,9 +107,10 @@ EOT
                       why a specific resource element has *not* been used for
                       task execution at that point in time (overhead).
 
-         utilization: (\$sid.\$pid.util.png)
-                      Plot the resource utilization for each pilot is plotted
-                      as percentage over time.
+         utilization: (\$sid.\$pid.util2.png)
+                      alternative utilization plot, showing the utilization
+                      as percentage over time, including the different
+                      distributions to that utilization.
 EOT
 }
 
@@ -117,16 +118,20 @@ test -z "$ARGS"          && usage "missing session ID(s)"
 test    "$ARGS" = "-h"   && usage
 test    "$ARGS" = "help" && usage
 
+ret=0
+base="$bin/rp_inspect/"
 for session in $ARGS
 do
     sid=$(basename $session)
     echo -n "$sid "
-    echo 'STATE:'; $bin/rp_inspect/plot_state.py  "$session" && echo -n .
-    echo 'DUR  :'; $bin/rp_inspect/plot_dur.py    "$session" && echo -n .
-    echo 'CONC :'; $bin/rp_inspect/plot_conc.py   "$session" && echo -n .
-    echo 'RATE :'; $bin/rp_inspect/plot_rate.py   "$session" && echo -n .
-    echo 'UTIL :'; $bin/rp_inspect/plot_util.py   "$session" && echo -n .
-    echo 'UTIL2:'; $bin/rp_inspect/plot_util_2.py "$session" && echo -n .
+    echo 'STATE:'; $base/plot_state.py  "$session"; ret=$((ret + $?))
+    echo 'DUR  :'; $base/plot_dur.py    "$session"; ret=$((ret + $?))
+    echo 'CONC :'; $base/plot_conc.py   "$session"; ret=$((ret + $?))
+    echo 'RATE :'; $base/plot_rate.py   "$session"; ret=$((ret + $?))
+    echo 'UTIL :'; $base/plot_util.py   "$session";
+    echo 'UTIL2:'; $base/plot_util_2.py "$session"; ret=$((ret + $?))
     echo " done"
 done
+
+exit $ret
 

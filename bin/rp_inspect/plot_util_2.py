@@ -270,7 +270,7 @@ def main():
     fig.suptitle(to_latex('%s Tasks - %s Nodes' % (n_tasks, n_nodes)))
 
     # Save a publication quality plot
-    fig.savefig('%s.util2.png' % sid, dpi=600, bbox_inches='tight')
+    fig.savefig('%s_util2.png' % sid, dpi=600, bbox_inches='tight')
 
 
 # ------------------------------------------------------------------------------
