@@ -4,6 +4,13 @@
 - For a list of open issues and known problems, see:
     <https://github.com/radical-cybertools/radical.analytics/issues?q=is%3Aissue+is%3Aopen>
 
+1.102.0 Release                                                       2025-05-28
+--------------------------------------------------------------------------------
+
+  - don't run util plots on many tasks (by default)
+  - move python version to 3.8
+  - plot improvements
+
 
 1.101.0 Release                                                       2025-03-26
 --------------------------------------------------------------------------------
