@@ -160,108 +160,128 @@ use_percent = True
 def main():
 
     # read the session profiles
-    src  = sys.argv[1]
+    sources  = sys.argv[1:]
+    sessions = list()
+    stype    = 'radical.pilot'
+    n_plots  = 0
+    fig      = None
+    gs       = None
+    tzero    = 0.0
 
-    if len(sys.argv) == 3: stype = sys.argv[2]
-    else                 : stype = 'radical.pilot'
+    for src in sources:
+        sessions.append(ra.Session.create(src=src, stype=stype))
 
-    session = ra.Session.create(src=src, stype=stype)
+    prev_session = None
+    for session in sessions:
 
-    # this script only works for one pilot
-    pilots = session.get(etype='pilot')
-    assert len(pilots) == 1, len(pilots)
+        if prev_session:
+            print('tzero', prev_session.t_stop + 10)
+            tzero = prev_session.t_stop + 1.0
 
-    sid     = session.uid
-    pilot   = pilots[0]
-    rm_info = pilot.cfg['resource_details']['rm_info']
-    p_size  = pilot.description['cores']
-    n_nodes = int(p_size / rm_info['cores_per_node'])
-    n_tasks = len(session.get(etype='task'))
+        # this script only works for one pilot
+        pilots = session.get(etype='pilot')
+        assert len(pilots) == 1, len(pilots)
 
-    # Derive pilot and task timeseries of a session for each metric
-    p_resrc, series, x = ra.get_pilot_series(session, pilot, tmap, resrc, use_percent)
+        sid     = session.uid
+        pilot   = pilots[0]
+        rm_info = pilot.cfg['resource_details']['rm_info']
+        p_size  = pilot.description['cores']
+        n_nodes = int(p_size / rm_info['cores_per_node'])
+        n_tasks = len(session.get(etype='task'))
 
-    # #plots = # of resource types (e.g., CPU/GPU = 2 resource types = 2 plots)
-    n_plots = 0
-    for r in p_resrc:
-        if p_resrc[r]:
-            n_plots += 1
+        # Derive pilot and task timeseries of a session for each metric
+        p_resrc, series, x = ra.get_pilot_series(session, pilot, tmap, resrc, use_percent)
 
-    # sub-plots for each resource type, legend on first, x-axis shared
-    fig = plt.figure(figsize=(ra.get_plotsize(400)))
-    gs  = mpl.gridspec.GridSpec(n_plots, 1)
+        # #plots = # of resource types (e.g., CPU/GPU = 2 resource types = 2 plots)
+        if not n_plots:
+            n_plots = 0
+            for r in p_resrc:
+                if p_resrc[r]:
+                    n_plots += 1
 
-    for plot_id, r in enumerate(resrc):
+            # sub-plots for each resource type, legend on first, x-axis shared
+            fig = plt.figure(figsize=(ra.get_plotsize(400)))
+            gs  = mpl.gridspec.GridSpec(n_plots, 1)
 
-        if not p_resrc[r]:
-            continue
+        for plot_id, r in enumerate(resrc):
 
-        # create sub-plot
-        ax = plt.subplot(gs[plot_id])
-
-        # stack timeseries for each metrics into areas
-        areas = ra.stack_transitions(series, r, to_stack)
-
-        # plot individual metrics
-        prev_m  = None
-        patches = dict()
-        legend  = dict()
-        for m in areas:
-
-            if m not in to_plot:
-                if m != 'time':
-                    print('skip', m)
+            if not p_resrc[r]:
                 continue
 
-            pcol   = to_plot[m][0]
-            palpha = to_plot[m][1]
+            # create sub-plot
+            ax = plt.subplot(gs[plot_id])
 
-            # plot the (stacked) areas
-            # fill first metric toward 0, all others towards previous line
-            if not prev_m:
-                patch = ax.fill_between(areas['time'], areas[m],
-                                        step='post', label=m, linewidth=0.0,
-                                        color=pcol, alpha=palpha)
+            # stack timeseries for each metrics into areas
+            areas = ra.stack_transitions(series, r, to_stack)
+            print(areas)
 
-            else:
-                patch = ax.fill_between(areas['time'], areas[m], areas[prev_m],
-                                        step='post', label=m, linewidth=0.0,
-                                        color=pcol, alpha=palpha)
+            for x in range(len(areas['time'])):
+                areas.loc[x, 'time'] += tzero
 
-            # remember patches for legend
-            legend[m] = to_latex(m)
-            patches[m] = patch
+            # plot individual metrics
+            prev_m  = None
+            patches = dict()
+            legend  = dict()
+            for m in areas:
 
-            # remember this line to fill against
-            prev_m = m
+                if m not in to_plot:
+                    if m != 'time':
+                        print('skip', m)
+                    continue
 
-        ax.set_xlim([x['min'], x['max']])
-        if use_percent:
-            ax.set_ylim([0, 110])
-        else:
-            ax.set_ylim([0, p_resrc[r]])
+                pcol   = to_plot[m][0]
+                palpha = to_plot[m][1]
 
-        ax.set_xlabel(to_latex('time (s)'))
-        ax.set_ylabel(to_latex('%s (%%)' % r))
+                # plot the (stacked) areas
+                # fill first metric toward 0, all others towards previous line
+                if not prev_m:
+                    patch = ax.fill_between(areas['time'], areas[m],
+                                            step='post', label=m, linewidth=0.0,
+                                            color=pcol, alpha=palpha)
 
-        # resort the legend to list entries from left to right
-        ncol = len(labels[0])
-        label_order = list()
-        for i in range(ncol):
-            for row in labels:
-                if len(row) > i:
-                    label_order.append(row[i])
-        legend_sorted  = list()
-        patches_sorted = list()
-        for label in label_order:
-            legend_sorted.append(legend[label])
-            patches_sorted.append(patches[label])
+                else:
+                    patch = ax.fill_between(areas['time'], areas[m], areas[prev_m],
+                                            step='post', label=m, linewidth=0.0,
+                                            color=pcol, alpha=palpha)
 
-        # first sub-plot gets legend
-        if plot_id == 0:
-            ax.legend(patches_sorted, legend_sorted, loc='upper center',
-                    ncol=ncol, bbox_to_anchor=(0.5, 1.25), fancybox=True,
-                    shadow=True)
+                # remember patches for legend
+                legend[m] = to_latex(m)
+                patches[m] = patch
+
+                # remember this line to fill against
+                prev_m = m
+
+          # ax.set_xlim([x['min'], x['max']])
+          # if use_percent:
+          #     ax.set_ylim([0, 110])
+          # else:
+          #     ax.set_ylim([0, p_resrc[r]])
+
+            ax.set_xlabel(to_latex('time (s)'))
+            ax.set_ylabel(to_latex('%s (%%)' % r))
+
+            # resort the legend to list entries from left to right
+            ncol = len(labels[0])
+            label_order = list()
+            for i in range(ncol):
+                for row in labels:
+                    if len(row) > i:
+                        label_order.append(row[i])
+
+            legend_sorted  = list()
+            patches_sorted = list()
+            for label in label_order:
+                legend_sorted.append(legend[label])
+                patches_sorted.append(patches[label])
+
+            # first sub-plot gets legend
+            if not prev_session and plot_id == 0:
+                ax.legend(patches_sorted, legend_sorted, loc='upper center',
+                        ncol=ncol, bbox_to_anchor=(0.5, 1.25), fancybox=True,
+                        shadow=True)
+
+        prev_session = session
+
 
     for ax in fig.get_axes():
         ax.label_outer()
@@ -270,7 +290,7 @@ def main():
     fig.suptitle(to_latex('%s Tasks - %s Nodes' % (n_tasks, n_nodes)))
 
     # Save a publication quality plot
-    fig.savefig('%s_util2.png' % sid, dpi=600, bbox_inches='tight')
+    fig.savefig('%s.util2.png' % sid, dpi=600, bbox_inches='tight')
 
 
 # ------------------------------------------------------------------------------
