@@ -120,7 +120,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 3: stype = sys.argv[2]
     else                 : stype = 'radical.pilot'
 
-    fig, axes = plt.subplots(2, figsize=ra.get_plotsize(500))
+    fig, axes = plt.subplots(2, figsize=ra.get_plotsize(252))
     session   = ra.Session(src, stype=stype)
 
     # this script only works for one pilot
@@ -178,7 +178,7 @@ if __name__ == '__main__':
 
     # Add legend for both plots
     fig.legend(legend, [m[0] for m in metrics], ncol=3,
-               loc='upper center', bbox_to_anchor=(0.5, 1.10))
+               loc='upper center', bbox_to_anchor=(0.5, 1.15))
 
 
   # plt.xticks(list(range(int(x_min)-1, int(x_max)+1)))

@@ -37,7 +37,7 @@ STYLE     = 'line'  # 'point', 'line', 'step', 'bar', 'hist', 'lp'
 GRID      = False   # True, False
 FNAME     = None
 SAVE_AS   = 'x11'   # 'svg', 'png', 'x11', 'pdf'
-WIDTH     = 500
+WIDTH     = 252
 
 
 # ------------------------------------------------------------------------------

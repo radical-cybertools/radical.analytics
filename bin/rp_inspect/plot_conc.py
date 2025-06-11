@@ -75,7 +75,7 @@ if __name__ == '__main__':
             for metric in metrics}
 
     # prep figure
-    fig, ax = plt.subplots(figsize=ra.get_plotsize(500))
+    fig, ax = plt.subplots(figsize=ra.get_plotsize(252))
 
     for metric in data:
         x = [e[0] for e in data[metric]]

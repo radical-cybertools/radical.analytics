@@ -67,8 +67,8 @@ plt.style.use(ra.get_mplstyle("radical_mpl"))
 
 # ------------------------------------------------------------------------------
 # pick and choose what resources to plot (one sub-plot per resource)
-resrc = ['cpu', 'gpu']
 resrc = ['cpu']
+resrc = ['cpu', 'gpu']
 
 # pick and choose what contributions to plot
 metrics = [  # metric        , [color    , alpha]]
@@ -84,8 +84,10 @@ metrics = [  # metric        , [color    , alpha]]
              ['idle'         , ['#00FF00',  0.1 ]]
           ]
 
-labels = [['exec_rp',       'exec_launch',   'exec_task',   'bootstrap', 'agent'],
-          ['raptor_master', 'raptor_worker', 'raptor_task', 'idle']]
+labels = [['exec_rp',       'exec_launch',   'exec_task'],
+          ['bootstrap', 'agent', 'idle'],
+        # ['raptor_master', 'raptor_worker', 'raptor_task'],
+         ]
 
 # ------------------------------------------------------------------------------
 # transition events for pilot, task, master, worker, request
@@ -103,7 +105,7 @@ p_trans = [
 
 t_trans = [
         [{1: 'schedule_ok'}       , 'idle'          , 'exec_rp'      ] ,
-        [{1: 'exec_start'}        , 'exec_rp'       , 'exec_launch'  ] ,
+        [{1: 'launch_start'}      , 'exec_rp'       , 'exec_launch'  ] ,
         [{1: 'rank_start'}        , 'exec_launch'   , 'exec_task'    ] ,
      #  [{1: 'app_start'}         , 'exec_task'     , 'exec_task'    ] ,
      #  [{1: 'app_stop'}          , 'exec_task'     , 'exec_task'    ] ,
@@ -181,26 +183,34 @@ def main():
     # Derive pilot and task timeseries of a session for each metric
     p_resrc, series, x = ra.get_pilot_series(session, pilot, tmap, resrc, use_percent)
 
-    # #plots = # of resource types (e.g., CPU/GPU = 2 resource types = 2 plots)
-    n_plots = 0
-    for r in p_resrc:
-        if p_resrc[r]:
-            n_plots += 1
-
-    # sub-plots for each resource type, legend on first, x-axis shared
-    fig = plt.figure(figsize=(ra.get_plotsize(400)))
-    gs  = mpl.gridspec.GridSpec(n_plots, 1)
-
+    r_areas = dict()
     for plot_id, r in enumerate(resrc):
 
         if not p_resrc[r]:
             continue
 
-        # create sub-plot
-        ax = plt.subplot(gs[plot_id])
-
         # stack timeseries for each metrics into areas
         areas = ra.stack_transitions(series, r, to_stack)
+        if len(areas) <= 3:
+            print('skip %s, not enough data' % r)
+        else:
+            r_areas[r] = areas
+
+    # #plots = # of resource types (e.g., CPU/GPU = 2 resource types = 2 plots)
+    n_plots = len(r_areas)
+
+    # sub-plots for each resource type, legend on first, x-axis shared
+    fig = plt.figure(figsize=(ra.get_plotsize(252)))
+    gs  = mpl.gridspec.GridSpec(n_plots, 1)
+
+    for plot_id, r in enumerate(resrc):
+
+        areas = r_areas.get(r)
+        if areas is None:
+            continue
+
+        # create sub-plot
+        ax = plt.subplot(gs[plot_id])
 
         # plot individual metrics
         prev_m  = None
@@ -237,7 +247,7 @@ def main():
 
         ax.set_xlim([x['min'], x['max']])
         if use_percent:
-            ax.set_ylim([0, 110])
+            ax.set_ylim([0, 100])
         else:
             ax.set_ylim([0, p_resrc[r]])
 
@@ -260,7 +270,7 @@ def main():
         # first sub-plot gets legend
         if plot_id == 0:
             ax.legend(patches_sorted, legend_sorted, loc='upper center',
-                    ncol=ncol, bbox_to_anchor=(0.5, 1.25), fancybox=True,
+                    ncol=ncol, bbox_to_anchor=(0.5, 1.35), fancybox=True,
                     shadow=True)
 
     for ax in fig.get_axes():
@@ -270,7 +280,7 @@ def main():
     fig.suptitle(to_latex('%s Tasks - %s Nodes' % (n_tasks, n_nodes)))
 
     # Save a publication quality plot
-    fig.savefig('%s.util2.png' % sid, dpi=600, bbox_inches='tight')
+    fig.savefig('%s_util2.png' % sid, dpi=600, bbox_inches='tight')
 
 
 # ------------------------------------------------------------------------------

@@ -67,7 +67,7 @@ if __name__ == '__main__':
     data = {metric: session.rate(event=metrics[metric], sampling=1.0)
             for metric in metrics}
 
-    fig, ax = plt.subplots(figsize=ra.get_plotsize(500))
+    fig, ax = plt.subplots(figsize=ra.get_plotsize(252))
 
     for metric in data:
         x = [e[0] for e in data[metric]]
