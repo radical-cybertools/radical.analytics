@@ -113,7 +113,6 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(figsize=ra.get_plotsize(RES))
 
     for idx,item in enumerate(event_list):
-        print(idx, item[1], item[0])
         ax.plot(np_data[:,0], np_data[:,(1 + idx)],
                  label=to_latex(item[1]))
 
