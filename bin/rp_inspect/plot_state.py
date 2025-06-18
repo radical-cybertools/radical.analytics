@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 __copyright__ = 'Copyright 2013-2016, http://radical.rutgers.edu'
 __license__   = 'MIT'
 
-
+import os
 import sys
 
 import radical.utils     as ru
@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 import numpy             as np
 
 from radical.analytics.utils import to_latex
+
+RES = int(os.environ.get('RADICAL_ANALYTICS_RESOLUTION', 252))
 
 
 # ----------------------------------------------------------------------------
@@ -108,7 +110,7 @@ if __name__ == '__main__':
 
     np_data = np.array(sorted_data)
 
-    fig, ax = plt.subplots(figsize=ra.get_plotsize(252))
+    fig, ax = plt.subplots(figsize=ra.get_plotsize(RES))
 
     for idx,item in enumerate(event_list):
         print(idx, item[1], item[0])

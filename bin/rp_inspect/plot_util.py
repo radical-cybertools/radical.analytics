@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 __copyright__ = 'Copyright 2013-2016, http://radical.rutgers.edu'
 __license__   = 'MIT'
 
-
+import os
 import sys
 
 import matplotlib.pyplot as plt
@@ -12,6 +12,8 @@ import radical.utils     as ru
 import radical.analytics as ra
 
 from radical.analytics.utils import to_latex
+
+RES = int(os.environ.get('RADICAL_ANALYTICS_RESOLUTION', 252))
 
 
 # ----------------------------------------------------------------------------
@@ -120,7 +122,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 3: stype = sys.argv[2]
     else                 : stype = 'radical.pilot'
 
-    fig, axes = plt.subplots(2, figsize=ra.get_plotsize(252))
+    fig, axes = plt.subplots(2, figsize=ra.get_plotsize(RES))
     session   = ra.Session(src, stype=stype)
 
     # this script only works for one pilot

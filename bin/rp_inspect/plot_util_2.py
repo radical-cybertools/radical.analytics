@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 
 import matplotlib        as mpl
@@ -8,6 +9,9 @@ import matplotlib.pyplot as plt
 import radical.analytics as ra
 
 from radical.analytics.utils import to_latex
+
+RES = int(os.environ.get('RADICAL_ANALYTICS_RESOLUTION', 252))
+
 
 # This utilization plot accounts for resource usages the following way:
 #
@@ -200,7 +204,7 @@ def main():
     n_plots = len(r_areas)
 
     # sub-plots for each resource type, legend on first, x-axis shared
-    fig = plt.figure(figsize=(ra.get_plotsize(252)))
+    fig = plt.figure(figsize=(ra.get_plotsize(RES)))
     gs  = mpl.gridspec.GridSpec(n_plots, 1)
 
     for plot_id, r in enumerate(resrc):
