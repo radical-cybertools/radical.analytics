@@ -125,6 +125,14 @@ if __name__ == '__main__':
     fig, axes = plt.subplots(2, figsize=ra.get_plotsize(RES))
     session   = ra.Session(src, stype=stype)
 
+    # this script does not really work for many tasks
+    tasks = session.get(etype='task')
+    if len(tasks) > 1024:
+        if 'RA_MANY_TASKS_OK' not in os.environ:
+            print('too many tasks for this plot type.  Set "RA_MANY_TASKS_OK"')
+            print('in the your environment to allow this script to run anyway.')
+            sys.exit(1)
+
     # this script only works for one pilot
     pilots = session.get(etype='pilot')
     assert(len(pilots) == 1), len(pilots)

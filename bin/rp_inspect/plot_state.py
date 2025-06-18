@@ -120,10 +120,9 @@ if __name__ == '__main__':
     plt.xlabel(to_latex('task (sorted by %s)' % order))
     plt.ylabel(to_latex('time [sec]'))
 
-    # FIXME: how to do the legend now?  With the large font size, I don't see
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.20),
           ncol=3, fancybox=True, shadow=True)
-    plt.savefig('%s.state.png' % session.uid)
+    plt.savefig('%s_state.png' % session.uid)
   # plt.show()
 
 
