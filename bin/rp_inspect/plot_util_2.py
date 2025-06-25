@@ -113,8 +113,8 @@ t_trans = [
         [{1: 'exec_start'}        , 'exec_launch'   , 'exec_task'    ] ,
      #  [{1: 'app_start'}         , 'exec_task'     , 'exec_task'    ] ,
      #  [{1: 'app_stop'}          , 'exec_task'     , 'exec_task'    ] ,
-        [{1: 'rank_stop'}         , 'exec_task'     , 'exec_launch'  ] ,
-        [{1: 'exec_stop'}         , 'exec_launch'   , 'exec_rp'      ] ,
+        [{1: 'exec_stop'}         , 'exec_task'     , 'exec_launch'  ] ,
+        [{1: 'launch_stop'}       , 'exec_task'     , 'exec_rp'      ] ,
         [{1: 'unschedule_stop'}   , 'exec_rp'       , 'idle'         ]
 ]
 
@@ -122,7 +122,8 @@ m_trans = [
         [{1: 'schedule_ok'}       , 'idle'          , 'exec_rp'      ] ,
         [{1: 'launch_start'}      , 'exec_rp'       , 'exec_launch'  ] ,
         [{1: 'exec_start'}        , 'exec_launch'   , 'raptor_master'] ,
-        [{1: 'exec_stop'}         , 'raptor_master' , 'exec_rp'      ] ,
+        [{1: 'exec_stop'}         , 'raptor_master' , 'exec_launch'  ] ,
+        [{1: 'launch_stop'}       , 'raptor_master' , 'exec_rp'      ] ,
         [{1: 'unschedule_stop'}   , 'exec_rp'       , 'idle'         ]
 ]
 
@@ -130,7 +131,8 @@ w_trans = [
         [{1: 'schedule_ok'}       , 'idle'          , 'exec_rp'      ] ,
         [{1: 'launch_start'}      , 'exec_rp'       , 'exec_launch'  ] ,
         [{1: 'exec_start'}        , 'exec_launch'   , 'raptor_worker'] ,
-        [{1: 'exec_stop'}         , 'raptor_worker' , 'exec_rp'      ] ,
+        [{1: 'exec_stop'}         , 'raptor_worker' , 'exec_launch'  ] ,
+        [{1: 'launch_stop'}       , 'raptor_worker' , 'exec_rp'      ] ,
         [{1: 'unschedule_stop'}   , 'exec_rp'       , 'idle'         ]
 ]
 
