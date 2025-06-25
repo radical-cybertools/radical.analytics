@@ -26,8 +26,9 @@ class Plotter(object):
             import matplotlib.pyplot as plt
             self._plt = plt
 
-        except:
-            raise RuntimeError('Plotter class needs matplotlib installed')
+        except Exception as e:
+            raise RuntimeError('Plotter class needs matplotlib installed') \
+                  from e
 
 
     # --------------------------------------------------------------------------
