@@ -34,7 +34,7 @@ RANGE     = [None, None, None, None]
 LOG_X     = False
 LOG_Y     = False
 LOG       = ''
-STYLE     = 'line'  # 'point', 'line', 'step', 'bar', 'hist', 'lp'
+STYLES    = ['line', 'point']  # 'point', 'line', 'step', 'bar', 'hist', 'lp'
 GRID      = False   # True, False
 FNAME     = None
 SAVE_AS   = 'x11'   # 'svg', 'png', 'x11', 'pdf'
@@ -133,7 +133,8 @@ if options.legend : LEGEND       = [str(x) for x in options.legend.split(',')]
 if options.width  : WIDTH        =  int(options.width)
 if options.height : HEIGHT       =  int(options.height)
 if options.log    : LOG          =  str(options.log)
-if options.style  : STYLE        =  str(options.style)
+if options.grid   : GRID         =  str(options.grid)
+if options.style  : STYLES       =  str(options.style).split(',')
 if options.save   : SAVE_AS      =  str(options.save)
 if options.fname  : FNAME        =  str(options.fname)
 if options.stdev  : STDEV        =  True
@@ -156,8 +157,9 @@ if COLUMN_X not in ['count']:
 if SAVE_AS not in ['x11', 'png', 'svg', 'pdf']:
     raise ValueError('invalid save_as value: %s' % SAVE_AS)
 
-if STYLE not in ['point', 'line', 'step', 'bar', 'hist', 'lp']:
-    raise ValueError('invalid style: %s' % STYLE)
+for STYLE in STYLES:
+    if STYLE not in ['point', 'line', 'step', 'bar', 'hist', 'lp']:
+        raise ValueError('invalid style: %s' % STYLE)
 
 
 # ------------------------------------------------------------------------------
@@ -185,20 +187,30 @@ def get_elems(line):
 
     ret = list()
     for e in elems:
-        try:
-            ret.append(float(e))
-        except:
-            ret.append(e)
+        if e in ['-', 'nan']:
+            ret.append(np.nan)
+        else:
+            try:
+                ret.append(float(e))
+            except:
+                ret.append(e)
 
     return ret
 
 
 # ------------------------------------------------------------------------------
-rows = list()
+rows    = list()
+rlabels = list()
 for line in get_lines():
 
     if line.startswith('#'):
-      # continue
+        rlabels = get_elems(line)[1:]
+        if not LABEL_X:
+            try:
+                LABEL_X = rlabels[int(COLUMN_X)]
+            except:
+                pass
+
         elems  = get_elems(line)[1:]
         if not LEGEND:
             LEGEND = [''] * (len(elems))
@@ -218,8 +230,8 @@ for line in get_lines():
             continue
         rows.append(get_elems(line))
 
-    if not LABEL_X:
-        LABEL_X = COLUMN_X
+if not LABEL_X:
+    LABEL_X = COLUMN_X
 
 if not rows:
     raise ValueError('no matching data')
@@ -236,7 +248,7 @@ for row in rows:
     for col in range(ncols):
         data[col].append(row[col])
 
-if STYLE == 'hist':
+if 'hist' in STYLES:
     if COLUMN_X and COLUMN_X != 'count':
         raise ValueError('histogram plots should specify `-y`, not `-x`')
 
@@ -260,7 +272,7 @@ try:
         if COLUMN_X == 'count':
             data_x = list(range(len(data[0])))
         else:
-            data_x = np.array(data[COLUMN_X])
+            data_x = np.array(data[int(COLUMN_X)])
 
 
         if '+' in col:
@@ -268,6 +280,8 @@ try:
             data_y = sum([np.array(data[c]) for c in cols])
             if STDEV:
                 data_y_err = sum([np.array(data[c + 1]) for c in cols])
+            if not label:
+                label = '+'.join([rlabels[int(col)] for col in cols])
 
         elif '-' in col:
             cols   = [int(c) for c in col.split('-')]
@@ -278,6 +292,8 @@ try:
                 data_y -= np.array(data[c])
                 if STDEV:
                     data_y_err += np.array(data[c + 1])
+            if not label:
+                label = '-'.join([rlabels[int(col)] for col in cols])
 
         elif '*' in col:
             cols   = [int(c) for c in col.split('*')]
@@ -288,6 +304,8 @@ try:
                 data_y *= np.array(data[c])
                 if STDEV:
                     data_y_err += np.array(data[c + 1])
+            if not label:
+                label = '*'.join([rlabels[int(col)] for col in cols])
 
         elif '/' in col:
             cols   = [int(c) for c in col.split('/')]
@@ -298,13 +316,17 @@ try:
                 data_y /= np.array(data[c])
                 if STDEV:
                     data_y_err += np.array(data[c + 1])
+            if not label:
+                label = '/'.join([rlabels[int(col)] for col in cols])
 
         else:
             col = int(col)
             time.sleep(1)
-            data_y  = np.array(data[col])
+            data_y = np.array(data[col])
             if STDEV:
                 data_y_err = np.array(data[col + 1])
+            if not label:
+                label = rlabels[int(col)]
 
         if STDEV and data_y_err is None:
             raise ValueError('stdev not available with column spec %s' % col)
@@ -312,14 +334,30 @@ try:
         colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
         color = colors[cnum]
 
-        # if cnum == 3:
-        #     color = colors[4]
-        if   STYLE == 'point': ax.scatter(data_x, data_y, c=color, label=label, s=10)
-        elif STYLE == 'line' : ax.plot   (data_x, data_y, c=color, label=label)
-        elif STYLE == 'step' : ax.step   (data_x, data_y, c=color, label=label)
-        elif STYLE == 'bar'  : ax.bar    (data_x, data_y, c=color, label=label)
-        elif STYLE == 'hist' : ax.hist   (data_y,  150,   color=color, label=label)
-        elif STYLE == 'lp'   : ax.plot   (data_x, data_y, c=color, label=label, marker='.')
+        # label only once, so reset `label` on first match
+        if 'point' in STYLES:
+            ax.scatter(data_x, data_y,      c=color, label=label, s=10)
+            label = None
+
+        elif 'line'  in STYLES:
+            ax.plot   (data_x, data_y, 'b', c=color, label=label)
+            label = None
+
+        elif 'step'  in STYLES:
+            ax.step   (data_x, data_y, 'b', c=color, label=label)
+            label = None
+
+        elif 'bar'   in STYLES:
+            ax.bar    (data_x, data_y,      c=color, label=label)
+            label = None
+
+        elif 'hist'  in STYLES:
+            ax.hist   (data_y,  150,        color=color, label=label)
+            label = None
+
+        elif 'lp'    in STYLES:
+            ax.plot   (data_x, data_y, 'b', c=color, label=label, marker='.')
+            label = None
 
       # if STDEV:
       #     ax.fill_between(data_x, data_y - data_y_err, data_y + data_y_err,
