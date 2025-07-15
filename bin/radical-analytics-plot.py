@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-
+import os
 import sys
 import time
 import optparse
@@ -11,6 +11,7 @@ import radical.analytics as ra
 
 from radical.analytics.utils import to_latex
 
+RES = int(os.environ.get('RADICAL_ANALYTICS_RESOLUTION', 252))
 
 # ----------------------------------------------------------------------------
 #
@@ -37,7 +38,7 @@ STYLES    = ['line', 'point']  # 'point', 'line', 'step', 'bar', 'hist', 'lp'
 GRID      = False   # True, False
 FNAME     = None
 SAVE_AS   = 'x11'   # 'svg', 'png', 'x11', 'pdf'
-WIDTH     = 500
+WIDTH     = RES
 HEIGHT    = None
 STDEV     = False
 
