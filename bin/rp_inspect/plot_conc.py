@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 __copyright__ = 'Copyright 2013-2016, http://radical.rutgers.edu'
 __license__   = 'MIT'
 
-
+import os
 import sys
 
 import matplotlib.pyplot as plt
@@ -13,6 +13,8 @@ import radical.pilot     as rp
 import radical.analytics as ra
 
 from radical.analytics.utils import to_latex
+
+RES = int(os.environ.get('RADICAL_ANALYTICS_RESOLUTION', 252))
 
 
 # ----------------------------------------------------------------------------
@@ -75,7 +77,7 @@ if __name__ == '__main__':
             for metric in metrics}
 
     # prep figure
-    fig, ax = plt.subplots(figsize=ra.get_plotsize(500))
+    fig, ax = plt.subplots(figsize=ra.get_plotsize(RES))
 
     for metric in data:
         x = [e[0] for e in data[metric]]
