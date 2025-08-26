@@ -348,7 +348,7 @@ try:
             label = None
 
         if 'bar'   in STYLES:
-            ax.bar    (data_x, data_y,      c=color, label=label)
+            ax.bar    (data_x, data_y,      color=color, label=label, width=0.1)
             label = None
 
         if 'hist'  in STYLES:

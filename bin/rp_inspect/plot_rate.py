@@ -81,8 +81,8 @@ if __name__ == '__main__':
 
     ax.legend(to_latex(list(data.keys())))
     # FIXME: why is the x-axis label gone?
-    plt.xlabel(to_latex('time [s]'))
-    plt.ylabel(to_latex('rate (#tasks / sec)'))
+    ax.set_xlabel(to_latex('time [s]'))
+    ax.set_ylabel(to_latex('rate (#tasks / sec)'))
 
     fig.savefig('%s_rate.png' % session.uid)
 
