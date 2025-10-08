@@ -2,6 +2,9 @@
 import os
 import sys
 import glob
+import pprint
+
+from collections import defaultdict
 
 import pandas        as pd
 import numpy         as np
@@ -228,6 +231,7 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
 
         td    = entity.description
         etype = entity.etype
+        check = defaultdict(list)
 
         transitions = tmap.get(etype)
         if not transitions:
@@ -287,7 +291,7 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
 
             ts = entity.timestamps(event=event)
             if not ts:
-              # print('%s: no event %s for %s' % (uid, event, etype))
+              # print('%s: no event %s for %s' % (entity.uid, event, etype))
                 continue
 
             for r in resrc:
@@ -295,10 +299,30 @@ def get_pilot_series(session, pilot, tmap, resrc, percent=True):
                 if amount == 0:
                     continue
                 t = (ts[0] - t_min)
+                check['%s:%s' % (r, p_from)].append([event, -amount])
+                check['%s:%s' % (r, p_to  )].append([event, +amount])
                 contribs[r][p_from].append([t, -amount])
                 contribs[r][p_to  ].append([t, +amount])
-              # print('%6.3f : %-30s : %-25s : %-15s --> %-15s [%s]' %
-              #         (t, uid, event, p_from, p_to,   amount))
+              # print('%6.3f : %-30s : %-25s : %-15s =-> %-15s [%s]' %
+              #         (t, entity.uid, event, p_from, p_to,   amount))
+
+
+        for metric in check:
+
+            # all contributions to a metric should sum to zero
+            # if not, pprint them
+            tot = sum([x[1] for x in check[metric]])
+            if tot != 0:
+                print('=== %s: %s' % (entity.uid, etype))
+                print('WARNING: unbalanced contributions to %s: %s' %
+                        (metric, tot))
+
+                for m in check:
+                    print('   %-20s : %8d' % (m, sum([x[1] for x in check[m]])))
+              # for e in entity.events:
+              #     print('   %6.3f : %-20s : %s' % (e[ru.TIME] - t_min,
+              #                                     e[ru.EVENT], e[ru.STATE]))
+                break
 
     # we now have, for all metrics, a list of resource changes, in the form of
     #
