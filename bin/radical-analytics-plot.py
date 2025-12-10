@@ -356,7 +356,7 @@ try:
             label = None
 
         elif 'lp'    in STYLES:
-            ax.plot   (data_x, data_y, 'b', c=color, label=label, marker='.')
+            ax.plot   (data_x, data_y,      color=color, label=label, marker='.')
             label = None
 
       # if STDEV:
